@@ -117,29 +117,33 @@ func (h hints) apply() {
 	applyHint(h.Floating)
 	applyHint(h.AutoIconify)
 	applyHint(h.Maximized)
+	//dont call, will crash. This is instead handled in the window constructor
+	//applyHint(h.ScaleToMonitor)
 }
 
 //window related hints
 //See https://www.glfw.org/docs/latest/window_guide.html
 type windowHints struct {
-	Focused     boolHint
-	Visible     boolHint
-	Resizable   boolHint
-	Decorated   boolHint
-	Floating    boolHint
-	AutoIconify boolHint
-	Maximized   boolHint
+	Focused        boolHint
+	Visible        boolHint
+	Resizable      boolHint
+	Decorated      boolHint
+	Floating       boolHint
+	AutoIconify    boolHint
+	Maximized      boolHint
+	ScaleToMonitor boolHint
 }
 
 func newWindowHints() windowHints {
 	return windowHints{
-		Resizable:   boolHint{Value: true, hint: hint{target: glfw.Resizable}},
-		Visible:     boolHint{Value: true, hint: hint{target: glfw.Visible}},
-		Decorated:   boolHint{Value: true, hint: hint{target: glfw.Decorated}},
-		Focused:     boolHint{Value: true, hint: hint{target: glfw.Focused}},
-		AutoIconify: boolHint{Value: true, hint: hint{target: glfw.AutoIconify}},
-		Floating:    boolHint{Value: false, hint: hint{target: glfw.Floating}},
-		Maximized:   boolHint{Value: false, hint: hint{target: glfw.Maximized}},
+		Resizable:      boolHint{Value: true, hint: hint{target: glfw.Resizable}},
+		Visible:        boolHint{Value: true, hint: hint{target: glfw.Visible}},
+		Decorated:      boolHint{Value: true, hint: hint{target: glfw.Decorated}},
+		Focused:        boolHint{Value: true, hint: hint{target: glfw.Focused}},
+		AutoIconify:    boolHint{Value: true, hint: hint{target: glfw.AutoIconify}},
+		Floating:       boolHint{Value: false, hint: hint{target: glfw.Floating}},
+		Maximized:      boolHint{Value: false, hint: hint{target: glfw.Maximized}},
+		ScaleToMonitor: boolHint{Value: false, hint: hint{target: glfw.Hint(0x0002200C)}},
 	}
 }
 

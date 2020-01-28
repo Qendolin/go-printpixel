@@ -33,9 +33,15 @@ func NewWindow(hints hints, title string, width, height int, monitor *glfw.Monit
 	glfw.DefaultWindowHints()
 	hints.apply()
 
-	if hints.Maximized.Value {
+	if monitor == nil && (hints.Maximized.Value || hints.ScaleToMonitor.Value) {
 		monitor = glfw.GetPrimaryMonitor()
 	}
+	if hints.ScaleToMonitor.Value {
+		vidMode := monitor.GetVideoMode()
+		width = vidMode.Width
+		height = vidMode.Height
+	}
+
 	win, err = glfw.CreateWindow(width, height, title, monitor, nil)
 	return
 }
