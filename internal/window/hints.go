@@ -111,49 +111,35 @@ func (h hints) apply() {
 	applyHint(h.RefreshRate)
 	applyHint(h.DoubleBuffer)
 	applyHint(h.Focused)
-	applyHint(h.Iconified)
 	applyHint(h.Visible)
 	applyHint(h.Resizable)
 	applyHint(h.Decorated)
 	applyHint(h.Floating)
 	applyHint(h.AutoIconify)
 	applyHint(h.Maximized)
-	applyHint(h.CenterCursor)
-	applyHint(h.TransparentFramebuffer)
-	applyHint(h.FocusOnShow)
-	applyHint(h.ScaleToMonitor)
 }
 
 //window related hints
 //See https://www.glfw.org/docs/latest/window_guide.html
 type windowHints struct {
-	Focused                boolHint
-	Iconified              boolHint
-	Visible                boolHint
-	Resizable              boolHint
-	Decorated              boolHint
-	Floating               boolHint
-	AutoIconify            boolHint
-	Maximized              boolHint
-	CenterCursor           boolHint
-	TransparentFramebuffer boolHint
-	FocusOnShow            boolHint
-	ScaleToMonitor         boolHint
+	Focused     boolHint
+	Visible     boolHint
+	Resizable   boolHint
+	Decorated   boolHint
+	Floating    boolHint
+	AutoIconify boolHint
+	Maximized   boolHint
 }
 
 func newWindowHints() windowHints {
 	return windowHints{
-		Resizable:              boolHint{Value: true, hint: hint{target: glfw.Resizable}},
-		Visible:                boolHint{Value: true, hint: hint{target: glfw.Visible}},
-		Decorated:              boolHint{Value: true, hint: hint{target: glfw.Decorated}},
-		Focused:                boolHint{Value: true, hint: hint{target: glfw.Focused}},
-		AutoIconify:            boolHint{Value: true, hint: hint{target: glfw.AutoIconify}},
-		Floating:               boolHint{Value: false, hint: hint{target: glfw.Floating}},
-		Maximized:              boolHint{Value: false, hint: hint{target: glfw.Maximized}},
-		CenterCursor:           boolHint{Value: true, hint: hint{target: glfw.Hint(0x00020009)}},
-		TransparentFramebuffer: boolHint{Value: false, hint: hint{target: glfw.Hint(0x0002000A)}},
-		FocusOnShow:            boolHint{Value: true, hint: hint{target: glfw.Hint(0x0002000C)}},
-		ScaleToMonitor:         boolHint{Value: false, hint: hint{target: glfw.Hint(0x0002200C)}},
+		Resizable:   boolHint{Value: true, hint: hint{target: glfw.Resizable}},
+		Visible:     boolHint{Value: true, hint: hint{target: glfw.Visible}},
+		Decorated:   boolHint{Value: true, hint: hint{target: glfw.Decorated}},
+		Focused:     boolHint{Value: true, hint: hint{target: glfw.Focused}},
+		AutoIconify: boolHint{Value: true, hint: hint{target: glfw.AutoIconify}},
+		Floating:    boolHint{Value: false, hint: hint{target: glfw.Floating}},
+		Maximized:   boolHint{Value: false, hint: hint{target: glfw.Maximized}},
 	}
 }
 
