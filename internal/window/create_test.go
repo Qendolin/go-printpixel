@@ -3,7 +3,7 @@ package window
 import (
 	"testing"
 
-	"github.com/go-gl/glfw/v3.2/glfw"
+	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/stretchr/testify/assert"
 )
 
