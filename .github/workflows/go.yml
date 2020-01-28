@@ -2,8 +2,10 @@ name: Go
 on: [push]
 jobs:
   build:
-    name: Build
+    name: Build & Test
     runs-on: ubuntu-latest
+    env:
+      DISPLAY: :0.0
     steps:
       - name: Set up Go 1.13
         uses: actions/setup-go@v1
