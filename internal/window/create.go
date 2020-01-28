@@ -18,6 +18,12 @@ func Init() (err error) {
 	return err
 }
 
+func Terminate() {
+	if glfwInit {
+		glfw.Terminate()
+	}
+}
+
 func NewWindow(hints hints, title string, width, height int, monitor *glfw.Monitor) (win *glfw.Window, err error) {
 
 	if !glfwInit {
