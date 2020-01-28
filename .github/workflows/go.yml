@@ -32,7 +32,7 @@ jobs:
       - name: Setup Virtual Screen & Display
         run: |
           sudo apt-get install xserver-xorg-video-dummy
-          cat >> /usr/share/X11/xorg.conf.d/xorg.conf << EOF
+          sudo cat >> /usr/share/X11/xorg.conf.d/xorg.conf << EOF
           Section "Device"
               Identifier  "Configured Video Device"
               Driver      "dummy"
