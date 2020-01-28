@@ -23,6 +23,9 @@ func TestCreateWindowNormal(t *testing.T) {
 	win, err := NewWindow(hints, "Test Window", 800, 450, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
+	w, h := win.GetSize()
+	assert.Equal(t, 800, w)
+	assert.Equal(t, 450, h)
 
 	win.Destroy()
 }
@@ -35,7 +38,8 @@ func TestCreateWindowMaximized(t *testing.T) {
 	win, err := NewWindow(hints, "Test Window", 800, 450, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
-
+	w, h := win.GetSize()
+	assert.True(t, 800 == w || 450 == h)
 	win.Destroy()
 }
 
@@ -52,7 +56,8 @@ func TestCreateWindowScaledToMon(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
 	w, h := win.GetSize()
-	assert.Equal(t, vidMode.Width, w, h)
+	assert.Equal(t, vidMode.Width, w)
+	assert.Equal(t, vidMode.Height, h)
 
 	win.Destroy()
 }
