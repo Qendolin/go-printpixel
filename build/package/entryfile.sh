@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /root/src/
+sudo xvfb-run -e /dev/stderr go test ./...

@@ -20,6 +20,7 @@ func TestCreateWindowNormal(t *testing.T) {
 	hints := NewHints()
 	hints.ContextVersionMajor.Value = 3
 	hints.ContextVersionMinor.Value = 2
+	hints.Visible.Value = false
 	win, err := NewWindow(hints, "Test Window", 800, 450, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
@@ -35,6 +36,7 @@ func TestCreateWindowMaximized(t *testing.T) {
 	hints.ContextVersionMajor.Value = 3
 	hints.ContextVersionMinor.Value = 2
 	hints.Maximized.Value = true
+	hints.Visible.Value = false
 	win, err := NewWindow(hints, "Test Window", 800, 450, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
@@ -52,6 +54,7 @@ func TestCreateWindowScaledToMon(t *testing.T) {
 	hints.ContextVersionMinor.Value = 2
 	hints.Maximized.Value = true
 	hints.ScaleToMonitor.Value = true
+	hints.Visible.Value = false
 	win, err := NewWindow(hints, "Test Window", 800, 450, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
