@@ -2,8 +2,8 @@ FROM alpine:latest
 
 RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
 RUN tar -xvf go1.13.3.linux-amd64.tar.gz
-RUN apk add sudo
-RUN sudo mv go /usr/local
+#RUN apk add sudo
+RUN mv go /usr/local
 
 #RUN apk --allow-untrusted -X https://apkproxy.herokuapp.com/sgerrand/alpine-pkg-glibc add glibc glibc-bin
 
@@ -32,20 +32,24 @@ RUN echo Go Config:
 RUN go version
 RUN go env
 
-RUN sudo apk update
-RUN sudo apk add gcc
-RUN sudo apk add mesa-dev
-RUN sudo apk add libx11-dev
-RUN sudo apk add libc-dev
-RUN sudo apk add libx11-dev
-RUN sudo apk add libxcursor-dev
-RUN sudo apk add libxi-dev
-RUN sudo apk add libxinerama-dev
-RUN sudo apk add libxrandr-dev
-RUN sudo apk add xorg-server
-RUN sudo apk add xvfb
-RUN sudo apk add coreutils
-RUN sudo apk add xvfb-run --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/main/ --allow-untrusted
+RUN apk update
+RUN apk add gcc
+RUN apk add mesa-dev
+RUN apk add libx11-dev
+RUN apk add libc-dev
+RUN apk add libx11-dev
+RUN apk add libxcursor-dev
+RUN apk add libxi-dev
+RUN apk add libxinerama-dev
+RUN apk add libxrandr-dev
+RUN apk add xorg-server
+RUN apk add xvfb
+RUN apk add coreutils
+RUN apk add mesa
+RUN apk add mesa-gl
+RUN apk add mesa-demos
+RUN apk add xvfb-run --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/main/ --allow-untrusted
+RUN apk add mesa-osmesa
 
 COPY ./build/package/entryfile.sh /entryfile.sh
 ADD ./ /root/src
