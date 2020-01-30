@@ -9,9 +9,9 @@ type Vbo struct {
 }
 
 func NewVbo() *Vbo {
-	vbo := new(uint32)
-	gl.GenBuffers(1, vbo)
-	return &Vbo{vbo}
+	id := new(uint32)
+	gl.GenBuffers(1, id)
+	return &Vbo{id}
 }
 
 func (vbo *Vbo) Id() uint32 {
