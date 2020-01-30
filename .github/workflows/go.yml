@@ -2,7 +2,7 @@ name: Go
 on: [push]
 jobs:
   build:
-    name: Build & Test
+    name: Build Go
     runs-on: ubuntu-latest
     env:
       DISPLAY: :0.0

@@ -4,6 +4,7 @@ on: [push]
 
 jobs:
   build:
+    name: Test Go
     runs-on: ubuntu-latest
 
     steps:
