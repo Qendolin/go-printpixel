@@ -1,3 +1,5 @@
+// +build !headless
+
 package canvas_test
 
 import (
