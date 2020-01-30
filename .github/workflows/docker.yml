@@ -1,0 +1,15 @@
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+  build:
+    name: Test Go
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker build . --file ./build/package/Dockerfile --tag go-printpixel
+      - name: Run Docker container
+        run: docker run go-printpixel
