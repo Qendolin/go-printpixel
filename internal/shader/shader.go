@@ -33,8 +33,12 @@ func NewFragmentShader(source string) (*Shader, error) {
 	return &Shader{uint32: &id, Type: gl.VERTEX_SHADER}, err
 }
 
-func (shader *Shader) Bind() {
+func (shader *Shader) Id() uint32 {
+	return *shader.uint32
+}
 
+func (shader *Shader) Destroy() {
+	gl.DeleteShader(shader.Id())
 }
 
 func loadAndCompileShader(id uint32, source string) error {
