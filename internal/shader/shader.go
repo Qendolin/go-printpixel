@@ -41,8 +41,9 @@ func (shader *Shader) Destroy() {
 }
 
 func loadAndCompileShader(id uint32, source string) error {
-	cStr := gl.Str(source + "\x00")
-	gl.ShaderSource(id, 1, &cStr, nil)
+	cStrs, free := gl.Strs(source + "\x00")
+	gl.ShaderSource(id, 1, cStrs, nil)
+	free()
 	gl.CompileShader(id)
 
 	var ok int32
