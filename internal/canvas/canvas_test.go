@@ -48,10 +48,10 @@ func TestCanvasQuad(t *testing.T) {
 	}
 	gl.ClearColor(1, 0, 0, 1)
 
-	canvas := canvas.NewCanvas()
+	cnv := canvas.NewCanvas()
 	for !win.ShouldClose() {
-		canvas.BindFor(func() []func() {
-			canvas.Draw()
+		cnv.BindFor(func() []func() {
+			cnv.Draw()
 			return nil
 		})
 		win.SwapBuffers()
