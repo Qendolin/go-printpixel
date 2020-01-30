@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Qendolin/go-printpixel/internal"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
@@ -37,15 +38,28 @@ func NewProgram(vertShader *Shader, fragShader *Shader) (prog *Program, err erro
 	return
 }
 
-func (prog Program) Id() uint32 {
+func (prog *Program) Id() uint32 {
 	return *prog.uint32
 }
 
-func (prog Program) Bind() {
+func (prog *Program) Bind() {
 	gl.UseProgram(prog.Id())
 }
 
-func (prog Program) Destroy() {
+func (prog *Program) Unbind() {
+	gl.UseProgram(0)
+}
+
+func (prog *Program) BindFor(context internal.BindingClosure) {
+	prog.Bind()
+	defered := context()
+	prog.Unbind()
+	for _, deferedFunc := range defered {
+		deferedFunc()
+	}
+}
+
+func (prog *Program) Destroy() {
 	gl.DeleteProgram(prog.Id())
 }
 

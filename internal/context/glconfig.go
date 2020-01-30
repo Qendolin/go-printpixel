@@ -16,7 +16,7 @@ type openGlError struct {
 }
 
 func (glerr openGlError) Error() string {
-	return fmt.Sprintf("[%-12s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
+	return fmt.Sprintf("[%s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
 }
 
 type glConfig struct {
