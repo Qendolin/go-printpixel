@@ -8,6 +8,7 @@ import (
 	"github.com/Qendolin/go-printpixel/internal/canvas"
 	"github.com/Qendolin/go-printpixel/internal/context"
 	"github.com/Qendolin/go-printpixel/internal/window"
+	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -24,7 +25,6 @@ func TestCanvasQuad(t *testing.T) {
 	hints := window.NewHints()
 	hints.ContextVersionMajor.Value = 3
 	hints.ContextVersionMinor.Value = 2
-	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
 	if err != nil {
@@ -46,10 +46,15 @@ func TestCanvasQuad(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+	gl.ClearColor(1, 0, 0, 1)
 
-	canvas := canvas.NewCanvas(1600, 800)
+	canvas := canvas.NewCanvas()
 	for !win.ShouldClose() {
-		canvas.Draw()
+		canvas.BindFor(func() []func() {
+			canvas.Draw()
+			return nil
+		})
+		win.SwapBuffers()
 		glfw.PollEvents()
 	}
 }

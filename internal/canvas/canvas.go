@@ -25,7 +25,7 @@ func _init() {
 		quadVbo := NewVbo()
 		quadVbo.Bind(gl.ARRAY_BUFFER)
 		quadVbo.WriteStatic(quadVertices)
-		quadVbo.MustLayout(0, 3, float32(0), false, 0)
+		quadVbo.MustLayout(0, 2, float32(0), false, 0)
 
 		defered = append(defered, func() {
 			quadVbo.Unbind(gl.ARRAY_BUFFER)
@@ -59,17 +59,13 @@ func _init() {
 }
 
 type Canvas struct {
-	Width, Height int
 }
 
-func NewCanvas(width, height int) *Canvas {
+func NewCanvas() *Canvas {
 	if !isInit {
 		_init()
 	}
-	return &Canvas{
-		Width:  width,
-		Height: height,
-	}
+	return &Canvas{}
 }
 
 func (canvas *Canvas) Bind() {
