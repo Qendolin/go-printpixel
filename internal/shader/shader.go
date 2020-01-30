@@ -18,19 +18,18 @@ func (cerr CompileErr) Error() string {
 
 type Shader struct {
 	*uint32
-	Type uint32
 }
 
 func NewVertexShader(source string) (*Shader, error) {
 	id := gl.CreateShader(gl.VERTEX_SHADER)
 	err := loadAndCompileShader(id, source)
-	return &Shader{uint32: &id, Type: gl.VERTEX_SHADER}, err
+	return &Shader{&id}, err
 }
 
 func NewFragmentShader(source string) (*Shader, error) {
 	id := gl.CreateShader(gl.VERTEX_SHADER)
 	err := loadAndCompileShader(id, source)
-	return &Shader{uint32: &id, Type: gl.VERTEX_SHADER}, err
+	return &Shader{&id}, err
 }
 
 func (shader *Shader) Id() uint32 {
@@ -46,9 +45,9 @@ func loadAndCompileShader(id uint32, source string) error {
 	gl.ShaderSource(id, 1, &cStr, nil)
 	gl.CompileShader(id)
 
-	var status int32
-	gl.GetShaderiv(id, gl.COMPILE_STATUS, &status)
-	if status == gl.FALSE {
+	var ok int32
+	gl.GetShaderiv(id, gl.COMPILE_STATUS, &ok)
+	if ok == gl.FALSE {
 		return CompileErr{
 			Log:    readShaderInfoLog(id),
 			Shader: id,
