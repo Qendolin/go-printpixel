@@ -1,8 +1,7 @@
-FROM alpine:latest
+FROM alpine:edge
 
 RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
 RUN tar -xvf go1.13.3.linux-amd64.tar.gz
-#RUN apk add sudo
 RUN mv go /usr/local
 
 #RUN apk --allow-untrusted -X https://apkproxy.herokuapp.com/sgerrand/alpine-pkg-glibc add glibc glibc-bin
@@ -26,31 +25,37 @@ ENV CGO_CXXFLAGS="-g -O2 --std=gnu11"
 ENV CGO_FFLAGS="-g -O2"
 ENV CGO_LDFLAGS="-g -O2"
 
-RUN ls $GOROOT
-RUN ls $GOROOT/bin
-RUN echo Go Config:
-RUN go version
-RUN go env
+#RUN ls $GOROOT
+#RUN ls $GOROOT/bin
+#RUN echo Go Config:
+#RUN go version
+#RUN go env
 
-RUN apk update
-RUN apk add gcc
-RUN apk add mesa-dev
-RUN apk add libx11-dev
-RUN apk add libc-dev
-RUN apk add libx11-dev
-RUN apk add libxcursor-dev
-RUN apk add libxi-dev
-RUN apk add libxinerama-dev
-RUN apk add libxrandr-dev
-RUN apk add xorg-server
-RUN apk add xvfb
-RUN apk add coreutils
-RUN apk add mesa
-RUN apk add mesa-gl
-RUN apk add mesa-demos
-RUN apk add xvfb-run --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/main/ --allow-untrusted
-RUN apk add mesa-osmesa
+RUN apk update && \
+	apk add \
+	gcc \
+	mesa-dev \
+	libx11-dev \
+	libc-dev \
+	libx11-dev \
+	libxcursor-dev \
+	libxi-dev \
+	libxinerama-dev \
+	libxrandr-dev \
+	xorg-server \
+	xvfb \
+	coreutils \
+	#mesa \
+	#mesa-gl \
+	#mesa-demos \
+	#mesa-osmesa \
+	xf86-video-dummy \
+	xvfb-run
 
+RUN apk add xf86-input-libinput
+RUN apk add virtualgl --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
+
+COPY ./build/package/xorg.conf /xorg.conf
 COPY ./build/package/entryfile.sh /entryfile.sh
 ADD ./ /root/src
 
