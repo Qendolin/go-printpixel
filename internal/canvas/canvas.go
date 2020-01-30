@@ -19,6 +19,7 @@ func _init() {
 	if isInit {
 		return
 	}
+	isInit = true
 
 	quadVao = NewVao()
 	quadVao.BindFor(func() (defered []func()) {
