@@ -2,32 +2,36 @@ package context
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"unsafe"
 
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
-type Logger interface {
-	Print(v ...interface{})
-	Fatal(v ...interface{})
+type openGlError struct {
+	Severity string
+	Id       uint32
+	Type     string
+	Message  string
+	Fatal    bool
 }
 
-type DebugMessageCallbackFactory func(Logger) gl.DebugProc
+func (glerr openGlError) Error() string {
+	return fmt.Sprintf("[%-12s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
+}
 
 type glConfig struct {
 	//Enables DEBUG_OUTPUT and DEBUG_OUTPUT_SYNCHRONOUS. Also sets DebugMessageCallback.
 	Debug  bool
-	Logger Logger
-	DMC    DebugMessageCallbackFactory
+	Errors <-chan openGlError
+	errors chan<- openGlError
 }
 
-func NewGlConfig() glConfig {
+func NewGlConfig(errorChanBufferSize int) glConfig {
+	errorChan := make(chan openGlError, errorChanBufferSize)
 	return glConfig{
 		Debug:  false,
-		Logger: log.New(ioutil.Discard, "", 0),
-		DMC:    defaultDebugMessageCallback,
+		Errors: errorChan,
+		errors: errorChan,
 	}
 }
 
@@ -35,12 +39,12 @@ func (cfg glConfig) Apply() error {
 	if cfg.Debug {
 		gl.Enable(gl.DEBUG_OUTPUT)
 		gl.Enable(gl.DEBUG_OUTPUT_SYNCHRONOUS)
-		gl.DebugMessageCallback(cfg.DMC(cfg.Logger), nil)
+		gl.DebugMessageCallback(debugMessageCallback(cfg.errors), nil)
 	}
 	return nil
 }
 
-func defaultDebugMessageCallback(log Logger) gl.DebugProc {
+func debugMessageCallback(errorChan chan<- openGlError) gl.DebugProc {
 	return func(source uint32,
 		gltype uint32,
 		id uint32,
@@ -83,12 +87,12 @@ func defaultDebugMessageCallback(log Logger) gl.DebugProc {
 			severityStr = "WARNING"
 		}
 
-		logStr := fmt.Sprintf("[%-12s] %v/%v: %v\n", severityStr, id, gltypeStr, message)
-
-		if fatal {
-			log.Fatal(logStr)
-		} else {
-			log.Print(logStr)
+		errorChan <- openGlError{
+			Severity: severityStr,
+			Id:       id,
+			Type:     gltypeStr,
+			Message:  message,
+			Fatal:    fatal,
 		}
 	}
 }
