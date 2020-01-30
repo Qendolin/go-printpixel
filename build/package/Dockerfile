@@ -55,8 +55,8 @@ RUN apk update && \
 RUN apk add xf86-input-libinput
 RUN apk add virtualgl --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
-COPY ./build/package/xorg.conf /xorg.conf
-COPY ./build/package/entryfile.sh /entryfile.sh
+COPY ./build/package/xorg.conf /root/xorg.conf
+COPY ./build/package/entryfile.sh /root/entryfile.sh
 ADD ./ /root/src
 
-ENTRYPOINT ["/entryfile.sh"]
+ENTRYPOINT ["sh", "/root/entryfile.sh"]
