@@ -37,6 +37,18 @@ func NewProgram(vertShader *Shader, fragShader *Shader) (prog *Program, err erro
 	return
 }
 
+func (prog Program) Id() uint32 {
+	return *prog.uint32
+}
+
+func (prog Program) Bind() {
+	gl.UseProgram(prog.Id())
+}
+
+func (prog Program) Destroy() {
+	gl.DeleteProgram(prog.Id())
+}
+
 func readProgramInfoLog(id uint32) string {
 	var logLength int32
 	gl.GetProgramiv(id, gl.INFO_LOG_LENGTH, &logLength)
