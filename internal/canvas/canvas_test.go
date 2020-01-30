@@ -36,6 +36,9 @@ func TestCanvasQuad(t *testing.T) {
 	cfg.Debug = true
 	go func() {
 		for err := range cfg.Errors {
+			if err.Fatal {
+				panic(err.Error())
+			}
 			fmt.Printf("%v\n", err)
 		}
 	}()

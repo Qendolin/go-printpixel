@@ -27,7 +27,7 @@ func NewVertexShader(source string) (*Shader, error) {
 }
 
 func NewFragmentShader(source string) (*Shader, error) {
-	id := gl.CreateShader(gl.VERTEX_SHADER)
+	id := gl.CreateShader(gl.FRAGMENT_SHADER)
 	err := loadAndCompileShader(id, source)
 	return &Shader{&id}, err
 }
