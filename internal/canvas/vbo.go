@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Qendolin/go-printpixel/internal"
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
@@ -39,7 +39,7 @@ func (vbo *Vbo) Unbind(target uint32) {
 	gl.BindBuffer(target, 0)
 }
 
-func (vbo *Vbo) BindFor(target uint32, context internal.BindingClosure) {
+func (vbo *Vbo) BindFor(target uint32, context utils.BindingClosure) {
 	vbo.Bind(target)
 	defered := context()
 	vbo.Unbind(target)

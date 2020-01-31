@@ -1,7 +1,7 @@
 package canvas
 
 import (
-	"github.com/Qendolin/go-printpixel/internal"
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
@@ -27,7 +27,7 @@ func (vao *Vao) Unbind() {
 	gl.BindVertexArray(0)
 }
 
-func (vao *Vao) BindFor(context internal.BindingClosure) {
+func (vao *Vao) BindFor(context utils.BindingClosure) {
 	vao.Bind()
 	defered := context()
 	vao.Unbind()

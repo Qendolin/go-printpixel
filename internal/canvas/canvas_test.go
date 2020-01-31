@@ -4,7 +4,6 @@ package canvas_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/canvas"
@@ -15,9 +14,6 @@ import (
 )
 
 func TestCanvasQuad(t *testing.T) {
-
-	os.Chdir("../..")
-
 	err := context.InitGlfw()
 	if err != nil {
 		panic(err)

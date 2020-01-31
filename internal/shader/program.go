@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Qendolin/go-printpixel/internal"
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
@@ -51,7 +51,7 @@ func (prog *Program) Unbind() {
 	gl.UseProgram(0)
 }
 
-func (prog *Program) BindFor(context internal.BindingClosure) {
+func (prog *Program) BindFor(context utils.BindingClosure) {
 	prog.Bind()
 	defered := context()
 	prog.Unbind()

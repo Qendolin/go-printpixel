@@ -3,7 +3,7 @@ package canvas
 import (
 	"io/ioutil"
 
-	"github.com/Qendolin/go-printpixel/internal"
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/Qendolin/go-printpixel/internal/shader"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
@@ -34,7 +34,7 @@ func _init() {
 		return
 	})
 
-	qvsSource, err := ioutil.ReadFile("./assets/shaders/quad.vert")
+	qvsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad.vert"))
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +43,7 @@ func _init() {
 		panic(err)
 	}
 
-	qfsSource, err := ioutil.ReadFile("./assets/shaders/quad.frag")
+	qfsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad.frag"))
 	if err != nil {
 		panic(err)
 	}
@@ -79,7 +79,7 @@ func (canvas *Canvas) Unbind() {
 	quadShaderProg.Unbind()
 }
 
-func (canvas *Canvas) BindFor(context internal.BindingClosure) {
+func (canvas *Canvas) BindFor(context utils.BindingClosure) {
 	canvas.Bind()
 	defered := context()
 	canvas.Unbind()
