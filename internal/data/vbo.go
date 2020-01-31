@@ -1,4 +1,4 @@
-package canvas
+package data
 
 import (
 	"encoding/binary"

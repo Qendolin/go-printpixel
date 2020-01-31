@@ -1,4 +1,4 @@
-package canvas
+package data
 
 import (
 	"github.com/Qendolin/go-printpixel/internal/utils"

@@ -3,14 +3,15 @@ package canvas
 import (
 	"io/ioutil"
 
-	"github.com/Qendolin/go-printpixel/internal/utils"
+	"github.com/Qendolin/go-printpixel/internal/data"
 	"github.com/Qendolin/go-printpixel/internal/shader"
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
 var (
 	quadVertices   = []float32{1, -1, 1, 1, -1, -1, -1, 1}
-	quadVao        *Vao
+	quadVao        *data.Vao
 	quadShaderProg *shader.Program
 	isInit         = false
 )
@@ -21,9 +22,9 @@ func _init() {
 	}
 	isInit = true
 
-	quadVao = NewVao()
+	quadVao = data.NewVao()
 	quadVao.BindFor(func() (defered []func()) {
-		quadVbo := NewVbo()
+		quadVbo := data.NewVbo()
 		quadVbo.Bind(gl.ARRAY_BUFFER)
 		quadVbo.WriteStatic(quadVertices)
 		quadVbo.MustLayout(0, 2, float32(0), false, 0)
