@@ -15,12 +15,20 @@ const (
 
 var status int
 
-var ErrGlfwNotInitialized error = errors.New("GLFW has not been initialized. You have to call InitGlfw() first.")
-var ErrGlNotInitialized error = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
+var (
+	ErrGlfwNotInitialized = errors.New("GLFW has not been initialized. You have to call InitGlfw() first.")
+	ErrGlfwNoContext      = errors.New("GLFW has no context. You have to call MakeContextCurrent() on a *glfw.Window first.")
+	ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
+)
 
 func InitGl(cfg glConfig) (err error) {
 	if status&StatusGlfwInitialized == 0 {
 		err = ErrGlfwNotInitialized
+		return
+	}
+
+	if glfw.GetCurrentContext() == nil {
+		err = ErrGlfwNoContext
 		return
 	}
 
