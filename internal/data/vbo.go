@@ -52,12 +52,18 @@ func (vbo *Vbo) BindFor(target uint32, context utils.BindingClosure) {
 	data - a silce of some type
 */
 func (vbo *Vbo) WriteStatic(data interface{}) {
+	vbo.Write(gl.STATIC_DRAW, data)
+}
+
+/*
+	data - a silce of some type
+*/
+func (vbo *Vbo) Write(mode uint32, data interface{}) {
 	size := binary.Size(data)
 	if size == -1 {
-		//TODO
-		panic("invalid data type")
+		//Ignore, gl will throw error anyway
 	}
-	gl.BufferData(gl.ARRAY_BUFFER, size, gl.Ptr(data), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, size, gl.Ptr(data), mode)
 }
 
 func (vbo *Vbo) Layout(index int, size int, dataType interface{}, normalized bool, stride int) (err error) {
