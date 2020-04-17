@@ -35,7 +35,7 @@ func _init() {
 		return
 	})
 
-	qvsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad.vert"))
+	qvsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad_tex.vert"))
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func _init() {
 		panic(err)
 	}
 
-	qfsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad.frag"))
+	qfsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad_tex.frag"))
 	if err != nil {
 		panic(err)
 	}
