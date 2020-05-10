@@ -30,8 +30,6 @@ func TestCreateWindowNormal(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
@@ -48,8 +46,6 @@ func TestCreateWindowMaximized(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Maximized.Value = true
 	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 1920, 1080, nil)
@@ -69,8 +65,6 @@ func TestCreateWindowScaledToMon(t *testing.T) {
 	vidMode := monitor.GetVideoMode()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Maximized.Value = true
 	hints.ScaleToMonitor.Value = true
 	hints.Visible.Value = false
@@ -89,8 +83,6 @@ func TestGlInit(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()

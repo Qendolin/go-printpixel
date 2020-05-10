@@ -21,8 +21,6 @@ func TestCanvasQuad(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
 	if err != nil {
