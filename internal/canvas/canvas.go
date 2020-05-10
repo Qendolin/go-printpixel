@@ -58,7 +58,7 @@ func NewCanvas() *Canvas {
 	if !isInit {
 		_init()
 	}
-	return &Canvas{Program: *quadShaderProg}
+	return &Canvas{*quadShaderProg}
 }
 
 func NewCanvasWithProgram(prog shader.Program) *Canvas {
@@ -70,12 +70,12 @@ func NewCanvasWithProgram(prog shader.Program) *Canvas {
 
 func (canvas *Canvas) Bind() {
 	quadVao.Bind()
-	quadShaderProg.Bind()
+	canvas.Program.Bind()
 }
 
 func (canvas *Canvas) Unbind() {
 	quadVao.Unbind()
-	quadShaderProg.Unbind()
+	canvas.Program.Unbind()
 }
 
 func (canvas *Canvas) BindFor(context utils.BindingClosure) {

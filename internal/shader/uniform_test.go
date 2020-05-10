@@ -1,7 +1,6 @@
 package shader_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/canvas"
@@ -16,7 +15,7 @@ import (
 func TestUniformColor(t *testing.T) {
 	err := context.InitGlfw()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	defer context.Terminate()
 
@@ -26,7 +25,7 @@ func TestUniformColor(t *testing.T) {
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	win.MakeContextCurrent()
 
@@ -35,34 +34,34 @@ func TestUniformColor(t *testing.T) {
 	go func() {
 		for err := range cfg.Errors {
 			if err.Fatal {
-				panic(err.Error())
+				t.Error(err)
 			}
-			fmt.Printf("%v\n", err)
+			t.Log(err)
 		}
 	}()
 	err = context.InitGl(cfg)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	gl.ClearColor(1, 0, 0, 1)
 
 	vs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uniform.vert", shader.TypeVertex)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	fs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uniform.frag", shader.TypeFragment)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	prog, err := shader.NewProgram(vs, fs)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	uColor, err := shader.NewUniform(*prog, "u_color")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	prog.Bind()

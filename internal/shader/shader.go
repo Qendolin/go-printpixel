@@ -44,7 +44,11 @@ func NewFragmentShader(source string) (*Shader, error) {
 }
 
 func NewShaderFromModulePath(modulePath string, shaderType ShaderType) (*Shader, error) {
-	source, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad_tex.vert"))
+	absPath, err := utils.ResolveModulePath(modulePath)
+	if err != nil {
+		return nil, err
+	}
+	source, err := ioutil.ReadFile(absPath)
 	if err != nil {
 		return nil, err
 	}

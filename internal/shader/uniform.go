@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/go-gl/mathgl/mgl64"
@@ -24,6 +25,7 @@ func (ulerr UniformLinkError) Error() string {
 }
 
 func NewUniform(prog Program, name string) (uni *Uniform, err error) {
+	name = utils.NullTerm(name)
 	loc := gl.GetUniformLocation(*prog.uint32, gl.Str(name))
 	if loc == -1 {
 		err = UniformLinkError{
