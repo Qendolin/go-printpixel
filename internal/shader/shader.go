@@ -22,7 +22,7 @@ type CompileErr struct {
 }
 
 func (cerr CompileErr) Error() string {
-	return fmt.Sprintf("Failed to compile shader (id: %v). Info: \n\n%v", cerr.Shader, cerr.Log)
+	return fmt.Sprintf("Failed to compile shader (id: %v). Compiler Log: \r\n\r\n%v\r\n\r\n", cerr.Shader, cerr.Log)
 }
 
 type Shader struct {
