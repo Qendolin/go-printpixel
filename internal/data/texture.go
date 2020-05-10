@@ -205,3 +205,22 @@ func (tex *Texture) WriteFromFile3D(files [6]io.Reader, level, internalFormat in
 	}
 	return nil
 }
+
+func (tex *Texture) WriteFromImageAs(img image.Image, target TexTarget, level, internalFormat int32, format, dataType uint32) {
+	rgba := image.NewRGBA(img.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	size := img.Bounds().Size()
+	tex.WriteAs(target, level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
+}
+
+func (tex *Texture) WriteFromImage(img image.Image, level, internalFormat int32, format, dataType uint32) {
+	tex.WriteFromImageAs(img, tex.Type, level, internalFormat, format, dataType)
+}
+
+func (tex *Texture) WriteFromBytes(bytes []byte, width, height int32, level, internalFormat int32, format uint32) {
+	tex.WriteFromBytesAs(bytes, width, height, tex.Type, level, internalFormat, format)
+}
+
+func (tex *Texture) WriteFromBytesAs(bytes []byte, width, height int32, target TexTarget, level, internalFormat int32, format uint32) {
+	tex.WriteAs(target, level, internalFormat, width, height, 0, format, gl.BYTE, bytes)
+}

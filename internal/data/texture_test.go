@@ -14,7 +14,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-func TestTextures(t *testing.T) {
+func TestFileTexture(t *testing.T) {
 	err := context.InitGlfw()
 	if err != nil {
 		t.Fatal(err)
@@ -71,4 +71,73 @@ func TestTextures(t *testing.T) {
 		glfw.PollEvents()
 	}
 
+}
+
+func TestGeneratedTexture(t *testing.T) {
+	err := context.InitGlfw()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer context.Terminate()
+
+	hints := window.NewHints()
+	win, err := window.New(hints, "Test Window", 800, 450, nil)
+	defer win.Destroy()
+	if err != nil {
+		t.Fatal(err)
+	}
+	win.MakeContextCurrent()
+
+	cfg := context.NewGlConfig(0)
+	cfg.Debug = true
+	go func() {
+		for err := range cfg.Errors {
+			if err.Fatal {
+				t.Error(err)
+			}
+			t.Log(err)
+		}
+	}()
+	err = context.InitGl(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gl.ClearColor(1, 0, 0, 1)
+
+	imgFile, err := os.Open(utils.MustResolveModulePath("assets/textures/uv.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer imgFile.Close()
+
+	tex := data.NewTexture(data.Texture2D)
+	tex.Bind(gl.TEXTURE0)
+	tex.FilterMode(data.FilterLinear, data.FilterLinear)
+	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge, data.WrapClampToEdge)
+
+	data := make([]byte, 100*100*3)
+
+	for x := 0; x < 100; x++ {
+		for y := 0; y < 100; y++ {
+			data[(x+y*100)*3+0] = byte(x)
+			data[(x+y*100)*3+1] = byte(y)
+			data[(x+y*100)*3+2] = 0
+		}
+	}
+
+	tex.WriteFromBytes(data, 100, 100, 0, gl.RGB, gl.RGB)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cnv := canvas.NewCanvas()
+
+	for !win.ShouldClose() {
+		cnv.BindFor(func() []func() {
+			cnv.Draw()
+			return nil
+		})
+		win.SwapBuffers()
+		glfw.PollEvents()
+	}
 }
