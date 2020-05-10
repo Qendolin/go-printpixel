@@ -32,3 +32,11 @@ func MustResolveModulePath(path string) string {
 	}
 	return absPath
 }
+
+func NullTerm(str string) string {
+	if str[len(str)-1] == '\x00' {
+		return str
+	} else {
+		return str + "\x00"
+	}
+}
