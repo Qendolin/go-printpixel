@@ -2,7 +2,7 @@ package data
 
 import (
 	"github.com/Qendolin/go-printpixel/internal/utils"
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 type Vao struct {

@@ -1,12 +1,10 @@
 package canvas
 
 import (
-	"io/ioutil"
-
 	"github.com/Qendolin/go-printpixel/internal/data"
 	"github.com/Qendolin/go-printpixel/internal/shader"
 	"github.com/Qendolin/go-printpixel/internal/utils"
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 var (
@@ -35,20 +33,12 @@ func _init() {
 		return
 	})
 
-	qvsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad_tex.vert"))
-	if err != nil {
-		panic(err)
-	}
-	quadVertShader, err := shader.NewVertexShader(string(qvsSource))
+	quadVertShader, err := shader.NewShaderFromModulePath("assets/shaders/quad_tex.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
 	}
 
-	qfsSource, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad_tex.frag"))
-	if err != nil {
-		panic(err)
-	}
-	quadFragShader, err := shader.NewFragmentShader(string(qfsSource))
+	quadFragShader, err := shader.NewShaderFromModulePath("assets/shaders/quad_tex.frag", shader.TypeFragment)
 	if err != nil {
 		panic(err)
 	}
@@ -61,13 +51,21 @@ func _init() {
 }
 
 type Canvas struct {
+	Program shader.Program
 }
 
 func NewCanvas() *Canvas {
 	if !isInit {
 		_init()
 	}
-	return &Canvas{}
+	return &Canvas{Program: *quadShaderProg}
+}
+
+func NewCanvasWithProgram(prog shader.Program) *Canvas {
+	if !isInit {
+		_init()
+	}
+	return &Canvas{prog}
 }
 
 func (canvas *Canvas) Bind() {

@@ -2,9 +2,18 @@ package shader
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/Qendolin/go-printpixel/internal/utils"
+	"github.com/go-gl/gl/v3.3-core/gl"
+)
+
+type ShaderType int
+
+const (
+	TypeVertex   = ShaderType(gl.VERTEX_SHADER)
+	TypeFragment = ShaderType(gl.FRAGMENT_SHADER)
 )
 
 type CompileErr struct {
@@ -20,16 +29,27 @@ type Shader struct {
 	*uint32
 }
 
-func NewVertexShader(source string) (*Shader, error) {
-	id := gl.CreateShader(gl.VERTEX_SHADER)
+func NewShader(source string, shaderType ShaderType) (*Shader, error) {
+	id := gl.CreateShader(uint32(shaderType))
 	err := loadAndCompileShader(id, source)
 	return &Shader{&id}, err
 }
 
+func NewVertexShader(source string) (*Shader, error) {
+	return NewShader(source, TypeVertex)
+}
+
 func NewFragmentShader(source string) (*Shader, error) {
-	id := gl.CreateShader(gl.FRAGMENT_SHADER)
-	err := loadAndCompileShader(id, source)
-	return &Shader{&id}, err
+	return NewShader(source, TypeFragment)
+}
+
+func NewShaderFromModulePath(modulePath string, shaderType ShaderType) (*Shader, error) {
+	source, err := ioutil.ReadFile(utils.MustResolveModulePath("assets/shaders/quad_tex.vert"))
+	if err != nil {
+		return nil, err
+	}
+
+	return NewShader(string(source), shaderType)
 }
 
 func (shader *Shader) Id() uint32 {

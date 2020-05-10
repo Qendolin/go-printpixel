@@ -8,7 +8,7 @@ import (
 
 	"github.com/Qendolin/go-printpixel/internal/context"
 	"github.com/Qendolin/go-printpixel/internal/window"
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/stretchr/testify/assert"
 )

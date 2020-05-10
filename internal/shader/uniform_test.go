@@ -1,6 +1,4 @@
-// +build !headless
-
-package canvas_test
+package shader_test
 
 import (
 	"fmt"
@@ -12,9 +10,10 @@ import (
 	"github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
-func TestCanvasQuad(t *testing.T) {
+func TestUniformColor(t *testing.T) {
 	err := context.InitGlfw()
 	if err != nil {
 		t.Error(err)
@@ -47,12 +46,12 @@ func TestCanvasQuad(t *testing.T) {
 	}
 	gl.ClearColor(1, 0, 0, 1)
 
-	vs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uv.vert", shader.TypeVertex)
+	vs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uniform.vert", shader.TypeVertex)
 	if err != nil {
 		t.Error(err)
 	}
 
-	fs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uv.frag", shader.TypeFragment)
+	fs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uniform.frag", shader.TypeFragment)
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,6 +59,14 @@ func TestCanvasQuad(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	uColor, err := shader.NewUniform(*prog, "u_color")
+	if err != nil {
+		t.Error(err)
+	}
+
+	prog.Bind()
+	uColor.Set(mgl32.Vec3{0, 1, 0})
 
 	cnv := canvas.NewCanvasWithProgram(*prog)
 	for !win.ShouldClose() {
