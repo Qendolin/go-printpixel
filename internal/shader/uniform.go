@@ -49,15 +49,23 @@ func (u *Uniform) Set(value interface{}) {
 	case float32:
 		gl.Uniform1f(*u.int32, v)
 	case int:
+		gl.Uniform1i(*u.int32, int32(v))
 	case int64:
+		gl.Uniform1i(*u.int32, int32(v))
 	case int32:
+		gl.Uniform1i(*u.int32, int32(v))
 	case int16:
+		gl.Uniform1i(*u.int32, int32(v))
 	case int8:
 		gl.Uniform1i(*u.int32, int32(v))
 	case uint:
+		gl.Uniform1ui(*u.int32, uint32(v))
 	case uint64:
+		gl.Uniform1ui(*u.int32, uint32(v))
 	case uint32:
+		gl.Uniform1ui(*u.int32, uint32(v))
 	case uint16:
+		gl.Uniform1ui(*u.int32, uint32(v))
 	case uint8:
 		gl.Uniform1ui(*u.int32, uint32(v))
 	case mgl32.Vec2:
