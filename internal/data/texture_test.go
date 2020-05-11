@@ -6,54 +6,29 @@ import (
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/canvas"
-	"github.com/Qendolin/go-printpixel/internal/context"
 	"github.com/Qendolin/go-printpixel/internal/data"
 	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/utils"
-	"github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 func TestFileTexture(t *testing.T) {
-	err := context.InitGlfw()
+	win, close := test.NewWindow(t)
+	defer close()
+
+	absPath, err := utils.ResolvePath("assets/textures/uv.png")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer context.Terminate()
-
-	hints := window.NewHints()
-	win, err := window.New(hints, "Test Window", 800, 450, nil)
-	defer win.Destroy()
-	if err != nil {
-		t.Fatal(err)
-	}
-	win.MakeContextCurrent()
-
-	cfg := context.NewGlConfig(0)
-	cfg.Debug = true
-	go func() {
-		for err := range cfg.Errors {
-			if err.Fatal {
-				t.Error(err)
-			}
-			t.Log(err)
-		}
-	}()
-	err = context.InitGl(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gl.ClearColor(1, 0, 0, 1)
-
-	imgFile, err := os.Open(utils.MustResolvePath("assets/textures/uv.png"))
+	imgFile, err := os.Open(absPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer imgFile.Close()
 
 	tex := data.NewTexture(data.Texture2D)
-	tex.Bind(gl.TEXTURE0)
+	tex.Bind(0)
 	tex.FilterMode(data.FilterLinear, data.FilterLinear)
 	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge, data.WrapClampToEdge)
 	err = tex.WriteFromFile2D(imgFile, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE)
@@ -61,7 +36,8 @@ func TestFileTexture(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cnv := canvas.NewCanvas()
+	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
+	cnv := canvas.NewCanvasWithProgram(prog)
 
 	for !win.ShouldClose() {
 		cnv.BindFor(func() []func() {
@@ -75,13 +51,8 @@ func TestFileTexture(t *testing.T) {
 }
 
 func TestGeneratedTexture(t *testing.T) {
-	win := test.NewWindow(t)
-
-	imgFile, err := os.Open(utils.MustResolvePath("assets/textures/uv.png"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer imgFile.Close()
+	win, close := test.NewWindow(t)
+	defer close()
 
 	tex := data.NewTexture(data.Texture2D)
 	tex.Bind(gl.TEXTURE0)
@@ -99,9 +70,6 @@ func TestGeneratedTexture(t *testing.T) {
 	}
 
 	tex.WriteFromBytes(data, 100, 100, 0, gl.RGB, gl.RGB)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
 	cnv := canvas.NewCanvasWithProgram(prog)

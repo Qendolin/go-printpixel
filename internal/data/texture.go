@@ -84,25 +84,25 @@ func (tex *Texture) Id() uint32 {
 	return *tex.uint32
 }
 
-func (tex *Texture) BindAs(target TexTarget, unit uint32) {
-	gl.ActiveTexture(unit)
+func (tex *Texture) BindAs(target TexTarget, unit int) {
+	gl.ActiveTexture(uint32(gl.TEXTURE0 + unit))
 	gl.BindTexture(uint32(target), tex.Id())
 }
 
-func (tex *Texture) Bind(unit uint32) {
+func (tex *Texture) Bind(unit int) {
 	tex.BindAs(tex.Type, unit)
 }
 
-func (tex *Texture) UnbindAs(target TexTarget, unit uint32) {
-	gl.ActiveTexture(unit)
+func (tex *Texture) UnbindAs(target TexTarget, unit int) {
+	gl.ActiveTexture(uint32(gl.TEXTURE0 + unit))
 	gl.BindTexture(uint32(target), 0)
 }
 
-func (tex *Texture) Unbind(unit uint32) {
+func (tex *Texture) Unbind(unit int) {
 	tex.UnbindAs(tex.Type, unit)
 }
 
-func (tex *Texture) BindForAs(target TexTarget, unit uint32, context utils.BindingClosure) {
+func (tex *Texture) BindForAs(target TexTarget, unit int, context utils.BindingClosure) {
 	tex.BindAs(target, unit)
 	defered := context()
 	tex.UnbindAs(target, unit)
@@ -111,7 +111,7 @@ func (tex *Texture) BindForAs(target TexTarget, unit uint32, context utils.Bindi
 	}
 }
 
-func (tex *Texture) BindFor(unit uint32, context utils.BindingClosure) {
+func (tex *Texture) BindFor(unit int, context utils.BindingClosure) {
 	tex.BindForAs(tex.Type, unit, context)
 }
 

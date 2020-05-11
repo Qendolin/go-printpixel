@@ -11,7 +11,8 @@ import (
 )
 
 func TestUniformColor(t *testing.T) {
-	win := test.NewWindow(t)
+	win, close := test.NewWindow(t)
+	defer close()
 
 	prog := test.NewProgram(t, "assets/shaders/quad_uniform.vert", "assets/shaders/quad_uniform.frag")
 

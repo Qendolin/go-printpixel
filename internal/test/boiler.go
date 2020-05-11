@@ -10,16 +10,15 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-func NewWindow(t *testing.T) glfw.Window {
+func NewWindow(t *testing.T) (w glfw.Window, close func()) {
 	err := context.InitGlfw()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer context.Terminate()
 
 	hints := window.NewHints()
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
-	defer win.Destroy()
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +40,10 @@ func NewWindow(t *testing.T) glfw.Window {
 	}
 	gl.ClearColor(1, 0, 0, 1)
 
-	return *win
+	return *win, func() {
+		win.Destroy()
+		context.Terminate()
+	}
 }
 
 func NewProgram(t *testing.T, vsPath, fsPath string) shader.Program {

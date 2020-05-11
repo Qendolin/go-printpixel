@@ -11,7 +11,8 @@ import (
 )
 
 func TestCanvasQuad(t *testing.T) {
-	win := test.NewWindow(t)
+	win, close := test.NewWindow(t)
+	defer close()
 
 	prog := test.NewProgram(t, "assets/shaders/quad_uv.vert", "assets/shaders/quad_uv.frag")
 
