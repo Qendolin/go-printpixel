@@ -6,59 +6,16 @@ import (
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/canvas"
-	"github.com/Qendolin/go-printpixel/internal/context"
-	"github.com/Qendolin/go-printpixel/internal/shader"
-	"github.com/Qendolin/go-printpixel/internal/window"
-	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 func TestCanvasQuad(t *testing.T) {
-	err := context.InitGlfw()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer context.Terminate()
+	win := test.NewWindow(t)
 
-	hints := window.NewHints()
-	win, err := window.New(hints, "Test Window", 800, 450, nil)
-	defer win.Destroy()
-	if err != nil {
-		t.Fatal(err)
-	}
-	win.MakeContextCurrent()
+	prog := test.NewProgram(t, "assets/shaders/quad_uv.vert", "assets/shaders/quad_uv.frag")
 
-	cfg := context.NewGlConfig(0)
-	cfg.Debug = true
-	go func() {
-		for err := range cfg.Errors {
-			if err.Fatal {
-				t.Error(err)
-			}
-			t.Log(err)
-		}
-	}()
-	err = context.InitGl(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gl.ClearColor(1, 0, 0, 1)
-
-	vs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uv.vert", shader.TypeVertex)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fs, err := shader.NewShaderFromModulePath("assets/shaders/quad_uv.frag", shader.TypeFragment)
-	if err != nil {
-		t.Fatal(err)
-	}
-	prog, err := shader.NewProgram(vs, fs)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	cnv := canvas.NewCanvasWithProgram(*prog)
+	cnv := canvas.NewCanvasWithProgram(prog)
 	for !win.ShouldClose() {
 		cnv.BindFor(func() []func() {
 			cnv.Draw()

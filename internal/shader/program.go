@@ -35,7 +35,20 @@ func NewProgram(vertShader *Shader, fragShader *Shader) (prog *Program, err erro
 			Program: id,
 		}
 	}
+
 	prog = &Program{&id}
+	return
+}
+
+func (prog *Program) Validate() (ok bool, log string) {
+	gl.ValidateProgram(*prog.uint32)
+
+	log = readProgramInfoLog(*prog.uint32)
+
+	var okInt int32
+	gl.GetProgramiv(*prog.uint32, gl.VALIDATE_STATUS, &okInt)
+	ok = okInt == gl.TRUE
+
 	return
 }
 

@@ -33,12 +33,12 @@ func _init() {
 		return
 	})
 
-	quadVertShader, err := shader.NewShaderFromModulePath("assets/shaders/quad_tex.vert", shader.TypeVertex)
+	quadVertShader, err := shader.NewShaderFromPath("assets/shaders/quad_tex.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
 	}
 
-	quadFragShader, err := shader.NewShaderFromModulePath("assets/shaders/quad_tex.frag", shader.TypeFragment)
+	quadFragShader, err := shader.NewShaderFromPath("assets/shaders/quad_tex.frag", shader.TypeFragment)
 	if err != nil {
 		panic(err)
 	}

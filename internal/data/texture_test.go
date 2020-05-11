@@ -8,6 +8,7 @@ import (
 	"github.com/Qendolin/go-printpixel/internal/canvas"
 	"github.com/Qendolin/go-printpixel/internal/context"
 	"github.com/Qendolin/go-printpixel/internal/data"
+	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -45,7 +46,7 @@ func TestFileTexture(t *testing.T) {
 	}
 	gl.ClearColor(1, 0, 0, 1)
 
-	imgFile, err := os.Open(utils.MustResolveModulePath("assets/textures/uv.png"))
+	imgFile, err := os.Open(utils.MustResolvePath("assets/textures/uv.png"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,37 +75,9 @@ func TestFileTexture(t *testing.T) {
 }
 
 func TestGeneratedTexture(t *testing.T) {
-	err := context.InitGlfw()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer context.Terminate()
+	win := test.NewWindow(t)
 
-	hints := window.NewHints()
-	win, err := window.New(hints, "Test Window", 800, 450, nil)
-	defer win.Destroy()
-	if err != nil {
-		t.Fatal(err)
-	}
-	win.MakeContextCurrent()
-
-	cfg := context.NewGlConfig(0)
-	cfg.Debug = true
-	go func() {
-		for err := range cfg.Errors {
-			if err.Fatal {
-				t.Error(err)
-			}
-			t.Log(err)
-		}
-	}()
-	err = context.InitGl(cfg)
-	if err != nil {
-		t.Fatal(err)
-	}
-	gl.ClearColor(1, 0, 0, 1)
-
-	imgFile, err := os.Open(utils.MustResolveModulePath("assets/textures/uv.png"))
+	imgFile, err := os.Open(utils.MustResolvePath("assets/textures/uv.png"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -130,7 +103,8 @@ func TestGeneratedTexture(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	cnv := canvas.NewCanvas()
+	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
+	cnv := canvas.NewCanvasWithProgram(prog)
 
 	for !win.ShouldClose() {
 		cnv.BindFor(func() []func() {

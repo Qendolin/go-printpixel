@@ -22,7 +22,7 @@ type CompileErr struct {
 }
 
 func (cerr CompileErr) Error() string {
-	return fmt.Sprintf("Failed to compile shader (id: %v). Compiler Log: \r\n\r\n%v\r\n\r\n", cerr.Shader, cerr.Log)
+	return fmt.Sprintf("Failed to compile shader (id: %v). Compiler Log: \n\n%v\n\n", cerr.Shader, cerr.Log)
 }
 
 type Shader struct {
@@ -43,8 +43,8 @@ func NewFragmentShader(source string) (*Shader, error) {
 	return NewShader(source, TypeFragment)
 }
 
-func NewShaderFromModulePath(modulePath string, shaderType ShaderType) (*Shader, error) {
-	absPath, err := utils.ResolveModulePath(modulePath)
+func NewShaderFromPath(modulePath string, shaderType ShaderType) (*Shader, error) {
+	absPath, err := utils.ResolvePath(modulePath)
 	if err != nil {
 		return nil, err
 	}
