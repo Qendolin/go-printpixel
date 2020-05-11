@@ -71,112 +71,82 @@ const (
 
 type Texture struct {
 	*uint32
-	Type TexTarget
+	Target TexTarget
 }
 
 func NewTexture(texType TexTarget) *Texture {
 	id := new(uint32)
 	gl.GenTextures(1, id)
-	return &Texture{uint32: id, Type: texType}
+	return &Texture{uint32: id, Target: texType}
 }
 
 func (tex *Texture) Id() uint32 {
 	return *tex.uint32
 }
 
-func (tex *Texture) BindAs(target TexTarget, unit int) {
-	gl.ActiveTexture(uint32(gl.TEXTURE0 + unit))
-	gl.BindTexture(uint32(target), tex.Id())
+func (tex *Texture) As(target TexTarget) *Texture {
+	return &Texture{
+		uint32: tex.uint32,
+		Target: target,
+	}
 }
 
 func (tex *Texture) Bind(unit int) {
-	tex.BindAs(tex.Type, unit)
-}
-
-func (tex *Texture) UnbindAs(target TexTarget, unit int) {
 	gl.ActiveTexture(uint32(gl.TEXTURE0 + unit))
-	gl.BindTexture(uint32(target), 0)
+	gl.BindTexture(uint32(tex.Target), tex.Id())
 }
 
 func (tex *Texture) Unbind(unit int) {
-	tex.UnbindAs(tex.Type, unit)
+	gl.ActiveTexture(uint32(gl.TEXTURE0 + unit))
+	gl.BindTexture(uint32(tex.Target), 0)
 }
 
-func (tex *Texture) BindForAs(target TexTarget, unit int, context utils.BindingClosure) {
-	tex.BindAs(target, unit)
+func (tex *Texture) BindFor(unit int, context utils.BindingClosure) {
+	tex.Bind(unit)
 	defered := context()
-	tex.UnbindAs(target, unit)
+	tex.Unbind(unit)
 	for _, deferedFunc := range defered {
 		deferedFunc()
 	}
 }
 
-func (tex *Texture) BindFor(unit int, context utils.BindingClosure) {
-	tex.BindForAs(tex.Type, unit, context)
-}
-
-func (tex *Texture) WrapModeAs(target TexTarget, sMode, tMode, rMode TexWrapMode) {
-	if sMode != 0 {
-		gl.TexParameteri(uint32(target), gl.TEXTURE_WRAP_S, int32(sMode))
-	}
-	if tMode != 0 {
-		gl.TexParameteri(uint32(target), gl.TEXTURE_WRAP_T, int32(tMode))
-	}
-	if tMode != 0 {
-		gl.TexParameteri(uint32(target), gl.TEXTURE_WRAP_R, int32(rMode))
-	}
-}
-
 func (tex *Texture) WrapMode(sMode, tMode, rMode TexWrapMode) {
-	tex.WrapModeAs(tex.Type, sMode, tMode, rMode)
-}
-
-func (tex *Texture) FilterModeAs(target TexTarget, minMode, magMode TexFilterMode) {
-	if minMode != 0 {
-		gl.TexParameteri(uint32(target), gl.TEXTURE_MIN_FILTER, int32(minMode))
+	if sMode != 0 {
+		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_WRAP_S, int32(sMode))
 	}
-	if magMode != 0 {
-		gl.TexParameteri(uint32(target), gl.TEXTURE_MAG_FILTER, int32(magMode))
+	if tMode != 0 {
+		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_WRAP_T, int32(tMode))
+	}
+	if tMode != 0 {
+		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_WRAP_R, int32(rMode))
 	}
 }
 
 func (tex *Texture) FilterMode(minMode, magMode TexFilterMode) {
-	tex.FilterModeAs(tex.Type, minMode, magMode)
+	if minMode != 0 {
+		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_MIN_FILTER, int32(minMode))
+	}
+	if magMode != 0 {
+		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_MAG_FILTER, int32(magMode))
+	}
 }
 
-func (tex *Texture) WriteAs(target TexTarget, level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
-	dataPtr := gl.Ptr(data)
-	if target == Texture1D || target == TextureProxy1D {
-		gl.TexImage1D(uint32(target), level, internalFormat, width, 0, format, dataType, dataPtr)
-	} else if target == Texture3D || target == TextureProxy3D || target == Texture2DArray || target == TextureProxy2DArray {
-		gl.TexImage3D(uint32(target), level, internalFormat, width, height, depth, 0, format, dataType, dataPtr)
-	} else {
-		gl.TexImage2D(uint32(target), level, internalFormat, width, height, 0, format, dataType, dataPtr)
-	}
+func (tex *Texture) GenerateMipMap() {
+	gl.GenerateMipmap(uint32(tex.Target))
 }
 
 func (tex *Texture) Write(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
-	tex.WriteAs(tex.Type, level, internalFormat, width, height, depth, format, dataType, data)
-}
-
-func (tex *Texture) WriteFromFile2DAs(file io.Reader, target TexTarget, level, internalFormat int32, format, dataType uint32) error {
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return err
+	dataPtr := gl.Ptr(data)
+	if tex.Target == Texture1D || tex.Target == TextureProxy1D {
+		gl.TexImage1D(uint32(tex.Target), level, internalFormat, width, 0, format, dataType, dataPtr)
+	} else if tex.Target == Texture3D || tex.Target == TextureProxy3D || tex.Target == Texture2DArray || tex.Target == TextureProxy2DArray {
+		gl.TexImage3D(uint32(tex.Target), level, internalFormat, width, height, depth, 0, format, dataType, dataPtr)
+	} else {
+		gl.TexImage2D(uint32(tex.Target), level, internalFormat, width, height, 0, format, dataType, dataPtr)
 	}
-
-	rgba := image.NewRGBA(img.Bounds())
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-	size := img.Bounds().Size()
-	tex.WriteAs(target, level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
-	return nil
 }
 
 func (tex *Texture) WriteFromFile2D(file io.Reader, level, internalFormat int32, format, dataType uint32) error {
-	return tex.WriteFromFile2DAs(file, tex.Type, level, internalFormat, format, dataType)
-}
-
-func (tex *Texture) WriteFromFile1DAs(file io.Reader, target TexTarget, level, internalFormat int32, format, dataType uint32) error {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return err
@@ -185,12 +155,21 @@ func (tex *Texture) WriteFromFile1DAs(file io.Reader, target TexTarget, level, i
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 	size := img.Bounds().Size()
-	tex.WriteAs(target, level, internalFormat, int32(size.X), 0, 0, format, dataType, rgba.Pix)
+	tex.Write(level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
 	return nil
 }
 
 func (tex *Texture) WriteFromFile1D(file io.Reader, level, internalFormat int32, format, dataType uint32) error {
-	return tex.WriteFromFile1DAs(file, tex.Type, level, internalFormat, format, dataType)
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return err
+	}
+
+	rgba := image.NewRGBA(img.Bounds())
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	size := img.Bounds().Size()
+	tex.Write(level, internalFormat, int32(size.X), 0, 0, format, dataType, rgba.Pix)
+	return nil
 }
 
 /*
@@ -198,7 +177,7 @@ func (tex *Texture) WriteFromFile1D(file io.Reader, level, internalFormat int32,
 */
 func (tex *Texture) WriteFromFile3D(files [6]io.Reader, level, internalFormat int32, format, dataType uint32) error {
 	for i, file := range files {
-		err := tex.WriteFromFile2DAs(file, TexTarget(int(TextureCubeMapPositiveX)+i), level, internalFormat, format, dataType)
+		err := tex.As(TexTarget(int(TextureCubeMapPositiveX)+i)).WriteFromFile2D(file, level, internalFormat, format, dataType)
 		if err != nil {
 			return err
 		}
@@ -206,21 +185,13 @@ func (tex *Texture) WriteFromFile3D(files [6]io.Reader, level, internalFormat in
 	return nil
 }
 
-func (tex *Texture) WriteFromImageAs(img image.Image, target TexTarget, level, internalFormat int32, format, dataType uint32) {
+func (tex *Texture) WriteFromImage(img image.Image, level, internalFormat int32, format, dataType uint32) {
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 	size := img.Bounds().Size()
-	tex.WriteAs(target, level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
-}
-
-func (tex *Texture) WriteFromImage(img image.Image, level, internalFormat int32, format, dataType uint32) {
-	tex.WriteFromImageAs(img, tex.Type, level, internalFormat, format, dataType)
+	tex.Write(level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
 }
 
 func (tex *Texture) WriteFromBytes(bytes []byte, width, height int32, level, internalFormat int32, format uint32) {
-	tex.WriteFromBytesAs(bytes, width, height, tex.Type, level, internalFormat, format)
-}
-
-func (tex *Texture) WriteFromBytesAs(bytes []byte, width, height int32, target TexTarget, level, internalFormat int32, format uint32) {
-	tex.WriteAs(target, level, internalFormat, width, height, 0, format, gl.BYTE, bytes)
+	tex.Write(level, internalFormat, width, height, 0, format, gl.BYTE, bytes)
 }
