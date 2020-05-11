@@ -33,21 +33,23 @@ func _init() {
 		return
 	})
 
-	quadVertShader, err := shader.NewShaderFromPath("assets/shaders/quad_tex.vert", shader.TypeVertex)
+	vs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
 	}
 
-	quadFragShader, err := shader.NewShaderFromPath("assets/shaders/quad_tex.frag", shader.TypeFragment)
+	fs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.frag", shader.TypeFragment)
 	if err != nil {
 		panic(err)
 	}
 
-	quadShaderProg, err = shader.NewProgram(quadVertShader, quadFragShader)
+	quadShaderProg, err = shader.NewProgram(vs, fs)
 	if err != nil {
 		panic(err)
 	}
 
+	fs.Destroy()
+	vs.Destroy()
 }
 
 type Canvas struct {

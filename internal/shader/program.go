@@ -26,6 +26,8 @@ func NewProgram(vertShader *Shader, fragShader *Shader) (prog *Program, err erro
 	gl.AttachShader(id, vertShader.Id())
 	gl.AttachShader(id, fragShader.Id())
 	gl.LinkProgram(id)
+	gl.DetachShader(id, vertShader.Id())
+	gl.DetachShader(id, fragShader.Id())
 
 	var ok int32
 	gl.GetProgramiv(id, gl.LINK_STATUS, &ok)

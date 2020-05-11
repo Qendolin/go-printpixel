@@ -58,6 +58,8 @@ func NewProgram(t *testing.T, vsPath, fsPath string) shader.Program {
 	if err != nil {
 		t.Fatal(err)
 	}
+	fs.Destroy()
+	vs.Destroy()
 
 	if ok, log := prog.Validate(); ok {
 		t.Logf("Program Validation Log: \n\n%v\n\n", log)
