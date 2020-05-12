@@ -135,7 +135,7 @@ func (tex *Texture) GenerateMipMap() {
 	gl.GenerateMipmap(uint32(tex.Target))
 }
 
-func (tex *Texture) Write(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
+func (tex *Texture) Alloc(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
 	dataPtr := gl.Ptr(data)
 	if tex.Target == Texture1D || tex.Target == TextureProxy1D {
 		gl.TexImage1D(uint32(tex.Target), level, internalFormat, width, 0, format, dataType, dataPtr)
@@ -146,7 +146,7 @@ func (tex *Texture) Write(level, internalFormat, width, height, depth int32, for
 	}
 }
 
-func (tex *Texture) WriteFromFile2D(file io.Reader, level, internalFormat int32, format, dataType uint32) error {
+func (tex *Texture) AllocWithFile2D(file io.Reader, level, internalFormat int32, format, dataType uint32) error {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return err
@@ -155,11 +155,11 @@ func (tex *Texture) WriteFromFile2D(file io.Reader, level, internalFormat int32,
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 	size := img.Bounds().Size()
-	tex.Write(level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
+	tex.Alloc(level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
 	return nil
 }
 
-func (tex *Texture) WriteFromFile1D(file io.Reader, level, internalFormat int32, format, dataType uint32) error {
+func (tex *Texture) AllocWithFile1D(file io.Reader, level, internalFormat int32, format, dataType uint32) error {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return err
@@ -168,16 +168,16 @@ func (tex *Texture) WriteFromFile1D(file io.Reader, level, internalFormat int32,
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 	size := img.Bounds().Size()
-	tex.Write(level, internalFormat, int32(size.X), 0, 0, format, dataType, rgba.Pix)
+	tex.Alloc(level, internalFormat, int32(size.X), 0, 0, format, dataType, rgba.Pix)
 	return nil
 }
 
 /*
 	files - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
 */
-func (tex *Texture) WriteFromFile3D(files [6]io.Reader, level, internalFormat int32, format, dataType uint32) error {
+func (tex *Texture) AllocWithFile3D(files [6]io.Reader, level, internalFormat int32, format, dataType uint32) error {
 	for i, file := range files {
-		err := tex.As(TexTarget(int(TextureCubeMapPositiveX)+i)).WriteFromFile2D(file, level, internalFormat, format, dataType)
+		err := tex.As(TexTarget(int(TextureCubeMapPositiveX)+i)).AllocWithFile2D(file, level, internalFormat, format, dataType)
 		if err != nil {
 			return err
 		}
@@ -185,13 +185,13 @@ func (tex *Texture) WriteFromFile3D(files [6]io.Reader, level, internalFormat in
 	return nil
 }
 
-func (tex *Texture) WriteFromImage(img image.Image, level, internalFormat int32, format, dataType uint32) {
+func (tex *Texture) AllocWithImage(img image.Image, level, internalFormat int32, format, dataType uint32) {
 	rgba := image.NewRGBA(img.Bounds())
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 	size := img.Bounds().Size()
-	tex.Write(level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
+	tex.Alloc(level, internalFormat, int32(size.X), int32(size.Y), 0, format, dataType, rgba.Pix)
 }
 
-func (tex *Texture) WriteFromBytes(bytes []byte, width, height int32, level, internalFormat int32, format uint32) {
-	tex.Write(level, internalFormat, width, height, 0, format, gl.BYTE, bytes)
+func (tex *Texture) AllocWithBytes(bytes []byte, width, height int32, level, internalFormat int32, format uint32) {
+	tex.Alloc(level, internalFormat, width, height, 0, format, gl.BYTE, bytes)
 }
