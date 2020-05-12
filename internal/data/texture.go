@@ -131,7 +131,7 @@ func (tex *Texture) FilterMode(minMode, magMode TexFilterMode) {
 	}
 }
 
-func (tex *Texture) GenerateMipMap() {
+func (tex *Texture) GenerateMipmap() {
 	gl.GenerateMipmap(uint32(tex.Target))
 }
 
