@@ -35,3 +35,9 @@ func (vao *Vao) BindFor(context utils.BindingClosure) {
 		deferedFunc()
 	}
 }
+
+//TODO: Destroy VBOs, note that VAOs can share VBOs
+func (vao *Vao) Destroy() {
+	gl.DeleteVertexArrays(1, vao.uint32)
+	vao.uint32 = nil
+}

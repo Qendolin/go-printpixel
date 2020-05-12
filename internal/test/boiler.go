@@ -1,6 +1,7 @@
 package test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/context"
@@ -11,6 +12,7 @@ import (
 )
 
 func NewWindow(t *testing.T) (w glfw.Window, close func()) {
+	runtime.LockOSThread()
 	err := context.InitGlfw()
 	if err != nil {
 		t.Fatal(err)
@@ -18,7 +20,6 @@ func NewWindow(t *testing.T) (w glfw.Window, close func()) {
 
 	hints := window.NewHints()
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
-
 	if err != nil {
 		t.Fatal(err)
 	}

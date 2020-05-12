@@ -37,9 +37,9 @@ func NewGlConfig(errorChanBufferSize int) glConfig {
 
 func (cfg glConfig) Apply() error {
 	if cfg.Debug {
+		gl.DebugMessageCallback(debugMessageCallback(cfg.errors), nil)
 		gl.Enable(gl.DEBUG_OUTPUT)
 		gl.Enable(gl.DEBUG_OUTPUT_SYNCHRONOUS)
-		gl.DebugMessageCallback(debugMessageCallback(cfg.errors), nil)
 	}
 	return nil
 }

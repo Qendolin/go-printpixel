@@ -62,6 +62,7 @@ func (shader *Shader) Id() uint32 {
 
 func (shader *Shader) Destroy() {
 	gl.DeleteShader(shader.Id())
+	shader.uint32 = nil
 }
 
 func loadAndCompileShader(id uint32, source string) error {

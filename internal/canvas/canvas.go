@@ -8,19 +8,37 @@ import (
 )
 
 var (
-	quadVertices   = []float32{1, -1, 1, 1, -1, -1, -1, 1}
-	quadVao        *data.Vao
-	quadShaderProg *shader.Program
-	isInit         = false
+	quadVertices = []float32{1, -1, 1, 1, -1, -1, -1, 1}
 )
 
-func _init() {
-	if isInit {
-		return
-	}
-	isInit = true
+type Canvas struct {
+	Program shader.Program
+	quad    data.Vao
+}
 
-	quadVao = data.NewVao()
+func NewCanvas() *Canvas {
+	vs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.vert", shader.TypeVertex)
+	if err != nil {
+		panic(err)
+	}
+
+	fs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.frag", shader.TypeFragment)
+	if err != nil {
+		panic(err)
+	}
+
+	quadShaderProg, err := shader.NewProgram(vs, fs)
+	if err != nil {
+		panic(err)
+	}
+
+	fs.Destroy()
+	vs.Destroy()
+	return NewCanvasWithProgram(*quadShaderProg)
+}
+
+func NewCanvasWithProgram(prog shader.Program) *Canvas {
+	quadVao := data.NewVao()
 	quadVao.BindFor(func() (defered []func()) {
 		quadVbo := data.NewVbo()
 		quadVbo.Bind(gl.ARRAY_BUFFER)
@@ -32,51 +50,16 @@ func _init() {
 		})
 		return
 	})
-
-	vs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.vert", shader.TypeVertex)
-	if err != nil {
-		panic(err)
-	}
-
-	fs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.frag", shader.TypeFragment)
-	if err != nil {
-		panic(err)
-	}
-
-	quadShaderProg, err = shader.NewProgram(vs, fs)
-	if err != nil {
-		panic(err)
-	}
-
-	fs.Destroy()
-	vs.Destroy()
-}
-
-type Canvas struct {
-	Program shader.Program
-}
-
-func NewCanvas() *Canvas {
-	if !isInit {
-		_init()
-	}
-	return &Canvas{*quadShaderProg}
-}
-
-func NewCanvasWithProgram(prog shader.Program) *Canvas {
-	if !isInit {
-		_init()
-	}
-	return &Canvas{prog}
+	return &Canvas{Program: prog, quad: *quadVao}
 }
 
 func (canvas *Canvas) Bind() {
-	quadVao.Bind()
+	canvas.quad.Bind()
 	canvas.Program.Bind()
 }
 
 func (canvas *Canvas) Unbind() {
-	quadVao.Unbind()
+	canvas.quad.Unbind()
 	canvas.Program.Unbind()
 }
 
@@ -92,4 +75,9 @@ func (canvas *Canvas) BindFor(context utils.BindingClosure) {
 func (canvas *Canvas) Draw() {
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+}
+
+func (canvas *Canvas) Destroy() {
+	canvas.Program.Destroy()
+	canvas.quad.Destroy()
 }

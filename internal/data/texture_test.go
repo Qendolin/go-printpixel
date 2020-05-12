@@ -55,7 +55,7 @@ func TestGeneratedTexture(t *testing.T) {
 	defer close()
 
 	tex := data.NewTexture(data.Texture2D)
-	tex.Bind(gl.TEXTURE0)
+	tex.Bind(0)
 	tex.FilterMode(data.FilterLinear, data.FilterLinear)
 	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge, data.WrapClampToEdge)
 
