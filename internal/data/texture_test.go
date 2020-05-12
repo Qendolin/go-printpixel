@@ -31,7 +31,7 @@ func TestFileTexture(t *testing.T) {
 	tex.Bind(0)
 	tex.FilterMode(data.FilterLinear, data.FilterLinear)
 	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge, data.WrapClampToEdge)
-	err = tex.WriteFromFile2D(imgFile, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE)
+	err = tex.AllocWithFile2D(imgFile, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestGeneratedTexture(t *testing.T) {
 		}
 	}
 
-	tex.WriteFromBytes(data, 100, 100, 0, gl.RGB, gl.RGB)
+	tex.AllocWithBytes(data, 100, 100, 0, gl.RGB, gl.RGB)
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
 	cnv := canvas.NewCanvasWithProgram(prog)

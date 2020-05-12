@@ -117,7 +117,7 @@ func (tex *Texture) WrapMode(sMode, tMode, rMode TexWrapMode) {
 	if tMode != 0 {
 		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_WRAP_T, int32(tMode))
 	}
-	if tMode != 0 {
+	if rMode != 0 {
 		gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_WRAP_R, int32(rMode))
 	}
 }
