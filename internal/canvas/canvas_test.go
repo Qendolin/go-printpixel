@@ -1,5 +1,3 @@
-// +build !headless
-
 package canvas_test
 
 import (
@@ -9,6 +7,11 @@ import (
 	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
+
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
 
 func TestCanvasQuad(t *testing.T) {
 	win, close := test.NewWindow(t)

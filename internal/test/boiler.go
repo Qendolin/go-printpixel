@@ -11,7 +11,21 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-func NewWindow(t *testing.T) (w glfw.Window, close func()) {
+type TestingWindow struct {
+	*glfw.Window
+	closeCheckCount int
+	isHeadless      bool
+}
+
+func (win TestingWindow) ShouldClose() bool {
+	win.closeCheckCount++
+	if win.closeCheckCount >= 10 || win.isHeadless {
+		return true
+	}
+	return win.Window.ShouldClose()
+}
+
+func NewWindow(t *testing.T) (w TestingWindow, close func()) {
 	runtime.LockOSThread()
 	err := context.InitGlfw()
 	if err != nil {
@@ -19,10 +33,13 @@ func NewWindow(t *testing.T) (w glfw.Window, close func()) {
 	}
 
 	hints := window.NewHints()
-	win, err := window.New(hints, "Test Window", 800, 450, nil)
+	glfwWin, err := window.New(hints, "Test Window", 800, 450, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	win := TestingWindow{glfwWin, 0, Args.Headless}
+
 	win.MakeContextCurrent()
 
 	cfg := context.NewGlConfig(0)
@@ -41,7 +58,7 @@ func NewWindow(t *testing.T) (w glfw.Window, close func()) {
 	}
 	gl.ClearColor(1, 0, 0, 1)
 
-	return *win, func() {
+	return win, func() {
 		win.Destroy()
 		context.Terminate()
 	}

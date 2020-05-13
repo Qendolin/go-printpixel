@@ -1,12 +1,10 @@
-// +build !headless
-
 package context_test
 
 import (
-	"runtime"
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/context"
+	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -14,7 +12,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	runtime.LockOSThread()
+	test.ParseArgs()
 	m.Run()
 }
 

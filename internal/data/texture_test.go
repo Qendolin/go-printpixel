@@ -13,6 +13,11 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
+
 func TestFileTexture(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()

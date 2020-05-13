@@ -1,20 +1,27 @@
-package utils
+package utils_test
 
 import (
 	"os"
 	"testing"
 
+	"github.com/Qendolin/go-printpixel/internal/test"
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
+
 func TestResolveModulePath(t *testing.T) {
-	_, err := ResolveModulePath("")
+	_, err := utils.ResolveModulePath("")
 	assert.NoError(t, err)
 }
 
 func TestResolvePath(t *testing.T) {
-	modPath := MustResolveModulePath("")
-	path, err := ResolvePath("")
+	modPath := utils.MustResolveModulePath("")
+	path, err := utils.ResolvePath("")
 	assert.NoError(t, err)
 	assert.Equal(t, modPath, path)
 
@@ -22,7 +29,7 @@ func TestResolvePath(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	path, err = ResolvePath(absPath)
+	path, err = utils.ResolvePath(absPath)
 	assert.NoError(t, err)
 	assert.Equal(t, absPath, path)
 }
@@ -30,6 +37,6 @@ func TestResolvePath(t *testing.T) {
 func TestNullTerminatedString(t *testing.T) {
 	nullStr := "Test\x00"
 	str := "Test"
-	assert.Equal(t, nullStr, NullTerm(str))
-	assert.Equal(t, nullStr, NullTerm(nullStr))
+	assert.Equal(t, nullStr, utils.NullTerm(str))
+	assert.Equal(t, nullStr, utils.NullTerm(nullStr))
 }

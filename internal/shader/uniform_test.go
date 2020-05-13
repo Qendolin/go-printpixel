@@ -10,6 +10,11 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
+
 func TestUniformColor(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
