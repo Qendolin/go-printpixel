@@ -1,20 +1,18 @@
-// +build !headless
-
 package context_test
 
 import (
-	"runtime"
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/internal/context"
+	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/window"
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMain(m *testing.M) {
-	runtime.LockOSThread()
+	test.ParseArgs()
 	m.Run()
 }
 
@@ -30,8 +28,6 @@ func TestCreateWindowNormal(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
@@ -48,8 +44,6 @@ func TestCreateWindowMaximized(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Maximized.Value = true
 	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 1920, 1080, nil)
@@ -69,8 +63,6 @@ func TestCreateWindowScaledToMon(t *testing.T) {
 	vidMode := monitor.GetVideoMode()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Maximized.Value = true
 	hints.ScaleToMonitor.Value = true
 	hints.Visible.Value = false
@@ -89,8 +81,6 @@ func TestGlInit(t *testing.T) {
 	defer context.Terminate()
 
 	hints := window.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 2
 	hints.Visible.Value = false
 	win, err := window.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()

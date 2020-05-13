@@ -32,3 +32,26 @@ func MustResolveModulePath(path string) string {
 	}
 	return absPath
 }
+
+func MustResolvePath(path string) string {
+	absPath, err := ResolveModulePath(path)
+	if err != nil {
+		panic(err)
+	}
+	return absPath
+}
+
+func ResolvePath(path string) (string, error) {
+	if filepath.IsAbs(path) {
+		return path, nil
+	}
+	return ResolveModulePath(path)
+}
+
+func NullTerm(str string) string {
+	if str[len(str)-1] == '\x00' {
+		return str
+	} else {
+		return str + "\x00"
+	}
+}

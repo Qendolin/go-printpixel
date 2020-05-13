@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Qendolin/go-printpixel/internal/utils"
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 type LinkErr struct {
@@ -26,6 +26,8 @@ func NewProgram(vertShader *Shader, fragShader *Shader) (prog *Program, err erro
 	gl.AttachShader(id, vertShader.Id())
 	gl.AttachShader(id, fragShader.Id())
 	gl.LinkProgram(id)
+	gl.DetachShader(id, vertShader.Id())
+	gl.DetachShader(id, fragShader.Id())
 
 	var ok int32
 	gl.GetProgramiv(id, gl.LINK_STATUS, &ok)
@@ -35,7 +37,20 @@ func NewProgram(vertShader *Shader, fragShader *Shader) (prog *Program, err erro
 			Program: id,
 		}
 	}
+
 	prog = &Program{&id}
+	return
+}
+
+func (prog *Program) Validate() (ok bool, log string) {
+	gl.ValidateProgram(*prog.uint32)
+
+	log = readProgramInfoLog(*prog.uint32)
+
+	var okInt int32
+	gl.GetProgramiv(*prog.uint32, gl.VALIDATE_STATUS, &okInt)
+	ok = okInt == gl.TRUE
+
 	return
 }
 
@@ -62,6 +77,7 @@ func (prog *Program) BindFor(context utils.BindingClosure) {
 
 func (prog *Program) Destroy() {
 	gl.DeleteProgram(prog.Id())
+	prog.uint32 = nil
 }
 
 func readProgramInfoLog(id uint32) string {

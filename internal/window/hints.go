@@ -167,8 +167,8 @@ type contextHints struct {
 func newContextHints() contextHints {
 	return contextHints{
 		ClientAPI:               enumHint{Value: OpenGLAPI, hint: hint{target: glfw.ClientAPI}},
-		ContextVersionMajor:     intHint{Value: 1, hint: hint{target: glfw.ContextVersionMajor}},
-		ContextVersionMinor:     intHint{Value: 0, hint: hint{target: glfw.ContextVersionMinor}},
+		ContextVersionMajor:     intHint{Value: 3, hint: hint{target: glfw.ContextVersionMajor}},
+		ContextVersionMinor:     intHint{Value: 3, hint: hint{target: glfw.ContextVersionMinor}},
 		ContextRobustness:       enumHint{Value: NoRobustness, hint: hint{target: glfw.ContextRobustness}},
 		ContextReleaseBehavior:  enumHint{Value: AnyReleaseBehavior, hint: hint{target: glfw.ContextReleaseBehavior}},
 		OpenGLForwardCompatible: boolHint{Value: false, hint: hint{target: glfw.OpenGLForwardCompatible}},

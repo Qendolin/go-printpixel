@@ -1,8 +1,8 @@
-package canvas
+package data
 
 import (
 	"github.com/Qendolin/go-printpixel/internal/utils"
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 type Vao struct {
@@ -34,4 +34,10 @@ func (vao *Vao) BindFor(context utils.BindingClosure) {
 	for _, deferedFunc := range defered {
 		deferedFunc()
 	}
+}
+
+//TODO: Destroy VBOs, note that VAOs can share VBOs
+func (vao *Vao) Destroy() {
+	gl.DeleteVertexArrays(1, vao.uint32)
+	vao.uint32 = nil
 }

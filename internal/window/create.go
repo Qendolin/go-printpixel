@@ -1,8 +1,9 @@
 package window
 
-import "github.com/go-gl/glfw/v3.3/glfw"
-
-import "github.com/Qendolin/go-printpixel/internal/context"
+import (
+	"github.com/Qendolin/go-printpixel/internal/context"
+	"github.com/go-gl/glfw/v3.3/glfw"
+)
 
 func New(hints hints, title string, width, height int, monitor *glfw.Monitor) (win *glfw.Window, err error) {
 

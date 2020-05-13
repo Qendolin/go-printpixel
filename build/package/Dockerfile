@@ -33,6 +33,7 @@ ENV CGO_LDFLAGS="-g -O2"
 
 RUN apk update && \
 	apk add \
+	git \
 	gcc \
 	mesa-dev \
 	libx11-dev \
@@ -45,18 +46,12 @@ RUN apk update && \
 	xorg-server \
 	xvfb \
 	coreutils \
-	#mesa \
-	#mesa-gl \
-	#mesa-demos \
-	#mesa-osmesa \
-	xf86-video-dummy \
-	xvfb-run
+	mesa \
+	mesa-gl \
+	mesa-osmesa \
+	mesa-dri-gallium
 
-RUN apk add xf86-input-libinput
-RUN apk add virtualgl --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
-
-COPY ./build/package/xorg.conf /root/xorg.conf
 COPY ./build/package/entryfile.sh /root/entryfile.sh
-ADD ./ /root/src
+ADD ./ /root/src/
 
 ENTRYPOINT ["sh", "/root/entryfile.sh"]

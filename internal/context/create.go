@@ -2,8 +2,9 @@ package context
 
 import (
 	"errors"
+	"log"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -35,6 +36,16 @@ func InitGl(cfg glConfig) (err error) {
 	if err = gl.Init(); err != nil {
 		return
 	}
+
+	log.Printf(" === System Information === \n")
+	var major, minor int32
+	gl.GetIntegerv(gl.MAJOR_VERSION, &major)
+	gl.GetIntegerv(gl.MINOR_VERSION, &minor)
+	log.Printf("OpenGL Version: %v (%v.%v)\n", gl.GoStr(gl.GetString(gl.VERSION)), major, minor)
+	log.Printf("GLSL Version: %v\n", gl.GoStr(gl.GetString(gl.SHADING_LANGUAGE_VERSION)))
+	log.Printf("Renderer: %v\n", gl.GoStr(gl.GetString(gl.RENDERER)))
+	log.Printf("Vendor: %v\n", gl.GoStr(gl.GetString(gl.VENDOR)))
+	log.Println()
 
 	if err = cfg.Apply(); err != nil {
 		return

@@ -1,11 +1,9 @@
 #!/bin/sh
 cd /root/src/
-##xvfb-run -e /dev/stderr --server-args=':99 -screen 0 640x480x8 +extension GLX +render -noreset -ac' glxinfo
-#Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile /dev/stdout -config /root/xorg.conf :10 &
-#sleep 2
-#echo ================
-#export DISPLAY=:10
-#vglrun -d :10 glxinfo
-#echo ================
-#vglrun go test --tags=headless ./...
-go test --tags=headless ./...
+echo Starting Xvfb
+export DISPLAY=:10
+Xvfb :10 -screen 0 1024x768x24 +extension GLX +render -noreset -ac &
+echo Installing go packages
+go get -v -t -d ./...
+echo Starting Test
+go test -timeout 120s ./... -headless
