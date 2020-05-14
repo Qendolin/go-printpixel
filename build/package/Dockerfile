@@ -1,17 +1,9 @@
 FROM alpine:edge
 
-RUN wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
-RUN tar -xvf go1.13.3.linux-amd64.tar.gz
-RUN mv go /usr/local
+RUN apk update
+RUN apk add git musl-dev go=1.13.10-r0
 
-#RUN apk --allow-untrusted -X https://apkproxy.herokuapp.com/sgerrand/alpine-pkg-glibc add glibc glibc-bin
-
-RUN apk --no-cache add ca-certificates wget
-RUN wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub
-RUN wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.28-r0/glibc-2.28-r0.apk
-RUN apk add glibc-2.28-r0.apk
-
-ENV GOROOT=/usr/local/go
+ENV GOROOT=/usr/lib/go
 ENV GOPATH=$HOME/go
 ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ENV GOGCCFLAGS=-std=c99
@@ -25,31 +17,25 @@ ENV CGO_CXXFLAGS="-g -O2 --std=gnu11"
 ENV CGO_FFLAGS="-g -O2"
 ENV CGO_LDFLAGS="-g -O2"
 
-#RUN ls $GOROOT
-#RUN ls $GOROOT/bin
-#RUN echo Go Config:
-#RUN go version
-#RUN go env
+RUN echo Go Config: &&\
+	go version &&\
+	go env
 
-RUN apk update && \
-	apk add \
-	git \
-	gcc \
-	mesa-dev \
-	libx11-dev \
-	libc-dev \
-	libx11-dev \
+# Dependencies for GLFW
+RUN	apk add \
+	build-base \
+	libx11-dev \ 
 	libxcursor-dev \
-	libxi-dev \
-	libxinerama-dev \
 	libxrandr-dev \
-	xorg-server \
-	xvfb \
-	coreutils \
-	mesa \
-	mesa-gl \
-	mesa-osmesa \
-	mesa-dri-gallium
+	libxinerama-dev \
+	libxi-dev \
+	mesa-dev
+
+# Required to run xvfb-run
+RUN apk add mesa-dri-gallium xvfb-run
+
+# virtualgl includes glxinfo
+RUN apk add virtualgl --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ --allow-untrusted
 
 COPY ./build/package/entryfile.sh /root/entryfile.sh
 ADD ./ /root/src/
