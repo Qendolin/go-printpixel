@@ -43,18 +43,21 @@ func TestCreateWindowMaximized(t *testing.T) {
 	assert.NoError(t, err)
 	defer context.Terminate()
 
+	monitor := glfw.GetPrimaryMonitor()
+	vidMode := monitor.GetVideoMode()
+
 	hints := window.NewHints()
 	hints.Maximized.Value = true
 	hints.Visible.Value = false
-	win, err := window.New(hints, "Test Window", 1920, 1080, nil)
+	win, err := window.New(hints, "Test Window", 1, 1, nil)
 	defer win.Destroy()
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
 	w, h := win.GetSize()
-	assert.True(t, 1920 == w || 1080 == h)
+	assert.True(t, w == vidMode.Width && h == vidMode.Height)
 }
 
-func TestCreateWindowScaledToMon(t *testing.T) {
+func TestCreateWindowFullscreen(t *testing.T) {
 	err := context.InitGlfw()
 	assert.NoError(t, err)
 	defer context.Terminate()
@@ -63,10 +66,9 @@ func TestCreateWindowScaledToMon(t *testing.T) {
 	vidMode := monitor.GetVideoMode()
 
 	hints := window.NewHints()
-	hints.Maximized.Value = true
-	hints.ScaleToMonitor.Value = true
+	hints.Fullscreen.Value = true
 	hints.Visible.Value = false
-	win, err := window.New(hints, "Test Window", 800, 450, nil)
+	win, err := window.New(hints, "Test Window", 1920, 1080, nil)
 	defer win.Destroy()
 	assert.NoError(t, err)
 	assert.NotNil(t, win)

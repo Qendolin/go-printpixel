@@ -48,9 +48,6 @@ func (vbo *Vbo) BindFor(target uint32, context utils.BindingClosure) {
 	}
 }
 
-/*
-	data - a silce of some type
-*/
 func (vbo *Vbo) WriteStatic(data interface{}) {
 	vbo.Write(gl.STATIC_DRAW, data)
 }

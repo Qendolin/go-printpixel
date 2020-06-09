@@ -19,23 +19,23 @@ func (glerr openGlError) Error() string {
 	return fmt.Sprintf("[%s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
 }
 
-type glConfig struct {
+type GlConfig struct {
 	//Enables DEBUG_OUTPUT and DEBUG_OUTPUT_SYNCHRONOUS. Also sets DebugMessageCallback.
 	Debug  bool
 	Errors <-chan openGlError
 	errors chan<- openGlError
 }
 
-func NewGlConfig(errorChanBufferSize int) glConfig {
-	errorChan := make(chan openGlError, errorChanBufferSize)
-	return glConfig{
+func NewGlConfig(errorChanSize int) GlConfig {
+	errorChan := make(chan openGlError, errorChanSize)
+	return GlConfig{
 		Debug:  false,
 		Errors: errorChan,
 		errors: errorChan,
 	}
 }
 
-func (cfg glConfig) Apply() error {
+func (cfg GlConfig) apply() error {
 	if cfg.Debug {
 		gl.DebugMessageCallback(debugMessageCallback(cfg.errors), nil)
 		gl.Enable(gl.DEBUG_OUTPUT)
