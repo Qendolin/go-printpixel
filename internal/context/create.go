@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	StatusUninitialized   = iota
+	StatusUninitialized   = 0
 	StatusGlfwInitialized = 1 << iota
-	StatusGlInitialized
+	//StatusGlInitialized
 )
 
 var status int
@@ -19,10 +19,14 @@ var status int
 var (
 	ErrGlfwNotInitialized = errors.New("GLFW has not been initialized. You have to call InitGlfw() first.")
 	ErrGlfwNoContext      = errors.New("GLFW has no context. You have to call MakeContextCurrent() on a *glfw.Window first.")
-	ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
+	//ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
 )
 
-func InitGl(cfg glConfig) (err error) {
+func InitGl(cfg GlConfig) (err error) {
+	/*if status&StatusGlInitialized > 0 {
+		return
+	}*/
+
 	if status&StatusGlfwInitialized == 0 {
 		err = ErrGlfwNotInitialized
 		return
@@ -37,6 +41,8 @@ func InitGl(cfg glConfig) (err error) {
 		return
 	}
 
+	//status |= StatusGlInitialized
+
 	log.Printf(" === System Information === \n")
 	var major, minor int32
 	gl.GetIntegerv(gl.MAJOR_VERSION, &major)
@@ -47,7 +53,7 @@ func InitGl(cfg glConfig) (err error) {
 	log.Printf("Vendor: %v\n", gl.GoStr(gl.GetString(gl.VENDOR)))
 	log.Println()
 
-	if err = cfg.Apply(); err != nil {
+	if err = cfg.apply(); err != nil {
 		return
 	}
 
@@ -55,11 +61,12 @@ func InitGl(cfg glConfig) (err error) {
 }
 
 func InitGlfw() (err error) {
-	if status&StatusGlfwInitialized == 0 {
-		err = glfw.Init()
-		if err == nil {
-			status |= StatusGlfwInitialized
-		}
+	if status&StatusGlfwInitialized > 0 {
+		return
+	}
+	err = glfw.Init()
+	if err == nil {
+		status |= StatusGlfwInitialized
 	}
 	return err
 }

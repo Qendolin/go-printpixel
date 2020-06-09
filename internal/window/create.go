@@ -5,7 +5,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-func New(hints hints, title string, width, height int, monitor *glfw.Monitor) (win *glfw.Window, err error) {
+func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (win *glfw.Window, err error) {
 
 	if context.Status()&context.StatusGlfwInitialized == 0 {
 		err = context.ErrGlfwNotInitialized
@@ -15,15 +15,16 @@ func New(hints hints, title string, width, height int, monitor *glfw.Monitor) (w
 	glfw.DefaultWindowHints()
 	hints.apply()
 
-	if monitor == nil && (hints.Maximized.Value || hints.ScaleToMonitor.Value) {
+	if monitor == nil && (hints.Fullscreen.Value) {
 		monitor = glfw.GetPrimaryMonitor()
-	}
-	if hints.ScaleToMonitor.Value {
-		vidMode := monitor.GetVideoMode()
-		width = vidMode.Width
-		height = vidMode.Height
 	}
 
 	win, err = glfw.CreateWindow(width, height, title, monitor, nil)
+	win.MakeContextCurrent()
+
+	if hints.Vsync.Value {
+		glfw.SwapInterval(1)
+	}
+
 	return
 }

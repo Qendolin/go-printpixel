@@ -2,39 +2,6 @@ package window
 
 import "github.com/go-gl/glfw/v3.3/glfw"
 
-type glfwEnum int
-
-//ClientApi
-const (
-	OpenGLAPI   = glfwEnum(glfw.OpenGLAPI)
-	OpenGLESAPI = glfwEnum(glfw.OpenGLESAPI)
-)
-
-//ContextRobustness
-const (
-	NoRobustness        = glfwEnum(glfw.NoRobustness)
-	NoResetNotification = glfwEnum(glfw.NoResetNotification)
-	LoseContextOnReset  = glfwEnum(glfw.LoseContextOnReset)
-)
-
-//ContextReleaseBehavior
-const (
-	AnyReleaseBehavior   = glfwEnum(glfw.AnyReleaseBehavior)
-	ReleaseBehaviorFlush = glfwEnum(glfw.ReleaseBehaviorFlush)
-	ReleaseBehaviorNone  = glfwEnum(glfw.ReleaseBehaviorNone)
-)
-
-//OpenGLProfile
-const (
-	OpenGLAnyProfile    = glfwEnum(glfw.OpenGLAnyProfile)
-	OpenGLCoreProfile   = glfwEnum(glfw.OpenGLCoreProfile)
-	OpenGLCompatProfile = glfwEnum(glfw.OpenGLCompatProfile)
-)
-
-const (
-	DontCare = glfwEnum(glfw.DontCare)
-)
-
 type glfwHint interface {
 	intValue() int
 	Code() glfw.Hint
@@ -75,50 +42,33 @@ func (ih intHint) intValue() int {
 
 type enumHint struct {
 	hint
-	Value glfwEnum
+	Value GlfwEnum
 }
 
 func (eh enumHint) intValue() int {
 	return int(eh.Value)
 }
 
-type hints struct {
+type Hints struct {
 	windowHints
 	contextHints
 	framebufferHints
+	customHints
 }
 
-func NewHints() hints {
-	return hints{
+func NewHints() Hints {
+	return Hints{
 		newWindowHints(),
 		newContextHints(),
 		newFramebufferHints(),
+		newCustomHints(),
 	}
 }
 
-func (h hints) apply() {
-	applyHint(h.ClientAPI)
-	applyHint(h.ContextVersionMajor)
-	applyHint(h.ContextVersionMinor)
-	applyHint(h.ContextRobustness)
-	applyHint(h.ContextReleaseBehavior)
-	applyHint(h.OpenGLForwardCompatible)
-	applyHint(h.OpenGLDebugContext)
-	applyHint(h.OpenGLProfile)
-	applyHint(h.SRGBCapable)
-	applyHint(h.DepthBits)
-	applyHint(h.Samples)
-	applyHint(h.RefreshRate)
-	applyHint(h.DoubleBuffer)
-	applyHint(h.Focused)
-	applyHint(h.Visible)
-	applyHint(h.Resizable)
-	applyHint(h.Decorated)
-	applyHint(h.Floating)
-	applyHint(h.AutoIconify)
-	applyHint(h.Maximized)
-	//dont call, will crash. This is instead handled in the window constructor
-	//applyHint(h.ScaleToMonitor)
+func (h Hints) apply() {
+	h.contextHints.apply()
+	h.windowHints.apply()
+	h.framebufferHints.apply()
 }
 
 //window related hints
@@ -143,8 +93,19 @@ func newWindowHints() windowHints {
 		AutoIconify:    boolHint{Value: true, hint: hint{target: glfw.AutoIconify}},
 		Floating:       boolHint{Value: false, hint: hint{target: glfw.Floating}},
 		Maximized:      boolHint{Value: false, hint: hint{target: glfw.Maximized}},
-		ScaleToMonitor: boolHint{Value: false, hint: hint{target: glfw.Hint(0x0002200C)}},
+		ScaleToMonitor: boolHint{Value: false, hint: hint{target: glfw.ScaleToMonitor}},
 	}
+}
+
+func (h windowHints) apply() {
+	applyHint(h.Focused)
+	applyHint(h.Visible)
+	applyHint(h.Resizable)
+	applyHint(h.Decorated)
+	applyHint(h.Floating)
+	applyHint(h.AutoIconify)
+	applyHint(h.Maximized)
+	applyHint(h.ScaleToMonitor)
 }
 
 //context related hints
@@ -178,6 +139,18 @@ func newContextHints() contextHints {
 	}
 }
 
+func (h contextHints) apply() {
+	applyHint(h.ClientAPI)
+	applyHint(h.ContextVersionMajor)
+	applyHint(h.ContextVersionMinor)
+	applyHint(h.ContextRobustness)
+	applyHint(h.ContextReleaseBehavior)
+	applyHint(h.OpenGLForwardCompatible)
+	applyHint(h.OpenGLDebugContext)
+	applyHint(h.OpenGLProfile)
+	applyHint(h.SRGBCapable)
+}
+
 //framebuffer related hints
 type framebufferHints struct {
 	DepthBits    intHint
@@ -192,5 +165,24 @@ func newFramebufferHints() framebufferHints {
 		Samples:      intHint{Value: 0, hint: hint{target: glfw.Samples}},
 		RefreshRate:  intHint{Value: int(DontCare), hint: hint{target: glfw.RefreshRate}},
 		DoubleBuffer: boolHint{Value: true, hint: hint{target: glfw.DoubleBuffer}},
+	}
+}
+
+func (h framebufferHints) apply() {
+	applyHint(h.DepthBits)
+	applyHint(h.Samples)
+	applyHint(h.RefreshRate)
+	applyHint(h.DoubleBuffer)
+}
+
+type customHints struct {
+	Fullscreen boolHint
+	Vsync      boolHint
+}
+
+func newCustomHints() customHints {
+	return customHints{
+		Fullscreen: boolHint{Value: false},
+		Vsync:      boolHint{Value: true},
 	}
 }
