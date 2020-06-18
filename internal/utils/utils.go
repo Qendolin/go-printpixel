@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-type BindingClosure func() []func()
+type BindingClosure func()
 
 var rootPath string
 

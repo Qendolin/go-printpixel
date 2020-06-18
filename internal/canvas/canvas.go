@@ -39,16 +39,13 @@ func NewCanvas() *Canvas {
 
 func NewCanvasWithProgram(prog shader.Program) *Canvas {
 	quadVao := data.NewVao()
-	quadVao.BindFor(func() (defered []func()) {
+	quadVao.BindFor(func() {
 		quadVbo := data.NewVbo()
 		quadVbo.Bind(gl.ARRAY_BUFFER)
 		quadVbo.WriteStatic(quadVertices)
 		quadVbo.MustLayout(0, 2, float32(0), false, 0)
 
-		defered = append(defered, func() {
-			quadVbo.Unbind(gl.ARRAY_BUFFER)
-		})
-		return
+		quadVbo.Unbind(gl.ARRAY_BUFFER)
 	})
 	return &Canvas{Program: prog, quad: *quadVao}
 }
@@ -65,11 +62,8 @@ func (canvas *Canvas) Unbind() {
 
 func (canvas *Canvas) BindFor(context utils.BindingClosure) {
 	canvas.Bind()
-	defered := context()
+	context()
 	canvas.Unbind()
-	for _, deferedFunc := range defered {
-		deferedFunc()
-	}
 }
 
 func (canvas *Canvas) Draw() {
