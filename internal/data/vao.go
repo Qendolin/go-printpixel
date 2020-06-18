@@ -29,11 +29,8 @@ func (vao *Vao) Unbind() {
 
 func (vao *Vao) BindFor(context utils.BindingClosure) {
 	vao.Bind()
-	defered := context()
+	context()
 	vao.Unbind()
-	for _, deferedFunc := range defered {
-		deferedFunc()
-	}
 }
 
 //TODO: Destroy VBOs, note that VAOs can share VBOs

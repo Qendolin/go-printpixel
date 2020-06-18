@@ -68,11 +68,8 @@ func (prog *Program) Unbind() {
 
 func (prog *Program) BindFor(context utils.BindingClosure) {
 	prog.Bind()
-	defered := context()
+	context()
 	prog.Unbind()
-	for _, deferedFunc := range defered {
-		deferedFunc()
-	}
 }
 
 func (prog *Program) Destroy() {

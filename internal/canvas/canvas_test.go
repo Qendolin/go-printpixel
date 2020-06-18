@@ -21,9 +21,8 @@ func TestCanvasQuad(t *testing.T) {
 
 	cnv := canvas.NewCanvasWithProgram(prog)
 	for !win.ShouldClose() {
-		cnv.BindFor(func() []func() {
+		cnv.BindFor(func() {
 			cnv.Draw()
-			return nil
 		})
 		win.SwapBuffers()
 		glfw.PollEvents()

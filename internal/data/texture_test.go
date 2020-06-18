@@ -2,6 +2,7 @@ package data_test
 
 import (
 	_ "image/png"
+	"math/rand"
 	"os"
 	"testing"
 
@@ -32,11 +33,11 @@ func TestFileTexture(t *testing.T) {
 	}
 	defer imgFile.Close()
 
-	tex := data.NewTexture(data.Texture2D)
+	tex := data.NewTexture(data.Tex2DTarget2D).As2D(0)
 	tex.Bind(0)
 	tex.FilterMode(data.FilterLinear, data.FilterLinear)
-	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge, data.WrapClampToEdge)
-	err = tex.AllocWithFile2D(imgFile, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE)
+	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge)
+	err = tex.AllocFile(imgFile, 0, gl.RGBA, gl.RGBA)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,9 +46,8 @@ func TestFileTexture(t *testing.T) {
 	cnv := canvas.NewCanvasWithProgram(prog)
 
 	for !win.ShouldClose() {
-		cnv.BindFor(func() []func() {
+		cnv.BindFor(func() {
 			cnv.Draw()
-			return nil
 		})
 		win.SwapBuffers()
 		glfw.PollEvents()
@@ -59,30 +59,53 @@ func TestGeneratedTexture(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	tex := data.NewTexture(data.Texture2D)
+	tex := data.NewTexture(data.Tex2DTarget2D).As2D(0)
 	tex.Bind(0)
 	tex.FilterMode(data.FilterLinear, data.FilterLinear)
-	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge, data.WrapClampToEdge)
+	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge)
 
-	data := make([]byte, 100*100*3)
+	data := make([]byte, 256*256*3)
 
-	for x := 0; x < 100; x++ {
-		for y := 0; y < 100; y++ {
-			data[(x+y*100)*3+0] = byte(x)
-			data[(x+y*100)*3+1] = byte(y)
-			data[(x+y*100)*3+2] = 0
+	for x := 0; x < 256; x++ {
+		for y := 0; y < 256; y++ {
+			data[(x+y*256)*3+0] = byte(x)
+			data[(x+y*256)*3+1] = byte(y)
+			data[(x+y*256)*3+2] = 0
 		}
 	}
 
-	tex.AllocWithBytes(data, 100, 100, 0, gl.RGB, gl.RGB)
+	tex.AllocBytes(data, 0, gl.RGB, 256, 256, gl.RGB)
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
 	cnv := canvas.NewCanvasWithProgram(prog)
 
 	for !win.ShouldClose() {
-		cnv.BindFor(func() []func() {
+		cnv.BindFor(func() {
 			cnv.Draw()
-			return nil
+		})
+		win.SwapBuffers()
+		glfw.PollEvents()
+	}
+}
+
+func TestUpdatingTexture(t *testing.T) {
+	win, close := test.NewWindow(t)
+	defer close()
+
+	tex := data.NewTexture(data.Tex2DTarget2D).As2D(0)
+	tex.Bind(0)
+	tex.FilterMode(data.FilterLinear, data.FilterLinear)
+	tex.WrapMode(data.WrapClampToEdge, data.WrapClampToEdge)
+
+	tex.AllocEmpty(0, gl.RGB, 100, 100, gl.RGB)
+
+	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
+	cnv := canvas.NewCanvasWithProgram(prog)
+
+	for !win.ShouldClose() {
+		tex.WriteBytes([]byte{255, 255, 255}, 0, int32(rand.Intn(100)), int32(rand.Intn(100)), 1, 1, gl.RGB)
+		cnv.BindFor(func() {
+			cnv.Draw()
 		})
 		win.SwapBuffers()
 		glfw.PollEvents()

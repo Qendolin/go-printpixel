@@ -41,11 +41,8 @@ func (vbo *Vbo) Unbind(target uint32) {
 
 func (vbo *Vbo) BindFor(target uint32, context utils.BindingClosure) {
 	vbo.Bind(target)
-	defered := context()
+	context()
 	vbo.Unbind(target)
-	for _, deferedFunc := range defered {
-		deferedFunc()
-	}
 }
 
 func (vbo *Vbo) WriteStatic(data interface{}) {
