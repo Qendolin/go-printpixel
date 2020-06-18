@@ -4,8 +4,14 @@ import (
 	"testing"
 
 	"github.com/Qendolin/go-printpixel/layout"
+	"github.com/Qendolin/go-printpixel/test"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
 
 func TestGrid(t *testing.T) {
 
