@@ -4,6 +4,7 @@ import (
 	"runtime"
 
 	"github.com/Qendolin/go-printpixel/internal/context"
+	"github.com/Qendolin/go-printpixel/internal/window"
 	iWin "github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/Qendolin/go-printpixel/layout"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -13,8 +14,8 @@ type Updater interface {
 	Update()
 }
 
-type Window struct {
-	handle *glfw.Window
+type Layout struct {
+	Window window.Extended
 	//Top, Right, Bottom, Left
 	margins []int
 	Child   layout.Layoutable
@@ -32,80 +33,80 @@ func NewGlConfig(errorChanSize int) GlConfig {
 	return GlConfig(context.NewGlConfig(errorChanSize))
 }
 
-func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Window, error) {
+func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Layout, error) {
 	context.InitGlfw()
 	glfwWin, err := iWin.New(iWin.Hints(hints), title, width, height, monitor)
 	if err != nil {
-		return Window{}, err
+		return Layout{}, err
 	}
 
-	mLeft, mTop, mRight, mBot := glfwWin.GetFrameSize()
+	mLeft, mTop, mRight, mBot := glfwWin.GetVisibleFrameSize()
 
-	win := Window{handle: glfwWin, margins: []int{mTop, mRight, mBot, mLeft}}
+	win := Layout{Window: glfwWin, margins: []int{mTop, mRight, mBot, mLeft}}
 	return win, nil
 }
 
-func (win Window) SetX(x int) {
-	_, y := win.handle.GetPos()
-	win.handle.SetPos(x+win.margins[3], y)
+func (win Layout) SetX(x int) {
+	_, y := win.Window.GetPos()
+	win.Window.SetPos(x+win.margins[3], y)
 }
 
-func (win Window) SetY(y int) {
-	x, _ := win.handle.GetPos()
-	win.handle.SetPos(x, y+win.margins[0])
+func (win Layout) SetY(y int) {
+	x, _ := win.Window.GetPos()
+	win.Window.SetPos(x, y+win.margins[0])
 }
 
-func (win Window) X() int {
-	x, _ := win.handle.GetPos()
+func (win Layout) X() int {
+	x, _ := win.Window.GetPos()
 	return x - win.margins[3]
 }
 
-func (win Window) Y() int {
-	_, y := win.handle.GetPos()
+func (win Layout) Y() int {
+	_, y := win.Window.GetPos()
 	return y - win.margins[0]
 }
 
-func (win Window) SetWidth(width int) {
-	_, h := win.handle.GetSize()
-	win.handle.SetSize(width-win.margins[1]-win.margins[3], h)
+func (win Layout) SetWidth(width int) {
+	_, h := win.Window.GetSize()
+	win.Window.SetSize(width-win.margins[1]-win.margins[3], h)
 }
 
-func (win Window) SetHeight(height int) {
-	w, _ := win.handle.GetSize()
-	win.handle.SetSize(w, height-win.margins[0]-win.margins[2])
+func (win Layout) SetHeight(height int) {
+	w, _ := win.Window.GetSize()
+	win.Window.SetSize(w, height-win.margins[0]-win.margins[2])
 }
 
-func (win Window) Width() int {
-	w, _ := win.handle.GetSize()
+func (win Layout) Width() int {
+	w, _ := win.Window.GetSize()
 	return w + win.margins[1] + win.margins[3]
 }
 
-func (win Window) Height() int {
-	_, h := win.handle.GetSize()
+func (win Layout) Height() int {
+	_, h := win.Window.GetSize()
 	return h + win.margins[0] + win.margins[2]
 }
 
-func (win Window) Run(cfg GlConfig) {
-	win.handle.MakeContextCurrent()
+func (win Layout) Run(cfg GlConfig) {
+	win.Window.MakeContextCurrent()
 	context.InitGl(context.GlConfig(cfg))
-	for !win.handle.ShouldClose() {
+	for !win.Window.ShouldClose() {
 		win.Update()
 	}
 }
 
-func (win Window) Close() {
+func (win Layout) Close() {
 	runtime.LockOSThread()
-	win.handle.Destroy()
-	win.handle = nil
+	win.Window.Destroy()
+	win.Window = nil
 	runtime.UnlockOSThread()
 }
 
-func (win Window) Update() {
-	win.handle.SwapBuffers()
+func (win Layout) Update() {
+	win.Window.SwapBuffers()
 	glfw.PollEvents()
 }
 
-func (win Window) Layout() {
+func (win Layout) Layout() {
 	if win.Child == nil {
 		return
 	}
