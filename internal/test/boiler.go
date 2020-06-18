@@ -8,11 +8,10 @@ import (
 	"github.com/Qendolin/go-printpixel/internal/shader"
 	"github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
-	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 type TestingWindow struct {
-	*glfw.Window
+	window.Extended
 	closeCheckCount int
 	isHeadless      bool
 }
@@ -22,10 +21,10 @@ func (win TestingWindow) ShouldClose() bool {
 	if win.closeCheckCount >= 10 || win.isHeadless {
 		return true
 	}
-	return win.Window.ShouldClose()
+	return win.Extended.ShouldClose()
 }
 
-func NewWindow(t *testing.T) (w TestingWindow, close func()) {
+func NewWindow(t *testing.T) (w window.Extended, close func()) {
 	runtime.LockOSThread()
 	err := context.InitGlfw()
 	if err != nil {
