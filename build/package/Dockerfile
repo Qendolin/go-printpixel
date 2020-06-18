@@ -1,7 +1,7 @@
 FROM alpine:edge
 
 RUN apk update
-RUN apk add git musl-dev go=1.13.10-r0
+RUN apk add git musl-dev go
 
 ENV GOROOT=/usr/lib/go
 ENV GOPATH=$HOME/go
