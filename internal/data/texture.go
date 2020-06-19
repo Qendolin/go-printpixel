@@ -87,6 +87,11 @@ func (tex GLTexture) Id() uint32 {
 	return *tex.uint32
 }
 
+func (tex *GLTexture) Destroy() {
+	gl.DeleteTextures(1, tex.uint32)
+	*tex.uint32 = 0
+}
+
 func (tex GLTexture) Dimensions() int {
 	if tex.Target == TexTarget(Tex1DTarget1D) || tex.Target == TexTarget(Tex1DTargetProxy1D) || tex.Target == TexTarget(Tex1DTargetBuffer) {
 		return 1
@@ -98,14 +103,14 @@ func (tex GLTexture) Dimensions() int {
 	}
 }
 
-func (tex GLTexture) As(target TexTarget) GLTexture {
-	return GLTexture{
+func (tex GLTexture) As(target TexTarget) *GLTexture {
+	return &GLTexture{
 		uint32: tex.uint32,
 		Target: target,
 	}
 }
 
-func (tex GLTexture) As1D(target TexTarget) Texture1D {
+func (tex GLTexture) As1D(target TexTarget) *Texture1D {
 	if target == 0 {
 		if tex.Dimensions() == 1 {
 			target = tex.Target
@@ -113,12 +118,12 @@ func (tex GLTexture) As1D(target TexTarget) Texture1D {
 			target = Tex1DTarget1D
 		}
 	}
-	return Texture1D{
-		GLTexture: tex.As(TexTarget(target)),
+	return &Texture1D{
+		GLTexture: *tex.As(TexTarget(target)),
 	}
 }
 
-func (tex GLTexture) As2D(target TexTarget) Texture2D {
+func (tex GLTexture) As2D(target TexTarget) *Texture2D {
 	if target == 0 {
 		if tex.Dimensions() == 2 {
 			target = tex.Target
@@ -126,12 +131,12 @@ func (tex GLTexture) As2D(target TexTarget) Texture2D {
 			target = Tex2DTarget2D
 		}
 	}
-	return Texture2D{
-		GLTexture: tex.As(TexTarget(target)),
+	return &Texture2D{
+		GLTexture: *tex.As(TexTarget(target)),
 	}
 }
 
-func (tex GLTexture) As3D(target TexTarget) Texture3D {
+func (tex GLTexture) As3D(target TexTarget) *Texture3D {
 	if target == 0 {
 		if tex.Dimensions() == 3 {
 			target = tex.Target
@@ -139,8 +144,8 @@ func (tex GLTexture) As3D(target TexTarget) Texture3D {
 			target = Tex3DTargetCubeMap
 		}
 	}
-	return Texture3D{
-		GLTexture: tex.As(TexTarget(target)),
+	return &Texture3D{
+		GLTexture: *tex.As(TexTarget(target)),
 	}
 }
 
@@ -181,8 +186,13 @@ func (tex GLTexture) FilterMode(minMode, magMode TexFilterMode) {
 	}
 }
 
-func (tex *GLTexture) GenerateMipmap() {
+func (tex GLTexture) GenerateMipmap() {
 	gl.GenerateMipmap(uint32(tex.Target))
+}
+
+func (tex GLTexture) DefaultModes() {
+	tex.FilterMode(FilterLinear, FilterLinear)
+	tex.WrapMode(WrapClampToEdge, WrapClampToEdge, WrapClampToEdge)
 }
 
 func (tex GLTexture) Alloc(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
@@ -351,12 +361,12 @@ type Texture3D struct {
 */
 func (tex Texture3D) As2DSides() []Texture2D {
 	return []Texture2D{
-		tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 0),
-		tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 1),
-		tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 2),
-		tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 3),
-		tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 4),
-		tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 5),
+		*tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 0),
+		*tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 1),
+		*tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 2),
+		*tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 3),
+		*tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 4),
+		*tex.GLTexture.As2D(Tex2DTargetCubeMapPositiveX + 5),
 	}
 }
 

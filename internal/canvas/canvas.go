@@ -13,6 +13,7 @@ var (
 
 type Canvas struct {
 	Program shader.Program
+	Texture *data.Texture2D
 	quad    data.Vao
 }
 
@@ -53,11 +54,17 @@ func NewCanvasWithProgram(prog shader.Program) *Canvas {
 func (canvas *Canvas) Bind() {
 	canvas.quad.Bind()
 	canvas.Program.Bind()
+	if canvas.Texture != nil {
+		canvas.Texture.Bind(0)
+	}
 }
 
 func (canvas *Canvas) Unbind() {
 	canvas.quad.Unbind()
 	canvas.Program.Unbind()
+	if canvas.Texture != nil {
+		canvas.Texture.Unbind(0)
+	}
 }
 
 func (canvas *Canvas) BindFor(context utils.BindingClosure) {
@@ -74,4 +81,7 @@ func (canvas *Canvas) Draw() {
 func (canvas *Canvas) Destroy() {
 	canvas.Program.Destroy()
 	canvas.quad.Destroy()
+	if canvas.Texture != nil {
+		canvas.Texture.Destroy()
+	}
 }
