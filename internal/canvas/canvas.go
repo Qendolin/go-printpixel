@@ -48,7 +48,7 @@ func NewCanvasWithProgram(prog shader.Program) *Canvas {
 
 		quadVbo.Unbind(gl.ARRAY_BUFFER)
 	})
-	return &Canvas{Program: prog, quad: *quadVao}
+	return &Canvas{Program: prog, quad: *quadVao, Texture: data.NewTexture2D(data.Tex2DTarget2D)}
 }
 
 func (canvas *Canvas) Bind() {

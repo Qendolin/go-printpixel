@@ -72,22 +72,45 @@ const (
 	Tex3DTargetProxy2DArray = TexTarget(gl.PROXY_TEXTURE_2D_ARRAY)
 )
 
+var NewID uint32
+
 type GLTexture struct {
 	*uint32
 	Target TexTarget
 }
 
 func NewTexture(texType TexTarget) *GLTexture {
-	id := new(uint32)
-	gl.GenTextures(1, id)
-	return &GLTexture{uint32: id, Target: texType}
+	return &GLTexture{uint32: &NewID, Target: texType}
 }
 
-func (tex GLTexture) Id() uint32 {
+func NewTexture1D(texType TexTarget) *Texture1D {
+	return &Texture1D{
+		GLTexture{uint32: &NewID, Target: texType},
+	}
+}
+
+func NewTexture2D(texType TexTarget) *Texture2D {
+	return &Texture2D{
+		GLTexture{uint32: &NewID, Target: texType},
+	}
+}
+
+func NewTexture3D(texType TexTarget) *Texture3D {
+	return &Texture3D{
+		GLTexture{uint32: &NewID, Target: texType},
+	}
+}
+
+func (tex *GLTexture) Id() uint32 {
+	if tex.uint32 == &NewID {
+		id := new(uint32)
+		gl.GenTextures(1, id)
+		tex.uint32 = id
+	}
 	return *tex.uint32
 }
 
-func (tex *GLTexture) Destroy() {
+func (tex GLTexture) Destroy() {
 	gl.DeleteTextures(1, tex.uint32)
 	*tex.uint32 = 0
 }
@@ -161,7 +184,7 @@ func (tex GLTexture) WrapMode(sMode, tMode, rMode TexWrapMode) {
 	}
 }
 
-func (tex GLTexture) Bind(unit int) {
+func (tex *GLTexture) Bind(unit int) {
 	gl.ActiveTexture(uint32(gl.TEXTURE0 + unit))
 	gl.BindTexture(uint32(tex.Target), tex.Id())
 }
