@@ -20,13 +20,17 @@ func TestGrid(t *testing.T) {
 		height = 300
 	)
 
-	grid := layout.NewGrid([]layout.TrackDef{
-		{.25, layout.Percent},
-		{.75, layout.Percent},
-	}, []layout.TrackDef{
-		{100, layout.Pixel},
-		{200, layout.Pixel},
-	})
+	grid := layout.Grid{
+		Cols: []layout.TrackDef{
+			{.25, layout.Percent},
+			{.75, layout.Percent},
+		},
+		Rows: []layout.TrackDef{
+			{100, layout.Pixel},
+			{200, layout.Pixel},
+		},
+	}
+	grid.Init()
 	grid.SetWidth(width)
 	grid.SetHeight(height)
 	grid.Children[0][0] = &layout.SimpleBox{}

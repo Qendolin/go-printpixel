@@ -128,5 +128,5 @@ func getGlType(dataType reflect.Type) (glType uint32, float bool, err error) {
 
 func (vbo *Vbo) Destroy() {
 	gl.DeleteBuffers(1, vbo.uint32)
-	vbo.uint32 = nil
+	*vbo.uint32 = 0
 }

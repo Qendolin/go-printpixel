@@ -13,32 +13,38 @@ type TrackDef struct {
 }
 
 type Grid struct {
-	Columns  []TrackDef
+	Cols     []TrackDef
 	Rows     []TrackDef
 	Children [][]Layoutable
 	SimpleBox
 }
 
 func NewGrid(cols []TrackDef, rows []TrackDef) Grid {
-	children := make([][]Layoutable, len(cols))
+	g := Grid{
+		Cols: cols,
+		Rows: rows,
+	}
+	g.Init()
+
+	return g
+}
+
+func (grid *Grid) Init() {
+	children := make([][]Layoutable, len(grid.Cols))
 	for x := range children {
-		children[x] = make([]Layoutable, len(rows))
+		children[x] = make([]Layoutable, len(grid.Rows))
 	}
-	return Grid{
-		Columns:  cols,
-		Rows:     rows,
-		Children: children,
-	}
+	grid.Children = children
 }
 
 func (grid Grid) Layout() {
-	colTrackPositions := make([]int, len(grid.Columns)+1)
+	colTrackPositions := make([]int, len(grid.Cols)+1)
 	colTrackPositions[0] = 0
 	rowTrackPositions := make([]int, len(grid.Rows)+1)
 	rowTrackPositions[0] = 0
 
 	var acc int
-	for col, def := range grid.Columns {
+	for col, def := range grid.Cols {
 		var delta int
 
 		switch def.Unit {

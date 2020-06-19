@@ -74,7 +74,7 @@ func (prog *Program) BindFor(context utils.BindingClosure) {
 
 func (prog *Program) Destroy() {
 	gl.DeleteProgram(prog.Id())
-	prog.uint32 = nil
+	*prog.uint32 = 0
 }
 
 func readProgramInfoLog(id uint32) string {
