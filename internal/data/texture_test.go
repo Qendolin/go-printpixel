@@ -32,7 +32,7 @@ func TestFileTexture(t *testing.T) {
 
 	tex := data.NewTexture(data.Tex2DTarget2D).As2D(0)
 	tex.Bind(0)
-	tex.DefaultModes()
+	tex.ApplyDefaults()
 	err = tex.AllocFile(imgFile, 0, gl.RGBA, gl.RGBA)
 	assert.NoError(t, err)
 
@@ -57,7 +57,7 @@ func TestGeneratedTexture(t *testing.T) {
 
 	tex := data.NewTexture(data.Tex2DTarget2D).As2D(0)
 	tex.Bind(0)
-	tex.DefaultModes()
+	tex.ApplyDefaults()
 
 	data := make([]byte, 256*256*3)
 

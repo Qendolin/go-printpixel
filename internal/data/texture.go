@@ -213,7 +213,7 @@ func (tex GLTexture) GenerateMipmap() {
 	gl.GenerateMipmap(uint32(tex.Target))
 }
 
-func (tex GLTexture) DefaultModes() {
+func (tex GLTexture) ApplyDefaults() {
 	tex.FilterMode(FilterLinear, FilterLinear)
 	tex.WrapMode(WrapClampToEdge, WrapClampToEdge, WrapClampToEdge)
 }

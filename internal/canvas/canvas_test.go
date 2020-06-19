@@ -47,7 +47,7 @@ func TestCanvasTexture(t *testing.T) {
 	assert.NoError(t, err)
 	defer imgFile.Close()
 	cnv.Texture.Bind(0)
-	cnv.Texture.DefaultModes()
+	cnv.Texture.ApplyDefaults()
 	err = cnv.Texture.AllocFile(imgFile, 0, gl.RGBA, gl.RGBA)
 	assert.NoError(t, err)
 
