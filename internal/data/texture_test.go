@@ -38,6 +38,8 @@ func TestFileTexture(t *testing.T) {
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
 	cnv := canvas.NewCanvasWithProgram(prog)
+	//Set Texture to nil in order to use our texture
+	cnv.Texture = nil
 
 	for !win.ShouldClose() {
 		cnv.BindFor(func() {
@@ -71,7 +73,8 @@ func TestGeneratedTexture(t *testing.T) {
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
 	cnv := canvas.NewCanvasWithProgram(prog)
-	cnv.Texture = tex
+	//Set Texture to nil in order to use our texture
+	cnv.Texture = nil
 
 	for !win.ShouldClose() {
 		cnv.BindFor(func() {
@@ -95,7 +98,8 @@ func TestUpdatingTexture(t *testing.T) {
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
 	cnv := canvas.NewCanvasWithProgram(prog)
-	cnv.Texture = tex
+	//Set Texture to nil in order to use our texture
+	cnv.Texture = nil
 
 	cnv.Bind()
 	for !win.ShouldClose() {

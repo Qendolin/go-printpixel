@@ -7,7 +7,6 @@ import (
 	_ "image/png"
 
 	"github.com/Qendolin/go-printpixel/internal/canvas"
-	"github.com/Qendolin/go-printpixel/internal/data"
 	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -47,7 +46,6 @@ func TestCanvasTexture(t *testing.T) {
 	imgFile, err := os.Open(absPath)
 	assert.NoError(t, err)
 	defer imgFile.Close()
-	cnv.Texture = data.NewTexture(data.Tex2DTarget2D).As2D(0)
 	cnv.Texture.Bind(0)
 	cnv.Texture.DefaultModes()
 	err = cnv.Texture.AllocFile(imgFile, 0, gl.RGBA, gl.RGBA)
