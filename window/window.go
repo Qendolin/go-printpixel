@@ -10,15 +10,13 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-type Updater interface {
-	Update()
-}
-
 type Layout struct {
 	Window window.Extended
 	//Top, Right, Bottom, Left
-	margins []int
-	Child   layout.Layoutable
+	margins      []int
+	Child        layout.Layoutable
+	BeforeUpdate func()
+	AfterUpdate  func()
 }
 
 type Hints iWin.Hints
@@ -102,8 +100,14 @@ func (win Layout) Close() {
 }
 
 func (win Layout) Update() {
+	if win.BeforeUpdate != nil {
+		win.BeforeUpdate()
+	}
 	win.Window.SwapBuffers()
 	glfw.PollEvents()
+	if win.AfterUpdate != nil {
+		win.AfterUpdate()
+	}
 }
 
 func (win Layout) Layout() {
