@@ -2,6 +2,7 @@ package context
 
 import (
 	"fmt"
+	"runtime/debug"
 	"unsafe"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -13,6 +14,7 @@ type openGlError struct {
 	Type     string
 	Message  string
 	Fatal    bool
+	Stack    string
 }
 
 func (glerr openGlError) Error() string {
@@ -87,12 +89,15 @@ func debugMessageCallback(errorChan chan<- openGlError) gl.DebugProc {
 			severityStr = "WARNING"
 		}
 
+		stack := debug.Stack()
+
 		errorChan <- openGlError{
 			Severity: severityStr,
 			Id:       id,
 			Type:     gltypeStr,
 			Message:  message,
 			Fatal:    fatal,
+			Stack:    string(stack),
 		}
 	}
 }
