@@ -1,25 +1,25 @@
 package window
 
 import (
-	"runtime"
-
 	"github.com/Qendolin/go-printpixel/internal/context"
-	"github.com/Qendolin/go-printpixel/internal/window"
 	iWin "github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/Qendolin/go-printpixel/layout"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
+type Extended = iWin.Extended
+
 type Layout struct {
-	Window window.Extended
+	Window iWin.Extended
 	//Top, Right, Bottom, Left
 	margins      []int
 	Child        layout.Layoutable
 	BeforeUpdate func()
 	AfterUpdate  func()
+	init         bool
 }
 
-type Hints iWin.Hints
+type Hints = iWin.Hints
 
 func NewHints() Hints {
 	return Hints(iWin.NewHints())
@@ -32,7 +32,10 @@ func NewGlConfig(errorChanSize int) GlConfig {
 }
 
 func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Layout, error) {
-	context.InitGlfw()
+	err := context.InitGlfw()
+	if err != nil {
+		return Layout{}, err
+	}
 	glfwWin, err := iWin.New(iWin.Hints(hints), title, width, height, monitor)
 	if err != nil {
 		return Layout{}, err
@@ -84,19 +87,24 @@ func (win Layout) Height() int {
 	return h + win.margins[0] + win.margins[2]
 }
 
-func (win Layout) Run(cfg GlConfig) {
-	win.Window.MakeContextCurrent()
-	context.InitGl(context.GlConfig(cfg))
+func (win *Layout) Init(cfg GlConfig) (err error) {
+	if !win.init {
+		win.Window.MakeContextCurrent()
+		err = context.InitGl(context.GlConfig(cfg))
+	}
+	win.init = true
+	return
+}
+
+func (win Layout) Run() {
 	for !win.Window.ShouldClose() {
 		win.Update()
 	}
 }
 
 func (win Layout) Close() {
-	runtime.LockOSThread()
 	win.Window.Destroy()
 	win.Window = nil
-	runtime.UnlockOSThread()
 }
 
 func (win Layout) Update() {
@@ -118,4 +126,8 @@ func (win Layout) Layout() {
 	win.Child.SetY(0)
 	win.Child.SetWidth(win.Width())
 	win.Child.SetHeight(win.Height())
+
+	if l, ok := win.Child.(layout.Layouter); ok {
+		l.Layout()
+	}
 }

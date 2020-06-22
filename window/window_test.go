@@ -1,11 +1,16 @@
 package window_test
 
 import (
+	"os"
 	"testing"
 
+	_ "image/png"
+
+	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/Qendolin/go-printpixel/layout"
 	"github.com/Qendolin/go-printpixel/test"
 	"github.com/Qendolin/go-printpixel/window"
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,12 +37,13 @@ func TestWindowNormal(t *testing.T) {
 		}
 	}()
 
-	win.Run(cfg)
-	win.Close()
+	win.Init(cfg)
+	win.Run()
 }
 
 func TestScreenLayout(t *testing.T) {
-	hints := window.NewHints()
+	win, close := test.NewWindow(t)
+	defer close()
 
 	screenLo := layout.NewScreenByDimensions(1920, 1080)
 	gridLo := layout.NewGrid([]layout.TrackDef{
@@ -48,30 +54,48 @@ func TestScreenLayout(t *testing.T) {
 	})
 	screenLo.Child = &gridLo
 
-	win, err := window.New(hints, "Test Window", 1600, 900, nil)
-	assert.NoError(t, err)
-	win.Window = test.WrapWindow(win.Window)
-
 	gridLo.Children[0][0] = win
 	screenLo.Layout()
 
-	cfg := window.NewGlConfig(0)
-	cfg.Debug = true
-	go func() {
-		for err := range cfg.Errors {
-			if err.Fatal {
-				t.Error(err)
-			}
-			t.Log(err)
-		}
-	}()
-
-	win.Run(cfg)
+	win.Run()
 
 	assert.Equal(t, 0, win.X())
 	assert.Equal(t, 0, win.Y())
 	assert.Equal(t, 1920, win.Width())
 	assert.Equal(t, 1080/2, win.Height())
+}
 
-	win.Close()
+func TestViewer(t *testing.T) {
+	win, close := test.NewWindow(t)
+	defer close()
+
+	absPath, err := utils.ResolvePath("assets/textures/uv.png")
+	assert.NoError(t, err)
+	imgFile, err := os.Open(absPath)
+	assert.NoError(t, err)
+	defer imgFile.Close()
+	v := layout.NewViewer()
+	v.Target.Texture.Bind(0)
+	err = v.Target.Texture.AllocFile(imgFile, 0, gl.RGBA, gl.RGBA)
+	assert.NoError(t, err)
+	v.Target.Texture.ApplyDefaults()
+	win.Child = v
+
+	prevW := win.Width()
+	prevH := win.Height()
+	win.AfterUpdate = func() {
+		if prevW != win.Width() || prevH != win.Height() {
+			prevW = win.Width()
+			prevH = win.Height()
+			win.Layout()
+			v.Draw()
+			win.Update()
+			v.Draw()
+		}
+	}
+
+	v.Draw()
+	win.Update()
+	v.Draw()
+	win.Run()
 }

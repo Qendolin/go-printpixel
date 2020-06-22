@@ -8,11 +8,11 @@ import (
 )
 
 type TextureCopy struct {
-	Source      data.Texture2D
-	Destination data.Texture2D
+	source      data.Texture2D
+	destination data.Texture2D
 	program     shader.Program
 	quad        data.Vao
-	fbo         *uint32
+	fbo         data.Fbo
 }
 
 func NewTextureCopy() *TextureCopy {
@@ -45,13 +45,10 @@ func NewTextureCopy() *TextureCopy {
 		quadVbo.Unbind(gl.ARRAY_BUFFER)
 	})
 
-	fbo := new(uint32)
-	gl.GenFramebuffers(1, fbo)
-
 	return &TextureCopy{
 		program: *quadShaderProg,
 		quad:    *quadVao,
-		fbo:     fbo,
+		fbo:     *data.NewFbo(),
 	}
 }
 
@@ -62,16 +59,15 @@ func (copy TextureCopy) Draw() {
 func (copy TextureCopy) Bind() {
 	copy.quad.Bind()
 	copy.program.Bind()
-	copy.Source.Bind(0)
-	gl.BindFramebuffer(gl.FRAMEBUFFER, *copy.fbo)
-	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, uint32(copy.Destination.Target), copy.Destination.Id(), 0)
+	copy.source.Bind(0)
+	copy.fbo.Bind(data.FboTargetReadWrite)
 }
 
 func (copy TextureCopy) Unbind() {
 	copy.quad.Unbind()
 	copy.program.Unbind()
-	copy.Source.Unbind(0)
-	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+	copy.source.Unbind(0)
+	copy.fbo.Bind(data.FboTargetReadWrite)
 }
 
 func (copy TextureCopy) BindFor(context utils.BindingClosure) {
@@ -83,5 +79,14 @@ func (copy TextureCopy) BindFor(context utils.BindingClosure) {
 func (copy TextureCopy) Destroy() {
 	copy.quad.Destroy()
 	copy.program.Destroy()
-	gl.DeleteFramebuffers(1, copy.fbo)
+	copy.fbo.Destroy()
+}
+
+func (copy *TextureCopy) SetSource(tex data.Texture2D) {
+	copy.source = tex
+}
+
+func (copy *TextureCopy) SetDestination(tex data.Texture2D) {
+	copy.destination = tex
+	copy.fbo.AttachTexture(tex.GLTexture, 0, 0)
 }
