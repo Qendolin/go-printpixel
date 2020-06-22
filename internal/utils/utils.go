@@ -1,28 +1,40 @@
 package utils
 
 import (
+	"go/build"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/tools/go/packages"
 )
 
 type BindingClosure func()
 
 var rootPath string
 
-func ResolveModulePath(path string) (absPath string, err error) {
+func ResolveModulePath(path string) (string, error) {
 	if rootPath == "" {
-		var wd string
-		wd, err = os.Getwd()
-		if err != nil {
-			panic(err)
+		pkgs, err := packages.Load(&packages.Config{
+			Mode: packages.NeedName | packages.NeedModule,
+		}, "github.com/Qendolin/go-printpixel")
+		if err == nil && len(pkgs) > 0 && pkgs[0].Module != nil && pkgs[0].Module.Dir != "" {
+			rootPath = pkgs[0].Module.Dir
+			return ResolveModulePath(path)
 		}
-		rootPath = filepath.Join(wd, "../..")
+
+		pkg, err := build.Import("github.com/Qendolin/go-printpixel", "/", build.FindOnly)
+		if err == nil && pkg.Dir != "" {
+			rootPath = pkg.Dir
+			return ResolveModulePath(path)
+		}
+
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		rootPath = wd
 	}
-	if err != nil {
-		return
-	}
-	absPath = filepath.Join(rootPath, path)
-	return
+	return filepath.Join(rootPath, path), nil
 }
 
 func MustResolveModulePath(path string) string {
