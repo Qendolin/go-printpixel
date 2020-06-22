@@ -10,12 +10,15 @@ type Vao struct {
 }
 
 func NewVao() *Vao {
-	id := new(uint32)
-	gl.GenVertexArrays(1, id)
-	return &Vao{id}
+	return &Vao{uint32: &NewId}
 }
 
 func (vao *Vao) Id() uint32 {
+	if vao.uint32 == &NewId {
+		id := new(uint32)
+		gl.GenVertexArrays(1, id)
+		vao.uint32 = id
+	}
 	return *vao.uint32
 }
 

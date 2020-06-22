@@ -9,11 +9,11 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
-type TypeErr struct {
+type TypeError struct {
 	Type reflect.Type
 }
 
-func (terr TypeErr) Error() string {
+func (terr TypeError) Error() string {
 	return fmt.Sprintf("Invalid dataType %v, doesn't correspond to any gl type", terr.Type)
 }
 
@@ -22,12 +22,15 @@ type Vbo struct {
 }
 
 func NewVbo() *Vbo {
-	id := new(uint32)
-	gl.GenBuffers(1, id)
-	return &Vbo{id}
+	return &Vbo{uint32: &NewId}
 }
 
 func (vbo *Vbo) Id() uint32 {
+	if vbo.uint32 == &NewId {
+		id := new(uint32)
+		gl.GenBuffers(1, id)
+		vbo.uint32 = id
+	}
 	return *vbo.uint32
 }
 
@@ -119,7 +122,7 @@ func getGlType(dataType reflect.Type) (glType uint32, float bool, err error) {
 		float = true
 	}
 	if glType == 0 {
-		err = TypeErr{
+		err = TypeError{
 			Type: dataType,
 		}
 	}

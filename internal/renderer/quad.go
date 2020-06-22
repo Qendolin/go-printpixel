@@ -74,7 +74,6 @@ func (renderer *TextureQuad) BindFor(context utils.BindingClosure) {
 }
 
 func (renderer *TextureQuad) Draw() {
-	//gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }
 
