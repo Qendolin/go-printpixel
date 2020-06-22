@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Qendolin/go-printpixel/internal/canvas"
 	"github.com/Qendolin/go-printpixel/internal/data"
+	"github.com/Qendolin/go-printpixel/internal/renderer"
 	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -37,7 +37,7 @@ func TestFileTexture(t *testing.T) {
 	assert.NoError(t, err)
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
-	cnv := canvas.NewCanvasWithProgram(prog)
+	cnv := renderer.NewTextureQuadWithProgram(prog)
 	//Set Texture to nil in order to use our texture
 	cnv.Texture = nil
 
@@ -72,7 +72,7 @@ func TestGeneratedTexture(t *testing.T) {
 	tex.AllocBytes(data, 0, gl.RGB, 256, 256, gl.RGB)
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
-	cnv := canvas.NewCanvasWithProgram(prog)
+	cnv := renderer.NewTextureQuadWithProgram(prog)
 	//Set Texture to nil in order to use our texture
 	cnv.Texture = nil
 
@@ -97,7 +97,7 @@ func TestUpdatingTexture(t *testing.T) {
 	tex.AllocEmpty(0, gl.RGB, 100, 100, gl.RGB)
 
 	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
-	cnv := canvas.NewCanvasWithProgram(prog)
+	cnv := renderer.NewTextureQuadWithProgram(prog)
 	//Set Texture to nil in order to use our texture
 	cnv.Texture = nil
 
