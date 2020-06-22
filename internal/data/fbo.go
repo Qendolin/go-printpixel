@@ -56,6 +56,10 @@ func (err FboStatusError) Error() string {
 	return fmt.Sprintf("Framebuffer %v bound as %v target is incomplete. Reason: %v. (%v)", err.Id, target, err.Status, err.GlStatus)
 }
 
+var DefaultFbo = Fbo{
+	uint32: new(uint32),
+}
+
 type Fbo struct {
 	*uint32
 }
