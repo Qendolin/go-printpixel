@@ -2,6 +2,7 @@ package window
 
 import (
 	"image"
+	"time"
 	"unsafe"
 
 	"github.com/Qendolin/go-printpixel/internal/context"
@@ -67,15 +68,26 @@ type Extended interface {
 	ShouldClose() bool
 	Show()
 	SwapBuffers()
+	Delta() time.Duration
 	GetGLFWWindow() *glfw.Window
 }
 
 type glfwWindow struct {
 	*glfw.Window
+	lastSwap time.Time
 }
 
-func (w glfwWindow) GetGLFWWindow() *glfw.Window {
+func (w *glfwWindow) GetGLFWWindow() *glfw.Window {
 	return w.Window
+}
+
+func (w *glfwWindow) SwapBuffers() {
+	w.lastSwap = time.Now()
+	w.Window.SwapBuffers()
+}
+
+func (w *glfwWindow) Delta() time.Duration {
+	return time.Since(w.lastSwap)
 }
 
 func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Extended, error) {
@@ -101,5 +113,8 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 		glfw.SwapInterval(1)
 	}
 
-	return glfwWindow{glfwWin}, nil
+	return &glfwWindow{
+		Window:   glfwWin,
+		lastSwap: time.Now(),
+	}, nil
 }
