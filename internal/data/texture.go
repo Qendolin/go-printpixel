@@ -72,7 +72,25 @@ const (
 	Tex3DTargetProxy2DArray = TexTarget(gl.PROXY_TEXTURE_2D_ARRAY)
 )
 
-var NewID uint32
+func (tt TexTarget) IsArray() bool {
+	switch tt {
+	case Tex2DTarget1DArray, Tex2DTargetProxy1DArray, Tex3DTarget2DArray, Tex3DTargetProxy2DArray, Tex3DTargetCubeMap:
+		return true
+	default:
+		return false
+	}
+}
+
+func (tt TexTarget) Dimensions() int {
+	switch tt {
+	case Tex1DTarget1D, Tex1DTargetProxy1D, Tex1DTargetBuffer:
+		return 1
+	case Tex3DTarget3D, Tex3DTargetProxy3D, Tex3DTarget2DArray, Tex3DTargetProxy2DArray, Tex3DTargetCubeMap:
+		return 3
+	default:
+		return 2
+	}
+}
 
 type GLTexture struct {
 	*uint32
@@ -80,29 +98,29 @@ type GLTexture struct {
 }
 
 func NewTexture(texType TexTarget) *GLTexture {
-	return &GLTexture{uint32: &NewID, Target: texType}
+	return &GLTexture{uint32: &NewId, Target: texType}
 }
 
 func NewTexture1D(texType TexTarget) *Texture1D {
 	return &Texture1D{
-		GLTexture{uint32: &NewID, Target: texType},
+		GLTexture{uint32: &NewId, Target: texType},
 	}
 }
 
 func NewTexture2D(texType TexTarget) *Texture2D {
 	return &Texture2D{
-		GLTexture{uint32: &NewID, Target: texType},
+		GLTexture{uint32: &NewId, Target: texType},
 	}
 }
 
 func NewTexture3D(texType TexTarget) *Texture3D {
 	return &Texture3D{
-		GLTexture{uint32: &NewID, Target: texType},
+		GLTexture{uint32: &NewId, Target: texType},
 	}
 }
 
 func (tex *GLTexture) Id() uint32 {
-	if tex.uint32 == &NewID {
+	if tex.uint32 == &NewId {
 		id := new(uint32)
 		gl.GenTextures(1, id)
 		tex.uint32 = id
@@ -115,17 +133,6 @@ func (tex GLTexture) Destroy() {
 	*tex.uint32 = 0
 }
 
-func (tex GLTexture) Dimensions() int {
-	if tex.Target == TexTarget(Tex1DTarget1D) || tex.Target == TexTarget(Tex1DTargetProxy1D) || tex.Target == TexTarget(Tex1DTargetBuffer) {
-		return 1
-	} else if tex.Target == TexTarget(Tex3DTarget3D) || tex.Target == TexTarget(Tex3DTargetProxy3D) || tex.Target == TexTarget(Tex3DTargetCubeMap) ||
-		tex.Target == TexTarget(Tex3DTarget2DArray) || tex.Target == TexTarget(Tex3DTargetProxy2DArray) {
-		return 3
-	} else {
-		return 2
-	}
-}
-
 func (tex GLTexture) As(target TexTarget) *GLTexture {
 	return &GLTexture{
 		uint32: tex.uint32,
@@ -135,7 +142,7 @@ func (tex GLTexture) As(target TexTarget) *GLTexture {
 
 func (tex GLTexture) As1D(target TexTarget) *Texture1D {
 	if target == 0 {
-		if tex.Dimensions() == 1 {
+		if tex.Target.Dimensions() == 1 {
 			target = tex.Target
 		} else {
 			target = Tex1DTarget1D
@@ -148,7 +155,7 @@ func (tex GLTexture) As1D(target TexTarget) *Texture1D {
 
 func (tex GLTexture) As2D(target TexTarget) *Texture2D {
 	if target == 0 {
-		if tex.Dimensions() == 2 {
+		if tex.Target.Dimensions() == 2 {
 			target = tex.Target
 		} else {
 			target = Tex2DTarget2D
@@ -161,7 +168,7 @@ func (tex GLTexture) As2D(target TexTarget) *Texture2D {
 
 func (tex GLTexture) As3D(target TexTarget) *Texture3D {
 	if target == 0 {
-		if tex.Dimensions() == 3 {
+		if tex.Target.Dimensions() == 3 {
 			target = tex.Target
 		} else {
 			target = Tex3DTargetCubeMap
@@ -223,7 +230,7 @@ func (tex GLTexture) Alloc(level, internalFormat, width, height, depth int32, fo
 	if data != nil {
 		dataPtr = gl.Ptr(data)
 	}
-	switch tex.Dimensions() {
+	switch tex.Target.Dimensions() {
 	case 1:
 		gl.TexImage1D(uint32(tex.Target), level, internalFormat, width, 0, format, dataType, dataPtr)
 	case 2:
@@ -243,7 +250,7 @@ func (tex GLTexture) AllocEmpty(level, internalFormat, width, height, depth int3
 
 func (tex GLTexture) Write(level, x, y, z, width, height, depth int32, format, dataType uint32, data interface{}) {
 	dataPtr := gl.Ptr(data)
-	switch tex.Dimensions() {
+	switch tex.Target.Dimensions() {
 	case 1:
 		gl.TexSubImage1D(uint32(tex.Target), level, x, width, format, dataType, dataPtr)
 	case 2:
