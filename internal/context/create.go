@@ -22,23 +22,21 @@ var (
 	//ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
 )
 
-func InitGl(cfg GlConfig) (err error) {
+func InitGl(cfg GlConfig) error {
 	/*if status&StatusGlInitialized > 0 {
 		return
 	}*/
 
 	if status&StatusGlfwInitialized == 0 {
-		err = ErrGlfwNotInitialized
-		return
+		return ErrGlfwNotInitialized
 	}
 
 	if glfw.GetCurrentContext() == nil {
-		err = ErrGlfwNoContext
-		return
+		return ErrGlfwNoContext
 	}
 
-	if err = gl.Init(); err != nil {
-		return
+	if err := gl.Init(); err != nil {
+		return err
 	}
 
 	//status |= StatusGlInitialized
@@ -53,18 +51,18 @@ func InitGl(cfg GlConfig) (err error) {
 	log.Printf("Vendor: %v\n", gl.GoStr(gl.GetString(gl.VENDOR)))
 	log.Println()
 
-	if err = cfg.apply(); err != nil {
-		return
+	if err := cfg.apply(); err != nil {
+		return err
 	}
 
-	return
+	return nil
 }
 
-func InitGlfw() (err error) {
-	if status&StatusGlfwInitialized > 0 {
-		return
+func InitGlfw() error {
+	if status&StatusGlfwInitialized != 0 {
+		return nil
 	}
-	err = glfw.Init()
+	err := glfw.Init()
 	if err == nil {
 		status |= StatusGlfwInitialized
 	}
@@ -72,7 +70,7 @@ func InitGlfw() (err error) {
 }
 
 func Terminate() {
-	if status&StatusGlfwInitialized > 0 {
+	if status&StatusGlfwInitialized != 0 {
 		glfw.Terminate()
 		status &= ^StatusGlfwInitialized
 	}
