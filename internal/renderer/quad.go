@@ -1,4 +1,4 @@
-package canvas
+package renderer
 
 import (
 	"github.com/Qendolin/go-printpixel/internal/data"
@@ -11,13 +11,13 @@ var (
 	quadVertices = []float32{1, -1, 1, 1, -1, -1, -1, 1}
 )
 
-type Canvas struct {
+type TextureQuad struct {
 	Program shader.Program
 	Texture *data.Texture2D
 	quad    data.Vao
 }
 
-func NewCanvas() *Canvas {
+func NewTextureQuad() *TextureQuad {
 	vs, err := shader.NewShaderFromPath("assets/shaders/quad_tex.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
@@ -35,10 +35,10 @@ func NewCanvas() *Canvas {
 
 	fs.Destroy()
 	vs.Destroy()
-	return NewCanvasWithProgram(*quadShaderProg)
+	return NewTextureQuadWithProgram(*quadShaderProg)
 }
 
-func NewCanvasWithProgram(prog shader.Program) *Canvas {
+func NewTextureQuadWithProgram(prog shader.Program) *TextureQuad {
 	quadVao := data.NewVao()
 	quadVao.BindFor(func() {
 		quadVbo := data.NewVbo()
@@ -48,40 +48,40 @@ func NewCanvasWithProgram(prog shader.Program) *Canvas {
 
 		quadVbo.Unbind(gl.ARRAY_BUFFER)
 	})
-	return &Canvas{Program: prog, quad: *quadVao, Texture: data.NewTexture2D(data.Tex2DTarget2D)}
+	return &TextureQuad{Program: prog, quad: *quadVao, Texture: data.NewTexture2D(data.Tex2DTarget2D)}
 }
 
-func (canvas *Canvas) Bind() {
-	canvas.quad.Bind()
-	canvas.Program.Bind()
-	if canvas.Texture != nil {
-		canvas.Texture.Bind(0)
+func (renderer *TextureQuad) Bind() {
+	renderer.quad.Bind()
+	renderer.Program.Bind()
+	if renderer.Texture != nil {
+		renderer.Texture.Bind(0)
 	}
 }
 
-func (canvas *Canvas) Unbind() {
-	canvas.quad.Unbind()
-	canvas.Program.Unbind()
-	if canvas.Texture != nil {
-		canvas.Texture.Unbind(0)
+func (renderer *TextureQuad) Unbind() {
+	renderer.quad.Unbind()
+	renderer.Program.Unbind()
+	if renderer.Texture != nil {
+		renderer.Texture.Unbind(0)
 	}
 }
 
-func (canvas *Canvas) BindFor(context utils.BindingClosure) {
-	canvas.Bind()
+func (renderer *TextureQuad) BindFor(context utils.BindingClosure) {
+	renderer.Bind()
 	context()
-	canvas.Unbind()
+	renderer.Unbind()
 }
 
-func (canvas *Canvas) Draw() {
-	gl.Clear(gl.COLOR_BUFFER_BIT)
+func (renderer *TextureQuad) Draw() {
+	//gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }
 
-func (canvas *Canvas) Destroy() {
-	canvas.Program.Destroy()
-	canvas.quad.Destroy()
-	if canvas.Texture != nil {
-		canvas.Texture.Destroy()
+func (renderer *TextureQuad) Destroy() {
+	renderer.Program.Destroy()
+	renderer.quad.Destroy()
+	if renderer.Texture != nil {
+		renderer.Texture.Destroy()
 	}
 }
