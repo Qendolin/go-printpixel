@@ -3,7 +3,7 @@ package shader_test
 import (
 	"testing"
 
-	"github.com/Qendolin/go-printpixel/internal/canvas"
+	"github.com/Qendolin/go-printpixel/internal/renderer"
 	"github.com/Qendolin/go-printpixel/internal/shader"
 	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -29,7 +29,7 @@ func TestUniformColor(t *testing.T) {
 	prog.Bind()
 	uColor.Set(mgl32.Vec3{0, 1, 0})
 
-	cnv := canvas.NewCanvasWithProgram(prog)
+	cnv := renderer.NewTextureQuadWithProgram(prog)
 	for !win.ShouldClose() {
 		cnv.BindFor(func() {
 			cnv.Draw()
