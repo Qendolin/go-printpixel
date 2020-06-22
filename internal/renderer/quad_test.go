@@ -1,4 +1,4 @@
-package canvas_test
+package renderer_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 
 	_ "image/png"
 
-	"github.com/Qendolin/go-printpixel/internal/canvas"
+	"github.com/Qendolin/go-printpixel/internal/renderer"
 	"github.com/Qendolin/go-printpixel/internal/test"
 	"github.com/Qendolin/go-printpixel/internal/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -19,13 +19,13 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestCanvasQuad(t *testing.T) {
+func TestTextureQuad(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
 	prog := test.NewProgram(t, "assets/shaders/quad_uv.vert", "assets/shaders/quad_uv.frag")
 
-	cnv := canvas.NewCanvasWithProgram(prog)
+	cnv := renderer.NewTextureQuadWithProgram(prog)
 	for !win.ShouldClose() {
 		cnv.BindFor(func() {
 			cnv.Draw()
@@ -35,11 +35,11 @@ func TestCanvasQuad(t *testing.T) {
 	}
 }
 
-func TestCanvasTexture(t *testing.T) {
+func TestTextureQuadTexture(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	cnv := canvas.NewCanvas()
+	cnv := renderer.NewTextureQuad()
 
 	absPath, err := utils.ResolvePath("assets/textures/uv.png")
 	assert.NoError(t, err)
