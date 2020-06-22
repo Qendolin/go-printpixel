@@ -8,7 +8,7 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
-type openGlError struct {
+type GlError struct {
 	Severity string
 	Id       uint32
 	Type     string
@@ -17,19 +17,19 @@ type openGlError struct {
 	Stack    string
 }
 
-func (glerr openGlError) Error() string {
+func (glerr GlError) Error() string {
 	return fmt.Sprintf("[%s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
 }
 
 type GlConfig struct {
 	//Enables DEBUG_OUTPUT and DEBUG_OUTPUT_SYNCHRONOUS. Also sets DebugMessageCallback.
 	Debug  bool
-	Errors <-chan openGlError
-	errors chan<- openGlError
+	Errors <-chan GlError
+	errors chan<- GlError
 }
 
 func NewGlConfig(errorChanSize int) GlConfig {
-	errorChan := make(chan openGlError, errorChanSize)
+	errorChan := make(chan GlError, errorChanSize)
 	return GlConfig{
 		Debug:  false,
 		Errors: errorChan,
@@ -46,7 +46,7 @@ func (cfg GlConfig) apply() error {
 	return nil
 }
 
-func debugMessageCallback(errorChan chan<- openGlError) gl.DebugProc {
+func debugMessageCallback(errorChan chan<- GlError) gl.DebugProc {
 	return func(source uint32,
 		gltype uint32,
 		id uint32,
@@ -91,7 +91,7 @@ func debugMessageCallback(errorChan chan<- openGlError) gl.DebugProc {
 
 		stack := debug.Stack()
 
-		errorChan <- openGlError{
+		errorChan <- GlError{
 			Severity: severityStr,
 			Id:       id,
 			Type:     gltypeStr,

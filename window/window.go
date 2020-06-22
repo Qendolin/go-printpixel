@@ -1,13 +1,13 @@
 package window
 
 import (
+	"runtime"
+
 	"github.com/Qendolin/go-printpixel/internal/context"
 	iWin "github.com/Qendolin/go-printpixel/internal/window"
 	"github.com/Qendolin/go-printpixel/layout"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
-
-type Extended = iWin.Extended
 
 type Layout struct {
 	Window iWin.Extended
@@ -19,13 +19,9 @@ type Layout struct {
 	init         bool
 }
 
-type Hints = iWin.Hints
-
 func NewHints() Hints {
 	return Hints(iWin.NewHints())
 }
-
-type GlConfig context.GlConfig
 
 func NewGlConfig(errorChanSize int) GlConfig {
 	return GlConfig(context.NewGlConfig(errorChanSize))
@@ -89,6 +85,7 @@ func (win Layout) Height() int {
 
 func (win *Layout) Init(cfg GlConfig) (err error) {
 	if !win.init {
+		runtime.LockOSThread()
 		win.Window.MakeContextCurrent()
 		err = context.InitGl(context.GlConfig(cfg))
 	}
