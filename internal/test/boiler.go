@@ -46,9 +46,10 @@ func NewWindow(t *testing.T) (w window.Extended, close func()) {
 	go func() {
 		for err := range cfg.Errors {
 			if err.Fatal {
-				t.Error(err)
+				t.Error(err, "\n"+err.Stack)
+			} else {
+				t.Log(err)
 			}
-			t.Log(err)
 		}
 	}()
 	err = context.InitGl(cfg)
