@@ -21,11 +21,6 @@ func TestMain(m *testing.M) {
 
 func TestWindowNormal(t *testing.T) {
 	hints := window.NewHints()
-
-	win, err := window.New(hints, "Test Window", 1600, 900, nil)
-	assert.NoError(t, err)
-	win.Window = test.WrapWindow(win.Window)
-
 	cfg := window.NewGlConfig(0)
 	cfg.Debug = true
 	go func() {
@@ -37,7 +32,9 @@ func TestWindowNormal(t *testing.T) {
 		}
 	}()
 
-	win.Init(cfg)
+	win, err := window.NewCustom("Test Window", 1600, 900, hints, nil, cfg)
+	assert.NoError(t, err)
+	win.Window = test.WrapWindow(win.Window)
 	win.Run()
 }
 

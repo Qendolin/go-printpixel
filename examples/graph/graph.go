@@ -34,17 +34,16 @@ func main() {
 }
 
 func setup() window.Layout {
-	hints := window.NewHints()
-	hints.Resizable.Value = false
-	win, err := window.New(hints, "Graph Example", 1600, 900, nil)
+	cfg := window.SimpleConfig{
+		Width:        1600,
+		Height:       900,
+		Unresizeable: true,
+		Debug:        true,
+	}
+	win, err := window.New("Graph Example", cfg)
 	panicIf(err)
 
-	glCfg := window.NewGlConfig(0)
-	glCfg.Debug = true
-	go handleErrors(glCfg.Errors)
-	err = win.Init(glCfg)
-	panicIf(err)
-
+	go handleErrors(cfg.Errors())
 	return win
 }
 

@@ -27,7 +27,19 @@ func NewGlConfig(errorChanSize int) GlConfig {
 	return GlConfig(context.NewGlConfig(errorChanSize))
 }
 
-func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Layout, error) {
+func New(title string, cfg SimpleConfig) (Layout, error) {
+	w := cfg.Width
+	h := cfg.Height
+	if w == 0 {
+		w = 800
+	}
+	if h == 0 {
+		h = 450
+	}
+	return NewCustom(title, w, h, cfg.ToHints(), nil, cfg.ToGlConfig())
+}
+
+func NewCustom(title string, width, height int, hints Hints, monitor *glfw.Monitor, glCfg GlConfig) (Layout, error) {
 	err := context.InitGlfw()
 	if err != nil {
 		return Layout{}, err
@@ -40,7 +52,12 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (L
 	mLeft, mTop, mRight, mBot := glfwWin.GetVisibleFrameSize()
 
 	win := Layout{Window: glfwWin, margins: []int{mTop, mRight, mBot, mLeft}}
-	return win, nil
+
+	runtime.LockOSThread()
+	win.Window.MakeContextCurrent()
+	err = context.InitGl(context.GlConfig(glCfg))
+
+	return win, err
 }
 
 func (win Layout) SetX(x int) {
@@ -81,16 +98,6 @@ func (win Layout) Width() int {
 func (win Layout) Height() int {
 	_, h := win.Window.GetSize()
 	return h + win.margins[0] + win.margins[2]
-}
-
-func (win *Layout) Init(cfg GlConfig) (err error) {
-	if !win.init {
-		runtime.LockOSThread()
-		win.Window.MakeContextCurrent()
-		err = context.InitGl(context.GlConfig(cfg))
-	}
-	win.init = true
-	return
 }
 
 func (win Layout) Run() {
