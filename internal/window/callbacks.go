@@ -40,7 +40,7 @@ type callbacks struct {
 	size            SizeCallback
 }
 
-func (w *glfwWindow) SetCharCallback(cb CharCallback) (previous CharCallback) {
+func (w *extWindow) SetCharCallback(cb CharCallback) (previous CharCallback) {
 	p := w.cbs.char
 	w.cbs.char = cb
 	w.GetGLFWWindow().SetCharCallback(func(_ *glfw.Window, char rune) {
@@ -49,7 +49,7 @@ func (w *glfwWindow) SetCharCallback(cb CharCallback) (previous CharCallback) {
 	return p
 }
 
-func (w *glfwWindow) SetCharModsCallback(cb CharModsCallback) (previous CharModsCallback) {
+func (w *extWindow) SetCharModsCallback(cb CharModsCallback) (previous CharModsCallback) {
 	p := w.cbs.charMods
 	w.cbs.charMods = cb
 	w.GetGLFWWindow().SetCharModsCallback(func(_ *glfw.Window, char rune, mods glfw.ModifierKey) {
@@ -58,7 +58,7 @@ func (w *glfwWindow) SetCharModsCallback(cb CharModsCallback) (previous CharMods
 	return p
 }
 
-func (w *glfwWindow) SetCloseCallback(cb CloseCallback) (previous CloseCallback) {
+func (w *extWindow) SetCloseCallback(cb CloseCallback) (previous CloseCallback) {
 	p := w.cbs.close
 	w.cbs.close = cb
 	w.GetGLFWWindow().SetCloseCallback(func(_ *glfw.Window) {
@@ -67,7 +67,7 @@ func (w *glfwWindow) SetCloseCallback(cb CloseCallback) (previous CloseCallback)
 	return p
 }
 
-func (w *glfwWindow) SetContentScaleCallback(cb ContentScaleCallback) (previous ContentScaleCallback) {
+func (w *extWindow) SetContentScaleCallback(cb ContentScaleCallback) (previous ContentScaleCallback) {
 	p := w.cbs.contentScale
 	w.cbs.contentScale = cb
 	w.GetGLFWWindow().SetContentScaleCallback(func(_ *glfw.Window, x float32, y float32) {
@@ -76,7 +76,7 @@ func (w *glfwWindow) SetContentScaleCallback(cb ContentScaleCallback) (previous 
 	return p
 }
 
-func (w *glfwWindow) SetCursorEnterCallback(cb CursorEnterCallback) (previous CursorEnterCallback) {
+func (w *extWindow) SetCursorEnterCallback(cb CursorEnterCallback) (previous CursorEnterCallback) {
 	p := w.cbs.cursorEnter
 	w.cbs.cursorEnter = cb
 	w.GetGLFWWindow().SetCursorEnterCallback(func(_ *glfw.Window, entered bool) {
@@ -85,7 +85,7 @@ func (w *glfwWindow) SetCursorEnterCallback(cb CursorEnterCallback) (previous Cu
 	return p
 }
 
-func (w *glfwWindow) SetCursorPosCallback(cb CursorPosCallback) (previous CursorPosCallback) {
+func (w *extWindow) SetCursorPosCallback(cb CursorPosCallback) (previous CursorPosCallback) {
 	p := w.cbs.cursorPos
 	w.cbs.cursorPos = cb
 	w.GetGLFWWindow().SetCursorPosCallback(func(_ *glfw.Window, x float64, y float64) {
@@ -94,7 +94,7 @@ func (w *glfwWindow) SetCursorPosCallback(cb CursorPosCallback) (previous Cursor
 	return p
 }
 
-func (w *glfwWindow) SetDropCallback(cb DropCallback) (previous DropCallback) {
+func (w *extWindow) SetDropCallback(cb DropCallback) (previous DropCallback) {
 	p := w.cbs.drop
 	w.cbs.drop = cb
 	w.GetGLFWWindow().SetDropCallback(func(_ *glfw.Window, names []string) {
@@ -103,7 +103,7 @@ func (w *glfwWindow) SetDropCallback(cb DropCallback) (previous DropCallback) {
 	return p
 }
 
-func (w *glfwWindow) SetFocusCallback(cb FocusCallback) (previous FocusCallback) {
+func (w *extWindow) SetFocusCallback(cb FocusCallback) (previous FocusCallback) {
 	p := w.cbs.focus
 	w.cbs.focus = cb
 	w.GetGLFWWindow().SetFocusCallback(func(_ *glfw.Window, focused bool) {
@@ -112,7 +112,7 @@ func (w *glfwWindow) SetFocusCallback(cb FocusCallback) (previous FocusCallback)
 	return p
 }
 
-func (w *glfwWindow) SetFramebufferSizeCallback(cb FramebufferSizeCallback) (previous FramebufferSizeCallback) {
+func (w *extWindow) SetFramebufferSizeCallback(cb FramebufferSizeCallback) (previous FramebufferSizeCallback) {
 	p := w.cbs.framebufferSize
 	w.cbs.framebufferSize = cb
 	w.GetGLFWWindow().SetFramebufferSizeCallback(func(_ *glfw.Window, width int, height int) {
@@ -121,7 +121,7 @@ func (w *glfwWindow) SetFramebufferSizeCallback(cb FramebufferSizeCallback) (pre
 	return p
 }
 
-func (w *glfwWindow) SetIconifyCallback(cb IconifyCallback) (previous IconifyCallback) {
+func (w *extWindow) SetIconifyCallback(cb IconifyCallback) (previous IconifyCallback) {
 	p := w.cbs.iconify
 	w.cbs.iconify = cb
 	w.GetGLFWWindow().SetIconifyCallback(func(_ *glfw.Window, iconified bool) {
@@ -130,7 +130,7 @@ func (w *glfwWindow) SetIconifyCallback(cb IconifyCallback) (previous IconifyCal
 	return p
 }
 
-func (w *glfwWindow) SetKeyCallback(cb KeyCallback) (previous KeyCallback) {
+func (w *extWindow) SetKeyCallback(cb KeyCallback) (previous KeyCallback) {
 	p := w.cbs.key
 	w.cbs.key = cb
 	w.GetGLFWWindow().SetKeyCallback(func(_ *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -139,7 +139,7 @@ func (w *glfwWindow) SetKeyCallback(cb KeyCallback) (previous KeyCallback) {
 	return p
 }
 
-func (w *glfwWindow) SetMaximizeCallback(cb MaximizeCallback) (previous MaximizeCallback) {
+func (w *extWindow) SetMaximizeCallback(cb MaximizeCallback) (previous MaximizeCallback) {
 	p := w.cbs.maximize
 	w.cbs.maximize = cb
 	w.GetGLFWWindow().SetMaximizeCallback(func(_ *glfw.Window, maximized bool) {
@@ -148,7 +148,7 @@ func (w *glfwWindow) SetMaximizeCallback(cb MaximizeCallback) (previous Maximize
 	return p
 }
 
-func (w *glfwWindow) SetMouseButtonCallback(cb MouseButtonCallback) (previous MouseButtonCallback) {
+func (w *extWindow) SetMouseButtonCallback(cb MouseButtonCallback) (previous MouseButtonCallback) {
 	p := w.cbs.mouseButton
 	w.cbs.mouseButton = cb
 	w.GetGLFWWindow().SetMouseButtonCallback(func(_ *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
@@ -157,7 +157,7 @@ func (w *glfwWindow) SetMouseButtonCallback(cb MouseButtonCallback) (previous Mo
 	return p
 }
 
-func (w *glfwWindow) SetPosCallback(cb PosCallback) (previous PosCallback) {
+func (w *extWindow) SetPosCallback(cb PosCallback) (previous PosCallback) {
 	p := w.cbs.pos
 	w.cbs.pos = cb
 	w.GetGLFWWindow().SetPosCallback(func(_ *glfw.Window, x int, y int) {
@@ -166,7 +166,7 @@ func (w *glfwWindow) SetPosCallback(cb PosCallback) (previous PosCallback) {
 	return p
 }
 
-func (w *glfwWindow) SetRefreshCallback(cb RefreshCallback) (previous RefreshCallback) {
+func (w *extWindow) SetRefreshCallback(cb RefreshCallback) (previous RefreshCallback) {
 	p := w.cbs.refresh
 	w.cbs.refresh = cb
 	w.GetGLFWWindow().SetRefreshCallback(func(_ *glfw.Window) {
@@ -175,7 +175,7 @@ func (w *glfwWindow) SetRefreshCallback(cb RefreshCallback) (previous RefreshCal
 	return p
 }
 
-func (w *glfwWindow) SetScrollCallback(cb ScrollCallback) (previous ScrollCallback) {
+func (w *extWindow) SetScrollCallback(cb ScrollCallback) (previous ScrollCallback) {
 	p := w.cbs.scroll
 	w.cbs.scroll = cb
 	w.GetGLFWWindow().SetScrollCallback(func(_ *glfw.Window, xoff float64, yoff float64) {
@@ -184,7 +184,7 @@ func (w *glfwWindow) SetScrollCallback(cb ScrollCallback) (previous ScrollCallba
 	return p
 }
 
-func (w *glfwWindow) SetSizeCallback(cb SizeCallback) (previous SizeCallback) {
+func (w *extWindow) SetSizeCallback(cb SizeCallback) (previous SizeCallback) {
 	p := w.cbs.size
 	w.cbs.size = cb
 	w.GetGLFWWindow().SetSizeCallback(func(_ *glfw.Window, width int, height int) {
