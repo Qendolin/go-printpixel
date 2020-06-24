@@ -25,17 +25,17 @@ func NewScreenByDimensions(width, height int) Screen {
 	}
 }
 
-func (b Screen) Layout() {
-	if b.Child == nil {
+func (s Screen) Layout() {
+	if s.Child == nil {
 		return
 	}
 
-	b.Child.SetX(0)
-	b.Child.SetY(0)
-	b.Child.SetWidth(b.width)
-	b.Child.SetHeight(b.height)
+	s.Child.SetX(0)
+	s.Child.SetY(0)
+	s.Child.SetWidth(s.width)
+	s.Child.SetHeight(s.height)
 
-	if l, ok := b.Child.(Layouter); ok {
+	if l, ok := s.Child.(Layouter); ok {
 		l.Layout()
 	}
 }

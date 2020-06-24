@@ -62,3 +62,88 @@ func TestGrid(t *testing.T) {
 	assert.InEpsilon(t, float32(width)*0.75, grid.Children[1][1].Width(), epsilon)
 	assert.Equal(t, 200, grid.Children[1][1].Height())
 }
+
+func TestAspect(t *testing.T) {
+	a := layout.Aspect{
+		Child: &layout.SimpleBox{},
+		Ratio: 1,
+		Mode:  layout.Contain,
+	}
+
+	a.SetWidth(100)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 100, a.Child.Width())
+	assert.Equal(t, 100, a.Child.Height())
+
+	a.SetWidth(200)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 100, a.Child.Width())
+	assert.Equal(t, 100, a.Child.Height())
+
+	a.SetWidth(100)
+	a.SetHeight(200)
+	a.Layout()
+	assert.Equal(t, 100, a.Child.Width())
+	assert.Equal(t, 100, a.Child.Height())
+
+	a.Mode = layout.Cover
+
+	a.SetWidth(100)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 100, a.Child.Width())
+	assert.Equal(t, 100, a.Child.Height())
+
+	a.SetWidth(200)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 200, a.Child.Width())
+	assert.Equal(t, 200, a.Child.Height())
+
+	a.SetWidth(100)
+	a.SetHeight(200)
+	a.Layout()
+	assert.Equal(t, 200, a.Child.Width())
+	assert.Equal(t, 200, a.Child.Height())
+
+	a.Ratio = 2 / 1
+	a.Mode = layout.FitHieght
+
+	a.SetWidth(100)
+	a.SetHeight(200)
+	a.Layout()
+	assert.Equal(t, 400, a.Child.Width())
+	assert.Equal(t, 200, a.Child.Height())
+
+	a.SetWidth(200)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 200, a.Child.Width())
+	assert.Equal(t, 100, a.Child.Height())
+
+	a.SetWidth(100)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 200, a.Child.Width())
+	assert.Equal(t, 100, a.Child.Height())
+
+	a.Ratio = 1. / 2.
+	a.Mode = layout.FitWidth
+
+	a.SetWidth(200)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 200, a.Child.Width())
+	assert.Equal(t, 400, a.Child.Height())
+
+	a.Ratio = 1
+	a.Mode = layout.FitWidth
+
+	a.SetWidth(200)
+	a.SetHeight(100)
+	a.Layout()
+	assert.Equal(t, 200, a.Child.Width())
+	assert.Equal(t, 200, a.Child.Height())
+}
