@@ -23,6 +23,10 @@ func (a *Aspect) Layout() {
 		a.Ratio = 1
 	}
 
+	if a.Child == nil {
+		return
+	}
+
 	a.Child.SetX(a.x)
 	a.Child.SetY(a.y)
 	switch a.Mode {
