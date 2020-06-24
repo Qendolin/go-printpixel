@@ -35,33 +35,33 @@ type Extended interface {
 	Restore()
 	SetAspectRatio(numer, denom int)
 	SetAttrib(attrib glfw.Hint, value int)
-	SetCharCallback(cbfun glfw.CharCallback) (previous glfw.CharCallback)
-	SetCharModsCallback(cbfun glfw.CharModsCallback) (previous glfw.CharModsCallback)
+	SetCharCallback(cbfun CharCallback) (previous CharCallback)
+	SetCharModsCallback(cbfun CharModsCallback) (previous CharModsCallback)
 	SetClipboardString(str string)
-	SetCloseCallback(cbfun glfw.CloseCallback) (previous glfw.CloseCallback)
-	SetContentScaleCallback(cbfun glfw.ContentScaleCallback) glfw.ContentScaleCallback
+	SetCloseCallback(cbfun CloseCallback) (previous CloseCallback)
+	SetContentScaleCallback(cbfun ContentScaleCallback) ContentScaleCallback
 	SetCursor(c *glfw.Cursor)
-	SetCursorEnterCallback(cbfun glfw.CursorEnterCallback) (previous glfw.CursorEnterCallback)
+	SetCursorEnterCallback(cbfun CursorEnterCallback) (previous CursorEnterCallback)
 	SetCursorPos(xpos, ypos float64)
-	SetCursorPosCallback(cbfun glfw.CursorPosCallback) (previous glfw.CursorPosCallback)
-	SetDropCallback(cbfun glfw.DropCallback) (previous glfw.DropCallback)
-	SetFocusCallback(cbfun glfw.FocusCallback) (previous glfw.FocusCallback)
-	SetFramebufferSizeCallback(cbfun glfw.FramebufferSizeCallback) (previous glfw.FramebufferSizeCallback)
+	SetCursorPosCallback(cbfun CursorPosCallback) (previous CursorPosCallback)
+	SetDropCallback(cbfun DropCallback) (previous DropCallback)
+	SetFocusCallback(cbfun FocusCallback) (previous FocusCallback)
+	SetFramebufferSizeCallback(cbfun FramebufferSizeCallback) (previous FramebufferSizeCallback)
 	SetIcon(images []image.Image)
-	SetIconifyCallback(cbfun glfw.IconifyCallback) (previous glfw.IconifyCallback)
+	SetIconifyCallback(cbfun IconifyCallback) (previous IconifyCallback)
 	SetInputMode(mode glfw.InputMode, value int)
-	SetKeyCallback(cbfun glfw.KeyCallback) (previous glfw.KeyCallback)
-	SetMaximizeCallback(cbfun glfw.MaximizeCallback) glfw.MaximizeCallback
+	SetKeyCallback(cbfun KeyCallback) (previous KeyCallback)
+	SetMaximizeCallback(cbfun MaximizeCallback) MaximizeCallback
 	SetMonitor(monitor *glfw.Monitor, xpos, ypos, width, height, refreshRate int)
-	SetMouseButtonCallback(cbfun glfw.MouseButtonCallback) (previous glfw.MouseButtonCallback)
+	SetMouseButtonCallback(cbfun MouseButtonCallback) (previous MouseButtonCallback)
 	SetOpacity(opacity float32)
 	SetPos(xpos, ypos int)
-	SetPosCallback(cbfun glfw.PosCallback) (previous glfw.PosCallback)
-	SetRefreshCallback(cbfun glfw.RefreshCallback) (previous glfw.RefreshCallback)
-	SetScrollCallback(cbfun glfw.ScrollCallback) (previous glfw.ScrollCallback)
+	SetPosCallback(cbfun PosCallback) (previous PosCallback)
+	SetRefreshCallback(cbfun RefreshCallback) (previous RefreshCallback)
+	SetScrollCallback(cbfun ScrollCallback) (previous ScrollCallback)
 	SetShouldClose(value bool)
 	SetSize(width, height int)
-	SetSizeCallback(cbfun glfw.SizeCallback) (previous glfw.SizeCallback)
+	SetSizeCallback(cbfun SizeCallback) (previous SizeCallback)
 	SetSizeLimits(minw, minh, maxw, maxh int)
 	SetTitle(title string)
 	SetUserPointer(pointer unsafe.Pointer)
@@ -72,21 +72,22 @@ type Extended interface {
 	GetGLFWWindow() *glfw.Window
 }
 
-type glfwWindow struct {
+type extWindow struct {
 	*glfw.Window
 	lastSwap time.Time
+	cbs      callbacks
 }
 
-func (w *glfwWindow) GetGLFWWindow() *glfw.Window {
+func (w *extWindow) GetGLFWWindow() *glfw.Window {
 	return w.Window
 }
 
-func (w *glfwWindow) SwapBuffers() {
+func (w *extWindow) SwapBuffers() {
 	w.lastSwap = time.Now()
 	w.Window.SwapBuffers()
 }
 
-func (w *glfwWindow) Delta() time.Duration {
+func (w *extWindow) Delta() time.Duration {
 	return time.Since(w.lastSwap)
 }
 
@@ -113,7 +114,7 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 		glfw.SwapInterval(1)
 	}
 
-	return &glfwWindow{
+	return &extWindow{
 		Window:   glfwWin,
 		lastSwap: time.Now(),
 	}, nil
