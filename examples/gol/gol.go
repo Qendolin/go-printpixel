@@ -30,7 +30,7 @@ func main() {
 		tex := life.Texture()
 		g.Texture.Bind(0)
 		g.Texture.WriteBytes(tex, 0, 0, 0, Width, Height, gl.RGB)
-		fmt.Println(win.GlWindow.Delta())
+		fmt.Printf("%10s, %.1ffps\n", win.GlWindow.Delta(), 1/win.GlWindow.Delta().Seconds())
 	}
 
 	win.Layout()
