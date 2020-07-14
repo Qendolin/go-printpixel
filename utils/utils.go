@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"go/build"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"golang.org/x/tools/go/packages"
 )
@@ -14,20 +14,15 @@ var rootPath string
 
 func ResolveModulePath(path string) (string, error) {
 	if rootPath == "" {
-		pkgs, err := packages.Load(&packages.Config{
-			Mode: packages.NeedName | packages.NeedModule,
-		}, "github.com/Qendolin/go-printpixel")
-		if err == nil && len(pkgs) > 0 && pkgs[0].Module != nil && pkgs[0].Module.Dir != "" {
-			rootPath = pkgs[0].Module.Dir
-			return ResolveModulePath(path)
+		if _, p, _, ok := runtime.Caller(0); ok {
+			pkgs, err := packages.Load(&packages.Config{
+				Mode: packages.NeedName | packages.NeedModule,
+			}, p)
+			if err == nil && len(pkgs) > 0 && pkgs[0].Module != nil && pkgs[0].Module.Dir != "" {
+				rootPath = pkgs[0].Module.Dir
+				return ResolveModulePath(path)
+			}
 		}
-
-		pkg, err := build.Import("github.com/Qendolin/go-printpixel", "/", build.FindOnly)
-		if err == nil && pkg.Dir != "" {
-			rootPath = pkg.Dir
-			return ResolveModulePath(path)
-		}
-
 		wd, err := os.Getwd()
 		if err != nil {
 			return "", err
