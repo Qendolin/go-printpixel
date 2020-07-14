@@ -85,14 +85,14 @@ func (win *Window) Y() int {
 	return y - win.margins[0]
 }
 
-func (win *Window) SetWidth(width int) {
+func (win *Window) SetWidth(w int) {
 	_, h := win.GlWindow.GetSize()
-	win.GlWindow.SetSize(width-win.margins[1]-win.margins[3], h)
+	win.GlWindow.SetSize(w-win.margins[1]-win.margins[3], h)
 }
 
-func (win *Window) SetHeight(height int) {
+func (win *Window) SetHeight(h int) {
 	w, _ := win.GlWindow.GetSize()
-	win.GlWindow.SetSize(w, height-win.margins[0]-win.margins[2])
+	win.GlWindow.SetSize(w, h-win.margins[0]-win.margins[2])
 }
 
 func (win *Window) Width() int {
@@ -103,6 +103,46 @@ func (win *Window) Width() int {
 func (win *Window) Height() int {
 	_, h := win.GlWindow.GetSize()
 	return h + win.margins[0] + win.margins[2]
+}
+
+func (win *Window) SetInnerX(x int) {
+	_, y := win.GlWindow.GetPos()
+	win.GlWindow.SetPos(x, y)
+}
+
+func (win *Window) SetInnerY(y int) {
+	x, _ := win.GlWindow.GetPos()
+	win.GlWindow.SetPos(x, y)
+}
+
+func (win *Window) InnerX() int {
+	x, _ := win.GlWindow.GetPos()
+	return x
+}
+
+func (win *Window) InnerY() int {
+	_, y := win.GlWindow.GetPos()
+	return y
+}
+
+func (win *Window) SetInnerWidth(w int) {
+	_, h := win.GlWindow.GetSize()
+	win.GlWindow.SetSize(w, h)
+}
+
+func (win *Window) SetInnerHeight(h int) {
+	w, _ := win.GlWindow.GetSize()
+	win.GlWindow.SetSize(w, h)
+}
+
+func (win *Window) InnerWidth() int {
+	w, _ := win.GlWindow.GetSize()
+	return w
+}
+
+func (win *Window) InnerHeight() int {
+	_, h := win.GlWindow.GetSize()
+	return h
 }
 
 func (win *Window) Run() {
@@ -125,7 +165,7 @@ func (win *Window) Update() {
 	for i, d := range win.drawables {
 		tq[i] = d.TextureQuad()
 	}
-	win.texQuadRenderer.Draw(1/float32(win.Width()), 1/float32(win.Height()), tq...)
+	win.texQuadRenderer.Draw(1/float32(win.InnerWidth()), 1/float32(win.InnerHeight()), tq...)
 	win.GlWindow.SwapBuffers()
 	glfw.PollEvents()
 	if win.AfterUpdate != nil {
@@ -139,8 +179,8 @@ func (win *Window) Layout() []layout.Layoutable {
 	}
 	win.Child.SetX(0)
 	win.Child.SetY(0)
-	win.Child.SetWidth(win.Width())
-	win.Child.SetHeight(win.Height())
+	win.Child.SetWidth(win.InnerWidth())
+	win.Child.SetHeight(win.InnerHeight())
 
 	if l, ok := win.Child.(layout.Layouter); ok {
 		graph := layout.Layout(l)
