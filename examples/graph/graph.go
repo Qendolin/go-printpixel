@@ -5,35 +5,36 @@ import (
 	"math"
 	"time"
 
-	"github.com/Qendolin/go-printpixel/layout"
-	"github.com/Qendolin/go-printpixel/window"
+	"github.com/Qendolin/go-printpixel/core/glcontext"
+	"github.com/Qendolin/go-printpixel/pkg/layout"
+	"github.com/Qendolin/go-printpixel/pkg/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 func main() {
 	win := setup()
 
-	view := layout.NewViewer()
-	view.Target.Texture.Bind(0)
-	view.Target.Texture.ApplyDefaults()
-	view.Target.Texture.AllocEmpty(0, gl.RGB, 1600, 900, gl.RGB)
-	win.Child = view
+	g := layout.NewGraphic()
+	g.Texture.Bind(0)
+	g.Texture.ApplyDefaults()
+	g.Texture.AllocEmpty(0, gl.RGB, 1600, 900, gl.RGB)
+	win.Child = g
 
 	start := time.Now()
 	win.BeforeUpdate = func() {
 		time := time.Since(start).Seconds()
 		x := time
 		y := math.Sin(time*math.Pi)*.5 + .5
-		view.Target.Texture.Bind(0)
-		view.Target.Texture.WriteBytes([]byte{255, 255, 255}, 0, 100+int32(x*50)%1400, 100+int32(y*500), 1, 1, gl.RGB)
-		view.Draw()
+		g.Texture.Bind(0)
+		g.Texture.WriteBytes([]byte{255, 255, 255}, 0, 100+int32(x*50)%1400, 100+int32(y*500), 1, 1, gl.RGB)
 	}
 
+	win.Layout()
 	win.Run()
 	win.Close()
 }
 
-func setup() window.Layout {
+func setup() *window.Window {
 	cfg := window.SimpleConfig{
 		Width:        1600,
 		Height:       900,
@@ -53,7 +54,7 @@ func panicIf(err error) {
 	}
 }
 
-func handleErrors(errs <-chan window.GlError) {
+func handleErrors(errs <-chan glcontext.GlError) {
 	for err := range errs {
 		if err.Fatal {
 			log.Fatalf("%v\n%v", err, err.Stack)

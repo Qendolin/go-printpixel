@@ -8,4 +8,4 @@ uniform sampler2D u_tex;
 void main()
 {
     out_color = texture(u_tex, pass_uv);
-} 
+}
