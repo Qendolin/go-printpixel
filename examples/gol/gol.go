@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Qendolin/go-printpixel/layout"
-	"github.com/Qendolin/go-printpixel/window"
+	"github.com/Qendolin/go-printpixel/core/glcontext"
+	"github.com/Qendolin/go-printpixel/pkg/layout"
+	"github.com/Qendolin/go-printpixel/pkg/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
@@ -17,27 +18,27 @@ const (
 func main() {
 	win := setup()
 
-	view := layout.NewViewer()
-	view.Target.Texture.Bind(0)
-	view.Target.Texture.ApplyDefaults()
-	view.Target.Texture.AllocEmpty(0, gl.RGB, Width, Height, gl.RGB)
-	win.Child = view
+	g := layout.NewGraphic()
+	g.Texture.Bind(0)
+	g.Texture.ApplyDefaults()
+	g.Texture.AllocEmpty(0, gl.RGB, Width, Height, gl.RGB)
+	win.Child = g
 
 	life := NewLife(Width, Height)
 	win.BeforeUpdate = func() {
 		life.Step()
 		tex := life.Texture()
-		view.Target.Texture.Bind(0)
-		view.Target.Texture.WriteBytes(tex, 0, 0, 0, Width, Height, gl.RGB)
-		view.Draw()
-		fmt.Println(win.Window.Delta())
+		g.Texture.Bind(0)
+		g.Texture.WriteBytes(tex, 0, 0, 0, Width, Height, gl.RGB)
+		fmt.Println(win.GlWindow.Delta())
 	}
 
+	win.Layout()
 	win.Run()
 	win.Close()
 }
 
-func setup() window.Layout {
+func setup() *window.Window {
 	cfg := window.SimpleConfig{
 		Width:        Width,
 		Height:       Height,
@@ -58,7 +59,7 @@ func panicIf(err error) {
 	}
 }
 
-func handleErrors(errs <-chan window.GlError) {
+func handleErrors(errs <-chan glcontext.GlError) {
 	for err := range errs {
 		if err.Fatal {
 			log.Fatalf("%v\n%v", err, err.Stack)
