@@ -3,6 +3,7 @@ package core
 import (
 	"image"
 	"io"
+	"math"
 	"os"
 
 	"github.com/Qendolin/go-printpixel/core/data"
@@ -89,42 +90,49 @@ func NewTexture2DFromImage(img image.Image) *data.Texture2D {
 }
 
 func LoadTexture(path string) (t *data.Texture2D) {
-	defer func() {
-		if t == nil {
-			t = newTextureError()
-		}
-	}()
-
 	path, err := utils.ResolvePath(path)
 	if err != nil {
-		return nil
+		return newTextureError("not found")
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return nil
+		return newTextureError("not found")
 	}
 	t, err = NewTexture2DFromFile(f)
 	if err != nil {
-		return nil
+		return newTextureError("not decodeable")
 	}
 	return t
 }
 
-func newTextureError() *data.Texture2D {
-	buf := make([]byte, 64*64)
-	for x := 0; x < 64; x++ {
-		for y := 0; y < 64; y++ {
-			if x == 0 || x == 63 || y == 0 || y == 63 || y == x || y == 63-x {
-				buf[x+y*64] = 255
-			} else {
-				buf[x+y*64] = 0
+func newTextureError(cause string) *data.Texture2D {
+	buf := make([]byte, 64*64*3)
+	switch cause {
+	case "not found":
+		for x := 0; x < 64; x++ {
+			for y := 0; y < 64; y++ {
+				if ((x/8)+(y/8))%2 == 0 {
+					buf[3*(x+y*64)+0] = 255
+					buf[3*(x+y*64)+2] = 255
+				}
+			}
+		}
+
+	case "not decodeable":
+		fallthrough
+	default:
+		for x := 0; x < 64; x++ {
+			for y := 0; y < 64; y++ {
+				if x <= 3 || x >= 60 || y <= 3 || y >= 60 || math.Abs(float64(y-x)) <= 3 || math.Abs(float64(y-63+x)) <= 3 {
+					buf[3*(x+y*64)+0] = 255
+				}
 			}
 		}
 	}
 	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
 	t.Bind(0)
-	t.AllocBytes(buf, 0, gl.RGBA, 64, 64, gl.RED)
-	t.ApplyDefaults()
+	t.AllocBytes(buf, 0, gl.RGBA, 64, 64, gl.RGB)
+	t.FilterMode(data.FilterNearest, data.FilterNearest)
 	t.Unbind(0)
 	return t
 }
