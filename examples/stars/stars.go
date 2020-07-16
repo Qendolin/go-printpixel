@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	_ "image/png"
+
 	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/data"
 	"github.com/Qendolin/go-printpixel/core/glcontext"
@@ -27,10 +29,10 @@ func main() {
 	panicIf(err)
 	defer img.Close()
 	tex, err := core.NewTexture2DFromFile(img)
+	panicIf(err)
 	tex.Bind(0)
 	tex.FilterMode(data.FilterLinearMipMapLinear, data.FilterLinear)
 	tex.GenerateMipmap()
-	panicIf(err)
 
 	starStack := &scene.Stack{
 		Children: make([]scene.Layoutable, Stars),
