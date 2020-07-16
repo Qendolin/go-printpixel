@@ -1,11 +1,4 @@
-package layout
-
-type Unit int
-
-const (
-	Pixel Unit = iota
-	Percent
-)
+package scene
 
 type TrackDef struct {
 	Value float32
@@ -81,8 +74,8 @@ func (grid Grid) Layout() []Layoutable {
 			}
 			posX := colTrackPositions[x]
 			posY := rowTrackPositions[y]
-			child.SetX(posX)
-			child.SetY(posY)
+			child.SetX(grid.x + posX)
+			child.SetY(grid.y + posY)
 			child.SetWidth(colTrackPositions[x+1] - posX)
 			child.SetHeight(rowTrackPositions[y+1] - posY)
 			childs = append(childs, child)

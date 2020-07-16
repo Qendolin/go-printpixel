@@ -6,45 +6,48 @@ import (
 )
 
 type SimpleConfig struct {
-	Width        int
-	Height       int
-	NoVsync      bool
-	Unresizeable bool
-	Invisible    bool
-	Maximized    bool
-	Debug        bool
-	errorsIn     <-chan glcontext.GlError
-	errorsOut    chan glcontext.GlError
+	Width         int
+	Height        int
+	NoVsync       bool
+	Unresizeable  bool
+	Invisible     bool
+	Maximized     bool
+	Debug         bool
+	Multisampling int
+	errorsIn      <-chan glcontext.Error
+	errorsOut     chan glcontext.Error
 }
 
 func (cfg *SimpleConfig) ToHints() glwindow.Hints {
-	h := NewHints()
+	h := glwindow.NewHints()
 	h.Visible.Value = !cfg.Invisible
 	h.Vsync.Value = !cfg.NoVsync
 	h.Resizable.Value = !cfg.Unresizeable
 	h.Maximized.Value = cfg.Maximized
+	h.Samples.Value = cfg.Multisampling
 	return h
 }
 
-func (cfg *SimpleConfig) Errors() <-chan glcontext.GlError {
+func (cfg *SimpleConfig) Errors() <-chan glcontext.Error {
 	if cfg.errorsOut != nil {
 		return cfg.errorsOut
 	}
 
-	cfg.errorsOut = make(chan glcontext.GlError, 0)
+	cfg.errorsOut = make(chan glcontext.Error, 0)
 	if cfg.errorsIn != nil {
 		go cfg.pipeErrors()
 	}
 	return cfg.errorsOut
 }
 
-func (cfg *SimpleConfig) ToGlConfig() glcontext.GlConfig {
+func (cfg *SimpleConfig) ToGlConfig() glcontext.Config {
 	size := 1
 	if cfg.Debug {
 		size = 0
 	}
-	glCfg := NewGlConfig(size)
+	glCfg := glcontext.NewGlConfig(size)
 	glCfg.Debug = cfg.Debug
+	glCfg.Multisampling = cfg.Multisampling > 1
 	cfg.errorsIn = glCfg.Errors
 	if cfg.errorsOut != nil {
 		go cfg.pipeErrors()

@@ -5,32 +5,24 @@ import (
 
 	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/Qendolin/go-printpixel/core/glwindow"
-	"github.com/Qendolin/go-printpixel/pkg/layout"
+	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/renderer"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
 type Window struct {
 	GlWindow     glwindow.Extended
-	Child        layout.Layoutable
+	Child        scene.Layoutable
 	BeforeUpdate func()
 	AfterUpdate  func()
+	Renderers    map[string]renderer.Renderer
 	//Top, Right, Bottom, Left
-	margins         []int
-	init            bool
-	drawables       []layout.Drawable
-	texQuadRenderer renderer.TextureQuadRenderer
+	margins   []int
+	init      bool
+	drawables map[string][]renderer.Drawable
 }
 
-func NewHints() glwindow.Hints {
-	return glwindow.NewHints()
-}
-
-func NewGlConfig(errorChanSize int) glcontext.GlConfig {
-	return glcontext.NewGlConfig(errorChanSize)
-}
-
-func New(title string, cfg SimpleConfig) (*Window, error) {
+func New(title string, cfg *SimpleConfig) (*Window, error) {
 	w := cfg.Width
 	h := cfg.Height
 	if w == 0 {
@@ -42,7 +34,7 @@ func New(title string, cfg SimpleConfig) (*Window, error) {
 	return NewCustom(title, w, h, cfg.ToHints(), nil, cfg.ToGlConfig())
 }
 
-func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *glfw.Monitor, glCfg glcontext.GlConfig) (*Window, error) {
+func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *glfw.Monitor, glCfg glcontext.Config) (*Window, error) {
 	err := glcontext.InitGlfw()
 	if err != nil {
 		return nil, err
@@ -60,7 +52,9 @@ func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *g
 	win.GlWindow.MakeContextCurrent()
 	err = glcontext.InitGl(glCfg)
 
-	win.texQuadRenderer = *renderer.NewTextureQuadRenderer()
+	win.Renderers = map[string]renderer.Renderer{
+		renderer.TextureQuad: renderer.NewTextureQuadRenderer(),
+	}
 
 	return &win, err
 }
@@ -160,12 +154,15 @@ func (win *Window) Update() {
 	if win.BeforeUpdate != nil {
 		win.BeforeUpdate()
 	}
-	win.texQuadRenderer.Bind()
-	tq := make([]renderer.TextureQuad, len(win.drawables))
-	for i, d := range win.drawables {
-		tq[i] = d.TextureQuad()
+
+	for key, drawables := range win.drawables {
+		renderer := win.Renderers[key]
+		renderer.SetScale(2/float32(win.InnerWidth()), 2/float32(win.InnerHeight()))
+		renderer.Bind()
+		renderer.Draw(drawables...)
+		renderer.Unbind()
 	}
-	win.texQuadRenderer.Draw(1/float32(win.InnerWidth()), 1/float32(win.InnerHeight()), tq...)
+
 	win.GlWindow.SwapBuffers()
 	glfw.PollEvents()
 	if win.AfterUpdate != nil {
@@ -173,7 +170,7 @@ func (win *Window) Update() {
 	}
 }
 
-func (win *Window) Layout() []layout.Layoutable {
+func (win *Window) Layout() []scene.Layoutable {
 	if win.Child == nil {
 		return nil
 	}
@@ -182,16 +179,22 @@ func (win *Window) Layout() []layout.Layoutable {
 	win.Child.SetWidth(win.InnerWidth())
 	win.Child.SetHeight(win.InnerHeight())
 
-	if l, ok := win.Child.(layout.Layouter); ok {
-		graph := layout.Layout(l)
-		win.drawables = make([]layout.Drawable, 0)
-		for node := range graph {
-			if d, ok := node.(layout.Drawable); ok {
-				win.drawables = append(win.drawables, d)
+	win.drawables = map[string][]renderer.Drawable{}
+
+	if l, ok := win.Child.(scene.Layouter); ok {
+		tree := scene.Layout(l)
+		for _, node := range tree.Nodes {
+			if d, ok := node.Value.(renderer.Drawable); ok {
+				if bucket, ok := win.drawables[d.GetRenderer()]; ok {
+					bucket = append(bucket, d)
+					win.drawables[d.GetRenderer()] = bucket
+				} else {
+					win.drawables[d.GetRenderer()] = []renderer.Drawable{d}
+				}
 			}
 		}
-	} else if d, ok := win.Child.(layout.Drawable); ok {
-		win.drawables = []layout.Drawable{d}
+	} else if d, ok := win.Child.(renderer.Drawable); ok {
+		win.drawables[d.GetRenderer()] = []renderer.Drawable{d}
 	}
 
 	return nil

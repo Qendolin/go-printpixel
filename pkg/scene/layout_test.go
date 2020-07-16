@@ -1,9 +1,9 @@
-package layout_test
+package scene_test
 
 import (
 	"testing"
 
-	"github.com/Qendolin/go-printpixel/pkg/layout"
+	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/pkg/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,23 +20,23 @@ func TestGrid(t *testing.T) {
 		height = 300
 	)
 
-	grid := layout.Grid{
-		Cols: []layout.TrackDef{
-			{.25, layout.Percent},
-			{.75, layout.Percent},
+	grid := scene.Grid{
+		Cols: []scene.TrackDef{
+			{.25, scene.Percent},
+			{.75, scene.Percent},
 		},
-		Rows: []layout.TrackDef{
-			{100, layout.Pixel},
-			{200, layout.Pixel},
+		Rows: []scene.TrackDef{
+			{100, scene.Pixel},
+			{200, scene.Pixel},
 		},
 	}
 	grid.Init()
 	grid.SetWidth(width)
 	grid.SetHeight(height)
-	grid.Children[0][0] = &layout.SimpleBox{}
-	grid.Children[0][1] = &layout.SimpleBox{}
-	grid.Children[1][0] = &layout.SimpleBox{}
-	grid.Children[1][1] = &layout.SimpleBox{}
+	grid.Children[0][0] = &scene.SimpleBox{}
+	grid.Children[0][1] = &scene.SimpleBox{}
+	grid.Children[1][0] = &scene.SimpleBox{}
+	grid.Children[1][1] = &scene.SimpleBox{}
 
 	grid.Layout()
 
@@ -64,10 +64,10 @@ func TestGrid(t *testing.T) {
 }
 
 func TestAspect(t *testing.T) {
-	a := layout.Aspect{
-		Child: &layout.SimpleBox{},
+	a := scene.Aspect{
+		Child: &scene.SimpleBox{},
 		Ratio: 1,
-		Mode:  layout.Contain,
+		Mode:  scene.Contain,
 	}
 
 	a.SetWidth(100)
@@ -88,7 +88,7 @@ func TestAspect(t *testing.T) {
 	assert.Equal(t, 100, a.Child.Width())
 	assert.Equal(t, 100, a.Child.Height())
 
-	a.Mode = layout.Cover
+	a.Mode = scene.Cover
 
 	a.SetWidth(100)
 	a.SetHeight(100)
@@ -109,7 +109,7 @@ func TestAspect(t *testing.T) {
 	assert.Equal(t, 200, a.Child.Height())
 
 	a.Ratio = 2 / 1
-	a.Mode = layout.FitHieght
+	a.Mode = scene.FitHieght
 
 	a.SetWidth(100)
 	a.SetHeight(200)
@@ -130,7 +130,7 @@ func TestAspect(t *testing.T) {
 	assert.Equal(t, 100, a.Child.Height())
 
 	a.Ratio = 1. / 2.
-	a.Mode = layout.FitWidth
+	a.Mode = scene.FitWidth
 
 	a.SetWidth(200)
 	a.SetHeight(100)
@@ -139,7 +139,7 @@ func TestAspect(t *testing.T) {
 	assert.Equal(t, 400, a.Child.Height())
 
 	a.Ratio = 1
-	a.Mode = layout.FitWidth
+	a.Mode = scene.FitWidth
 
 	a.SetWidth(200)
 	a.SetHeight(100)

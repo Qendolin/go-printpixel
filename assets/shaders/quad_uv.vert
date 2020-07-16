@@ -5,5 +5,5 @@ out vec3 pass_color;
 void main()
 {
     gl_Position = vec4(in_position, 0., 1.);
-    pass_color = vec3(in_position, 0.);
+    pass_color = vec3(in_position*vec2(1,-1)+vec2(0.5), 0.);
 }

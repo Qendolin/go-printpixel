@@ -1,4 +1,4 @@
-package renderer_test
+package core_test
 
 import (
 	"os"
@@ -6,8 +6,8 @@ import (
 
 	_ "image/png"
 
+	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/test"
-	"github.com/Qendolin/go-printpixel/renderer"
 	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -19,17 +19,14 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func TestTextureQuad(t *testing.T) {
+func TestQuad(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
 	prog := test.NewProgram(t, "assets/shaders/quad_uv.vert", "assets/shaders/quad_uv.frag")
 	prog.Bind()
 
-	tq := renderer.NewTextureQuad()
-	tq.Bind(0)
-
-	renderer.NewQuad().Bind()
+	core.Quad().Bind()
 
 	for !win.ShouldClose() {
 		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
@@ -38,28 +35,27 @@ func TestTextureQuad(t *testing.T) {
 	}
 }
 
-func TestTextureQuadTexture(t *testing.T) {
+func TestTextureQuad(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	tq := renderer.NewTextureQuad()
+	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
+	prog.Bind()
 
 	absPath, err := utils.ResolvePath("assets/textures/uv.png")
 	assert.NoError(t, err)
-	imgFile, err := os.Open(absPath)
+	img, err := os.Open(absPath)
 	assert.NoError(t, err)
-	defer imgFile.Close()
+	defer img.Close()
 
-	tq.Bind(0)
-	tq.Texture.ApplyDefaults()
-	err = tq.Texture.AllocFile(imgFile, 0, gl.RGBA, gl.RGBA)
+	tex, err := core.NewTexture2DFromFile(img)
 	assert.NoError(t, err)
+	tex.Bind(0)
 
-	render := renderer.NewTextureQuadRenderer()
-	render.Bind()
+	core.Quad().Bind()
 
 	for !win.ShouldClose() {
-		render.Draw(1, 1, *tq)
+		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		win.SwapBuffers()
 		glfw.PollEvents()
 	}

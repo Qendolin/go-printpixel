@@ -5,8 +5,9 @@ import (
 	"math"
 	"time"
 
+	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/glcontext"
-	"github.com/Qendolin/go-printpixel/pkg/layout"
+	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/pkg/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
@@ -14,10 +15,9 @@ import (
 func main() {
 	win := setup()
 
-	g := layout.NewGraphic()
-	g.Texture.Bind(0)
-	g.Texture.ApplyDefaults()
-	g.Texture.AllocEmpty(0, gl.RGB, 1600, 900, gl.RGB)
+	g := &scene.Graphic{
+		Texture: core.NewTexture2DEmpty(1600, 900),
+	}
 	win.Child = g
 
 	start := time.Now()
@@ -41,7 +41,7 @@ func setup() *window.Window {
 		Unresizeable: true,
 		Debug:        true,
 	}
-	win, err := window.New("Graph Example", cfg)
+	win, err := window.New("Graph Example", &cfg)
 	panicIf(err)
 
 	go handleErrors(cfg.Errors())
@@ -54,7 +54,7 @@ func panicIf(err error) {
 	}
 }
 
-func handleErrors(errs <-chan glcontext.GlError) {
+func handleErrors(errs <-chan glcontext.Error) {
 	for err := range errs {
 		if err.Fatal {
 			log.Fatalf("%v\n%v", err, err.Stack)

@@ -22,7 +22,7 @@ var (
 	//ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
 )
 
-func InitGl(cfg GlConfig) error {
+func InitGl(cfg Config) error {
 	/*if status&StatusGlInitialized > 0 {
 		return
 	}*/

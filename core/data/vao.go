@@ -9,21 +9,20 @@ type Vao struct {
 	*uint32
 }
 
-func NewVao() *Vao {
-	return &Vao{uint32: &NewId}
+func NewVao(id *uint32) *Vao {
+	return &Vao{uint32: id}
 }
 
-func (vao *Vao) Id() uint32 {
-	if vao.uint32 == &NewId {
-		id := new(uint32)
-		gl.GenVertexArrays(1, id)
-		vao.uint32 = id
+func (vao *Vao) Id() *uint32 {
+	if vao.uint32 == nil {
+		vao.uint32 = new(uint32)
+		gl.GenVertexArrays(1, vao.uint32)
 	}
-	return *vao.uint32
+	return vao.uint32
 }
 
 func (vao *Vao) Bind() {
-	gl.BindVertexArray(vao.Id())
+	gl.BindVertexArray(*vao.Id())
 }
 
 func (vao *Vao) Unbind() {

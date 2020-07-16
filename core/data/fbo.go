@@ -64,21 +64,20 @@ type Fbo struct {
 	*uint32
 }
 
-func NewFbo() *Fbo {
-	return &Fbo{uint32: &NewId}
+func NewFbo(id *uint32) *Fbo {
+	return &Fbo{uint32: id}
 }
 
-func (fbo *Fbo) Id() uint32 {
-	if fbo.uint32 == &NewId {
-		id := new(uint32)
-		gl.GenFramebuffers(1, id)
-		fbo.uint32 = id
+func (fbo *Fbo) Id() *uint32 {
+	if fbo.uint32 == nil {
+		fbo.uint32 = new(uint32)
+		gl.GenFramebuffers(1, fbo.uint32)
 	}
-	return *fbo.uint32
+	return fbo.uint32
 }
 
 func (fbo *Fbo) Bind(target FboTarget) {
-	gl.BindFramebuffer(uint32(target), fbo.Id())
+	gl.BindFramebuffer(uint32(target), *fbo.Id())
 }
 
 func (fbo *Fbo) Unbind(target FboTarget) {
@@ -151,11 +150,11 @@ func FboCheck(target FboTarget) error {
 }
 
 func (fbo *Fbo) AttachTexture(tex GLTexture, attachment FboAttachment, level int) {
-	gl.FramebufferTexture(gl.FRAMEBUFFER, attachment.ToGlEnum(), tex.Id(), int32(level))
+	gl.FramebufferTexture(gl.FRAMEBUFFER, attachment.ToGlEnum(), *tex.Id(), int32(level))
 }
 
 func (fbo *Fbo) AttachTextureLayer(tex GLTexture, attachment FboAttachment, level, layer int) {
-	gl.FramebufferTextureLayer(gl.FRAMEBUFFER, attachment.ToGlEnum(), tex.Id(), int32(level), int32(layer))
+	gl.FramebufferTextureLayer(gl.FRAMEBUFFER, attachment.ToGlEnum(), *tex.Id(), int32(level), int32(layer))
 }
 
 func (fbo *Fbo) AttachRenderbuffer(bufId uint32, attachment FboAttachment) {
