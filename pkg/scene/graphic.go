@@ -22,6 +22,12 @@ func NewGraphic() *Graphic {
 	}
 }
 
+func LoadGraphic(path string) (g *Graphic) {
+	return &Graphic{
+		Texture: core.LoadTexture(path),
+	}
+}
+
 func (g *Graphic) SetWidth(w int) {
 	g.b.width = w
 	g.t.Set(0, 0, float32(w))

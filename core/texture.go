@@ -3,8 +3,10 @@ package core
 import (
 	"image"
 	"io"
+	"os"
 
 	"github.com/Qendolin/go-printpixel/core/data"
+	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
@@ -81,6 +83,47 @@ func NewTexture2DFromImage(img image.Image) *data.Texture2D {
 	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
 	t.Bind(0)
 	t.AllocImage(img, 0, gl.RGBA)
+	t.ApplyDefaults()
+	t.Unbind(0)
+	return t
+}
+
+func LoadTexture(path string) (t *data.Texture2D) {
+	defer func() {
+		if t == nil {
+			t = newTextureError()
+		}
+	}()
+
+	path, err := utils.ResolvePath(path)
+	if err != nil {
+		return nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	t, err = NewTexture2DFromFile(f)
+	if err != nil {
+		return nil
+	}
+	return t
+}
+
+func newTextureError() *data.Texture2D {
+	buf := make([]byte, 64*64)
+	for x := 0; x < 64; x++ {
+		for y := 0; y < 64; y++ {
+			if x == 0 || x == 63 || y == 0 || y == 63 || y == x || y == 63-x {
+				buf[x+y*64] = 255
+			} else {
+				buf[x+y*64] = 0
+			}
+		}
+	}
+	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
+	t.Bind(0)
+	t.AllocBytes(buf, 0, gl.RGBA, 64, 64, gl.RED)
 	t.ApplyDefaults()
 	t.Unbind(0)
 	return t

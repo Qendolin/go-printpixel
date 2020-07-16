@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 
 	_ "image/png"
@@ -25,11 +24,7 @@ func main() {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	img, err := os.Open("./star.png")
-	panicIf(err)
-	defer img.Close()
-	tex, err := core.NewTexture2DFromFile(img)
-	panicIf(err)
+	tex := core.LoadTexture("./star.png")
 	tex.Bind(0)
 	tex.FilterMode(data.FilterLinearMipMapLinear, data.FilterLinear)
 	tex.GenerateMipmap()
