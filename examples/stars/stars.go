@@ -70,10 +70,9 @@ func main() {
 
 func setup() *window.Window {
 	cfg := window.SimpleConfig{
-		Width:        1600,
-		Height:       900,
-		Debug:        true,
-		Unresizeable: false,
+		Width:  1600,
+		Height: 900,
+		Debug:  true,
 	}
 	win, err := window.New("Stars Example", &cfg)
 	panicIf(err)
