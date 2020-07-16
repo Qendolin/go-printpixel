@@ -2,11 +2,9 @@ package main
 
 import (
 	"log"
-	"os"
 
 	_ "image/png"
 
-	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/Qendolin/go-printpixel/core/glwindow"
 	"github.com/Qendolin/go-printpixel/pkg/scene"
@@ -16,16 +14,8 @@ import (
 func main() {
 	win := setup()
 
-	img, err := os.Open("./image.png")
-	panicIf(err)
-	defer img.Close()
-	tex, err := core.NewTexture2DFromFile(img)
-	panicIf(err)
-
 	win.Child = &scene.Aspect{
-		Child: &scene.Graphic{
-			Texture: tex,
-		},
+		Child: scene.LoadGraphic("./image.png"),
 		Ratio: 640 / 640,
 	}
 
