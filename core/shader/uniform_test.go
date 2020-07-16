@@ -3,9 +3,9 @@ package shader_test
 import (
 	"testing"
 
+	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/shader"
 	"github.com/Qendolin/go-printpixel/core/test"
-	"github.com/Qendolin/go-printpixel/renderer"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -30,7 +30,7 @@ func TestUniformColor(t *testing.T) {
 	prog.Bind()
 	uColor.Set(mgl32.Vec3{0, 1, 0})
 
-	renderer.NewQuad().Bind()
+	core.Quad().Bind()
 	for !win.ShouldClose() {
 		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		win.SwapBuffers()

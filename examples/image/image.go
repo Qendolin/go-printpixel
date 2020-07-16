@@ -6,11 +6,11 @@ import (
 
 	_ "image/png"
 
+	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/Qendolin/go-printpixel/core/glwindow"
-	"github.com/Qendolin/go-printpixel/pkg/layout"
+	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/pkg/window"
-	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 func main() {
@@ -19,14 +19,13 @@ func main() {
 	img, err := os.Open("./image.png")
 	panicIf(err)
 	defer img.Close()
-
-	g := layout.NewGraphic()
-	g.Texture.Bind(0)
-	g.Texture.ApplyDefaults()
-	err = g.Texture.AllocFile(img, 0, gl.RGBA, gl.RGBA)
+	tex, err := core.NewTexture2DFromFile(img)
 	panicIf(err)
-	win.Child = &layout.Aspect{
-		Child: g,
+
+	win.Child = &scene.Aspect{
+		Child: &scene.Graphic{
+			Texture: tex,
+		},
 		Ratio: 640 / 640,
 	}
 
@@ -45,7 +44,7 @@ func setup() *window.Window {
 		Height: 900,
 		Debug:  true,
 	}
-	win, err := window.New("Image Example", cfg)
+	win, err := window.New("Image Example", &cfg)
 	panicIf(err)
 
 	go handleErrors(cfg.Errors())
@@ -58,7 +57,7 @@ func panicIf(err error) {
 	}
 }
 
-func handleErrors(errs <-chan glcontext.GlError) {
+func handleErrors(errs <-chan glcontext.Error) {
 	for err := range errs {
 		if err.Fatal {
 			log.Fatalf("%v\n%v", err, err.Stack)

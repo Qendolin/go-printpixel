@@ -4,6 +4,9 @@ import (
 	"runtime"
 	"testing"
 
+	_ "image/jpeg"
+	_ "image/png"
+
 	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/Qendolin/go-printpixel/core/glwindow"
 	"github.com/Qendolin/go-printpixel/pkg/window"

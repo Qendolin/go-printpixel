@@ -7,6 +7,6 @@ uniform mat3 u_transform;
 
 void main()
 {
-    gl_Position = vec4(vec3(in_position, 0.) * u_transform, 1.);
-    pass_uv = in_position*vec2(1,-1)*0.5+vec2(0.5);
+    gl_Position = vec4(vec3(in_position, 1.) * u_transform, 1.);
+    pass_uv = in_position*vec2(1,-1)+vec2(0.5);
 }

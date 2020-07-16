@@ -21,21 +21,20 @@ type Vbo struct {
 	*uint32
 }
 
-func NewVbo() *Vbo {
-	return &Vbo{uint32: &NewId}
+func NewVbo(id *uint32) *Vbo {
+	return &Vbo{uint32: id}
 }
 
-func (vbo *Vbo) Id() uint32 {
-	if vbo.uint32 == &NewId {
-		id := new(uint32)
-		gl.GenBuffers(1, id)
-		vbo.uint32 = id
+func (vbo *Vbo) Id() *uint32 {
+	if vbo.uint32 == nil {
+		vbo.uint32 = new(uint32)
+		gl.GenBuffers(1, vbo.uint32)
 	}
-	return *vbo.uint32
+	return vbo.uint32
 }
 
 func (vbo *Vbo) Bind(target uint32) {
-	gl.BindBuffer(target, vbo.Id())
+	gl.BindBuffer(target, *vbo.Id())
 }
 
 func (vbo *Vbo) Unbind(target uint32) {
@@ -46,6 +45,11 @@ func (vbo *Vbo) BindFor(target uint32, context utils.BindingClosure) {
 	vbo.Bind(target)
 	context()
 	vbo.Unbind(target)
+}
+
+func (vbo *Vbo) Destroy() {
+	gl.DeleteBuffers(1, vbo.uint32)
+	*vbo.uint32 = 0
 }
 
 func (vbo *Vbo) WriteStatic(data interface{}) {
@@ -127,9 +131,4 @@ func getGlType(dataType reflect.Type) (glType uint32, float bool, err error) {
 		}
 	}
 	return
-}
-
-func (vbo *Vbo) Destroy() {
-	gl.DeleteBuffers(1, vbo.uint32)
-	*vbo.uint32 = 0
 }

@@ -2,13 +2,16 @@ package glcontext
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"runtime/debug"
+	"time"
 	"unsafe"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
-type GlError struct {
+type Error struct {
 	Severity string
 	Id       uint32
 	Type     string
@@ -17,36 +20,41 @@ type GlError struct {
 	Stack    string
 }
 
-func (glerr GlError) Error() string {
+func (glerr Error) Error() string {
 	return fmt.Sprintf("[%s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
 }
 
-type GlConfig struct {
+type Config struct {
 	//Enables DEBUG_OUTPUT and DEBUG_OUTPUT_SYNCHRONOUS. Also sets DebugMessageCallback.
-	Debug  bool
-	Errors <-chan GlError
-	errors chan<- GlError
+	Debug         bool
+	Multisampling bool
+	Errors        <-chan Error
+	errors        chan<- Error
 }
 
-func NewGlConfig(errorChanSize int) GlConfig {
-	errorChan := make(chan GlError, errorChanSize)
-	return GlConfig{
-		Debug:  false,
-		Errors: errorChan,
-		errors: errorChan,
+func NewGlConfig(errorChanSize int) Config {
+	errorChan := make(chan Error, errorChanSize)
+	return Config{
+		Debug:         false,
+		Multisampling: true,
+		Errors:        errorChan,
+		errors:        errorChan,
 	}
 }
 
-func (cfg GlConfig) apply() error {
+func (cfg Config) apply() error {
 	if cfg.Debug {
 		gl.DebugMessageCallback(debugMessageCallback(cfg.errors), nil)
 		gl.Enable(gl.DEBUG_OUTPUT)
 		gl.Enable(gl.DEBUG_OUTPUT_SYNCHRONOUS)
 	}
+	if cfg.Multisampling {
+		gl.Enable(gl.MULTISAMPLE)
+	}
 	return nil
 }
 
-func debugMessageCallback(errorChan chan<- GlError) gl.DebugProc {
+func debugMessageCallback(errorChan chan<- Error) gl.DebugProc {
 	return func(source uint32,
 		gltype uint32,
 		id uint32,
@@ -91,13 +99,21 @@ func debugMessageCallback(errorChan chan<- GlError) gl.DebugProc {
 
 		stack := debug.Stack()
 
-		errorChan <- GlError{
+		err := Error{
 			Severity: severityStr,
 			Id:       id,
 			Type:     gltypeStr,
 			Message:  message,
 			Fatal:    fatal,
 			Stack:    string(stack),
+		}
+		select {
+		case errorChan <- err:
+		case <-time.After(500 * time.Millisecond):
+			o := log.Writer()
+			log.SetOutput(os.Stderr)
+			log.Printf("Error stuck for 500ms: %v", err)
+			log.SetOutput(o)
 		}
 	}
 }

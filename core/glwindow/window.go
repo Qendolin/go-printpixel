@@ -10,6 +10,23 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
+var id uint64 = 0
+
+func NewId() uint64 {
+	id++
+	return id
+}
+
+var windows = map[uint64]Extended{}
+
+func Get(id uint64) Extended {
+	return windows[id]
+}
+
+func Put(win Extended) {
+	windows[win.Id()] = win
+}
+
 type Extended interface {
 	Destroy()
 	GetAttrib(attrib glfw.Hint) int
@@ -71,12 +88,15 @@ type Extended interface {
 	SwapBuffers()
 	Delta() time.Duration
 	GetGLFWWindow() *glfw.Window
+	Id() uint64
 }
 
 type extWindow struct {
 	*glfw.Window
 	lastSwap time.Time
+	d        time.Duration
 	cbs      callbacks
+	id       uint64
 }
 
 func (w *extWindow) GetGLFWWindow() *glfw.Window {
@@ -84,16 +104,20 @@ func (w *extWindow) GetGLFWWindow() *glfw.Window {
 }
 
 func (w *extWindow) SwapBuffers() {
+	w.d = time.Since(w.lastSwap)
 	w.lastSwap = time.Now()
 	w.Window.SwapBuffers()
 }
 
 func (w *extWindow) Delta() time.Duration {
-	return time.Since(w.lastSwap)
+	return w.d
+}
+
+func (w *extWindow) Id() uint64 {
+	return w.id
 }
 
 func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Extended, error) {
-
 	if glcontext.Status()&glcontext.StatusGlfwInitialized == 0 {
 		return nil, glcontext.ErrGlfwNotInitialized
 	}
@@ -121,8 +145,14 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 		}
 	})
 
-	return &extWindow{
+	x := &extWindow{
 		Window:   glfwWin,
 		lastSwap: time.Now(),
-	}, nil
+		id:       NewId(),
+	}
+	id := x.id
+	glfwWin.SetUserPointer(gl.Ptr(&id))
+	Put(x)
+
+	return x, nil
 }
