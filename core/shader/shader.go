@@ -43,8 +43,8 @@ func NewFragmentShader(source string) (*Shader, error) {
 	return NewShader(source, TypeFragment)
 }
 
-func NewShaderFromPath(modulePath string, shaderType ShaderType) (*Shader, error) {
-	absPath, err := utils.ResolvePath(modulePath)
+func NewShaderFromPath(path string, shaderType ShaderType) (*Shader, error) {
+	absPath, err := utils.ResolvePath(path)
 	if err != nil {
 		return nil, err
 	}

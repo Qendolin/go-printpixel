@@ -23,7 +23,7 @@ func TestQuad(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	prog := test.NewProgram(t, "assets/shaders/quad_uv.vert", "assets/shaders/quad_uv.frag")
+	prog := test.NewProgram(t, "res://assets/shaders/quad_uv.vert", "res://assets/shaders/quad_uv.frag")
 	prog.Bind()
 
 	core.Quad().Bind()
@@ -39,10 +39,10 @@ func TestTextureQuad(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	prog := test.NewProgram(t, "assets/shaders/quad_tex.vert", "assets/shaders/quad_tex.frag")
+	prog := test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag")
 	prog.Bind()
 
-	absPath, err := utils.ResolvePath("assets/textures/uv.png")
+	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
 	assert.NoError(t, err)
 	img, err := os.Open(absPath)
 	assert.NoError(t, err)

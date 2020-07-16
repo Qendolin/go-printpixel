@@ -68,7 +68,7 @@ func TestGraphic(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	absPath, err := utils.ResolvePath("assets/textures/uv.png")
+	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
 	assert.NoError(t, err)
 	imgFile, err := os.Open(absPath)
 	assert.NoError(t, err)

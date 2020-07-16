@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"golang.org/x/tools/go/packages"
 )
@@ -49,10 +50,10 @@ func MustResolvePath(path string) string {
 }
 
 func ResolvePath(path string) (string, error) {
-	if filepath.IsAbs(path) {
-		return path, nil
+	if !strings.HasPrefix(path, "res://") {
+		return filepath.Abs(path)
 	}
-	return ResolveModulePath(path)
+	return ResolveModulePath(path[6:])
 }
 
 func NullTerm(str string) string {
