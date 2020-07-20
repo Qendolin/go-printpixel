@@ -13,6 +13,7 @@ type ContextInstance struct {
 
 func (ci *ContextInstance) Create(f func() *uint32) *uint32 {
 	ci.m.Lock()
+	defer ci.m.Unlock()
 	if ci.ids == nil {
 		ci.ids = make(map[uint64]*uint32, 1)
 	}
@@ -24,6 +25,5 @@ func (ci *ContextInstance) Create(f func() *uint32) *uint32 {
 
 	id := f()
 	ci.ids[*wId] = id
-	ci.m.Unlock()
 	return id
 }
