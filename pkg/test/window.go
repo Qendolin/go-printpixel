@@ -55,7 +55,7 @@ func NewWindow(t *testing.T) (w *window.Window, close func()) {
 	}
 	win.GlWindow = WrapWindow(win.GlWindow)
 
-	gl.ClearColor(1, 0, 0, 1)
+	gl.ClearColor(0, 0, 0, 1)
 
 	return win, win.Close
 }

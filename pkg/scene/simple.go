@@ -34,7 +34,13 @@ type Stack struct {
 	Children []Layoutable
 }
 
-func (stack Stack) Layout() []Layoutable {
+func Stacked(c ...Layoutable) *Stack {
+	return &Stack{
+		Children: c,
+	}
+}
+
+func (stack *Stack) Layout() []Layoutable {
 	if stack.Children == nil {
 		return nil
 	}
@@ -46,7 +52,15 @@ func (stack Stack) Layout() []Layoutable {
 		c.SetY(stack.y)
 	}
 
-	return stack.Children
+	//reverse children so that the first is ontop
+	c := make([]Layoutable, len(stack.Children))
+	copy(c, stack.Children)
+	for i := len(c)/2 - 1; i >= 0; i-- {
+		opp := len(c) - 1 - i
+		c[i], c[opp] = c[opp], c[i]
+	}
+
+	return c
 }
 
 type Center struct {
@@ -54,7 +68,13 @@ type Center struct {
 	Child Layoutable
 }
 
-func (c Center) Layout() []Layoutable {
+func Centered(c Layoutable) *Center {
+	return &Center{
+		Child: c,
+	}
+}
+
+func (c *Center) Layout() []Layoutable {
 	if c.Child == nil {
 		return nil
 	}
@@ -65,4 +85,22 @@ func (c Center) Layout() []Layoutable {
 	c.Child.SetY(c.y - c.height/2)
 
 	return []Layoutable{c.Child}
+}
+
+type Layer struct {
+	SimpleBox
+	Child Layoutable
+}
+
+func (l *Layer) Layout() []Layoutable {
+	if l.Child == nil {
+		return nil
+	}
+
+	l.Child.SetWidth(l.width)
+	l.Child.SetHeight(l.height)
+	l.Child.SetX(l.x)
+	l.Child.SetY(l.y)
+
+	return []Layoutable{l.Child}
 }

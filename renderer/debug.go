@@ -7,21 +7,21 @@ import (
 )
 
 const (
-	TextureQuad = "TextureQuadRenderer"
+	Debug = "DebugRenderer"
 )
 
-type TextureQuadRenderer struct {
+type DebugRenderer struct {
 	program    shader.Program
 	uTransform shader.Uniform
 	Base
 }
 
-func NewTextureQuadRenderer() *TextureQuadRenderer {
-	vs, err := shader.NewShaderFromPath("res://assets/shaders/quad_tex_transform.vert", shader.TypeVertex)
+func NewDebugRenderer() *DebugRenderer {
+	vs, err := shader.NewShaderFromPath("res://assets/shaders/debug.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
 	}
-	fs, err := shader.NewShaderFromPath("res://assets/shaders/quad_tex_transform.frag", shader.TypeFragment)
+	fs, err := shader.NewShaderFromPath("res://assets/shaders/debug.frag", shader.TypeFragment)
 	if err != nil {
 		panic(err)
 	}
@@ -32,27 +32,27 @@ func NewTextureQuadRenderer() *TextureQuadRenderer {
 	fs.Destroy()
 	vs.Destroy()
 
-	return &TextureQuadRenderer{
+	return &DebugRenderer{
 		program:    *prog,
 		uTransform: prog.MustGetUniform("u_transform"),
 	}
 }
 
-func (renderer *TextureQuadRenderer) Bind() {
+func (renderer *DebugRenderer) Bind() {
 	renderer.program.Bind()
 }
 
-func (renderer *TextureQuadRenderer) Unbind() {
+func (renderer *DebugRenderer) Unbind() {
 	renderer.program.Unbind()
 }
 
-func (renderer *TextureQuadRenderer) BindFor(context utils.BindingClosure) {
+func (renderer *DebugRenderer) BindFor(context utils.BindingClosure) {
 	renderer.Bind()
 	context()
 	renderer.Unbind()
 }
 
-func (r *TextureQuadRenderer) Draw(ds ...ZDrawable) {
+func (r *DebugRenderer) Draw(ds ...ZDrawable) {
 	for i, d := range ds {
 		if i == 0 {
 			d.GetMesh().Bind()
@@ -66,6 +66,6 @@ func (r *TextureQuadRenderer) Draw(ds ...ZDrawable) {
 	}
 }
 
-func (renderer *TextureQuadRenderer) Destroy() {
+func (renderer *DebugRenderer) Destroy() {
 	renderer.program.Destroy()
 }

@@ -8,8 +8,6 @@ import (
 )
 
 type Graphic struct {
-	// Texture data.Texture2D
-	// q       *renderer.TextureQuad
 	Texture *data.Texture2D
 	b       SimpleBox
 	t       mgl32.Mat3
