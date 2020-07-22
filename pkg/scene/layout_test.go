@@ -33,10 +33,10 @@ func TestGrid(t *testing.T) {
 	grid.Init()
 	grid.SetWidth(width)
 	grid.SetHeight(height)
-	grid.Children[0][0] = &scene.SimpleBox{}
-	grid.Children[0][1] = &scene.SimpleBox{}
-	grid.Children[1][0] = &scene.SimpleBox{}
-	grid.Children[1][1] = &scene.SimpleBox{}
+	grid.Children[0][0] = &scene.Box{}
+	grid.Children[0][1] = &scene.Box{}
+	grid.Children[1][0] = &scene.Box{}
+	grid.Children[1][1] = &scene.Box{}
 
 	grid.Layout()
 
@@ -65,7 +65,7 @@ func TestGrid(t *testing.T) {
 
 func TestAspect(t *testing.T) {
 	a := scene.Aspect{
-		Child: &scene.SimpleBox{},
+		Child: &scene.Box{},
 		Ratio: 1,
 		Mode:  scene.Contain,
 	}

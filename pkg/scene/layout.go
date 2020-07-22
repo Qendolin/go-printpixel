@@ -7,61 +7,57 @@ const (
 	Percent
 )
 
-type Box interface {
+type Layouter interface {
+	Layout() (children []Layoutable)
+}
+
+type Layoutable interface {
+	X() int
+	SetX(int)
+	Y() int
+	SetY(int)
 	Width() int
 	SetWidth(int)
 	Height() int
 	SetHeight(int)
 }
 
-type Layouter interface {
-	Layout() (children []Layoutable)
-}
-
-type Layoutable interface {
-	SetX(int)
-	SetY(int)
-	X() int
-	Y() int
-	Box
-}
-
-type SimpleBox struct {
+type Box struct {
 	width  int
 	height int
 	x      int
 	y      int
 }
 
-func (box *SimpleBox) Width() int {
+func (box *Box) Width() int {
 	return box.width
 }
 
-func (box *SimpleBox) Height() int {
+func (box *Box) Height() int {
 	return box.height
 }
 
-func (box *SimpleBox) SetWidth(width int) {
+func (box *Box) SetWidth(width int) {
 	box.width = width
 }
 
-func (box *SimpleBox) SetHeight(height int) {
+func (box *Box) SetHeight(height int) {
 	box.height = height
 }
 
-func (box *SimpleBox) SetX(x int) {
+func (box *Box) SetX(x int) {
 	box.x = x
 }
 
-func (box *SimpleBox) SetY(y int) {
+func (box *Box) SetY(y int) {
 	box.y = y
 }
 
-func (box *SimpleBox) X() int {
+func (box *Box) X() int {
 	return box.x
 }
 
-func (box *SimpleBox) Y() int {
+func (box *Box) Y() int {
 	return box.y
 }
 

@@ -12,7 +12,7 @@ const (
 )
 
 type Aspect struct {
-	SimpleBox
+	Box
 	Child Layoutable
 	Ratio float64
 	Mode  AspectMode

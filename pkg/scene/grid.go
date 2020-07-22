@@ -9,7 +9,7 @@ type Grid struct {
 	Cols     []TrackDef
 	Rows     []TrackDef
 	Children [][]Layoutable
-	SimpleBox
+	Box
 }
 
 func NewGrid(cols []TrackDef, rows []TrackDef) Grid {

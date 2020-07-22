@@ -1,7 +1,7 @@
 package scene
 
 type Absolute struct {
-	SimpleBox
+	Box
 	Child Layoutable
 	DX    float32
 	DY    float32
@@ -30,7 +30,7 @@ func (abs *Absolute) Layout() []Layoutable {
 }
 
 type Stack struct {
-	SimpleBox
+	Box
 	Children []Layoutable
 }
 
@@ -64,7 +64,7 @@ func (stack *Stack) Layout() []Layoutable {
 }
 
 type Center struct {
-	SimpleBox
+	Box
 	Child Layoutable
 }
 
@@ -88,7 +88,7 @@ func (c *Center) Layout() []Layoutable {
 }
 
 type Layer struct {
-	SimpleBox
+	Box
 	Child Layoutable
 }
 

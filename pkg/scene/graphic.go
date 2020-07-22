@@ -9,7 +9,7 @@ import (
 
 type Graphic struct {
 	Texture *data.Texture2D
-	b       SimpleBox
+	b       Box
 	t       mgl32.Mat3
 	q       *data.Vao
 }
