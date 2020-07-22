@@ -9,6 +9,7 @@ import (
 
 type Graphic struct {
 	Texture *data.Texture2D
+	Alpha   bool
 	b       Box
 	t       mgl32.Mat3
 	q       *data.Vao
@@ -79,4 +80,8 @@ func (g *Graphic) GetTransform() mgl32.Mat3 {
 
 func (g *Graphic) GetRenderer() string {
 	return renderer.TextureQuad
+}
+
+func (g *Graphic) HasAlpha() bool {
+	return g.Alpha
 }

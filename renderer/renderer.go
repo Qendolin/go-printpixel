@@ -11,6 +11,7 @@ type Drawable interface {
 	GetTextures() []data.GLTexture
 	GetTransform() mgl32.Mat3
 	GetRenderer() string
+	HasAlpha() bool
 }
 
 type ZDrawable struct {

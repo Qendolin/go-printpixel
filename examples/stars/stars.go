@@ -21,7 +21,6 @@ const Stars = 400
 
 func main() {
 	win := setup()
-	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	tex := core.LoadTexture("./star.png")
@@ -36,7 +35,7 @@ func main() {
 
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < Stars; i++ {
-		size := 13 + 10*rand.Float32()
+		size := 20 + 10*rand.Float32()
 		starStack.Children[i] = &scene.Absolute{
 			Unit: scene.Percent,
 			DX:   rand.Float32(),
@@ -48,6 +47,7 @@ func main() {
 				H: size,
 				Child: &scene.Graphic{
 					Texture: tex,
+					Alpha:   true,
 				},
 			},
 		}
