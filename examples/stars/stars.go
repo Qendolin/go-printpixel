@@ -32,9 +32,7 @@ func main() {
 	starStack := &scene.Stack{
 		Children: make([]scene.Layoutable, Stars),
 	}
-	win.Child = &scene.Center{
-		Child: starStack,
-	}
+	win.Child = scene.Centered(starStack)
 
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < Stars; i++ {

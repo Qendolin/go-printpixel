@@ -7,6 +7,7 @@ import (
 	"github.com/Qendolin/go-printpixel/core/glwindow"
 	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/renderer"
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
@@ -19,7 +20,7 @@ type Window struct {
 	//Top, Right, Bottom, Left
 	margins   []int
 	init      bool
-	drawables map[string][]renderer.Drawable
+	drawables []map[string][]renderer.ZDrawable
 }
 
 func New(title string, cfg *SimpleConfig) (*Window, error) {
@@ -54,6 +55,7 @@ func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *g
 
 	win.Renderers = map[string]renderer.Renderer{
 		renderer.TextureQuad: renderer.NewTextureQuadRenderer(),
+		renderer.Debug:       renderer.NewDebugRenderer(),
 	}
 
 	return &win, err
@@ -155,13 +157,20 @@ func (win *Window) Update() {
 		win.BeforeUpdate()
 	}
 
-	for key, drawables := range win.drawables {
-		renderer := win.Renderers[key]
-		renderer.SetScale(2/float32(win.InnerWidth()), 2/float32(win.InnerHeight()))
-		renderer.Bind()
-		renderer.Draw(drawables...)
-		renderer.Unbind()
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LEQUAL)
+	depth := len(win.drawables)
+	for d := range win.drawables {
+		for key, drawables := range win.drawables[len(win.drawables)-d-1] {
+			renderer := win.Renderers[key]
+			renderer.SetScale(2/float32(win.InnerWidth()), 2/float32(win.InnerHeight()), -2/float32(depth))
+			renderer.Bind()
+			renderer.Draw(drawables...)
+			renderer.Unbind()
+		}
 	}
+	gl.Disable(gl.DEPTH_TEST)
 
 	win.GlWindow.SwapBuffers()
 	glfw.PollEvents()
@@ -179,22 +188,32 @@ func (win *Window) Layout() []scene.Layoutable {
 	win.Child.SetWidth(win.InnerWidth())
 	win.Child.SetHeight(win.InnerHeight())
 
-	win.drawables = map[string][]renderer.Drawable{}
-
 	if l, ok := win.Child.(scene.Layouter); ok {
+		win.drawables = make([]map[string][]renderer.ZDrawable, 0)
 		tree := scene.Layout(l)
 		for _, node := range tree.Nodes {
+			if node.Depth >= len(win.drawables) {
+				ds := make([]map[string][]renderer.ZDrawable, node.Depth+1)
+				copy(ds, win.drawables)
+				for i := range ds {
+					if ds[i] == nil {
+						ds[i] = make(map[string][]renderer.ZDrawable)
+					}
+				}
+				win.drawables = ds
+			}
 			if d, ok := node.Value.(renderer.Drawable); ok {
-				if bucket, ok := win.drawables[d.GetRenderer()]; ok {
-					bucket = append(bucket, d)
-					win.drawables[d.GetRenderer()] = bucket
+				zd := renderer.ZDrawable{Drawable: d, Z: node.Depth}
+				if bucket, ok := win.drawables[node.Depth][d.GetRenderer()]; ok {
+					bucket = append(bucket, zd)
+					win.drawables[node.Depth][d.GetRenderer()] = bucket
 				} else {
-					win.drawables[d.GetRenderer()] = []renderer.Drawable{d}
+					win.drawables[node.Depth][d.GetRenderer()] = []renderer.ZDrawable{zd}
 				}
 			}
 		}
 	} else if d, ok := win.Child.(renderer.Drawable); ok {
-		win.drawables[d.GetRenderer()] = []renderer.Drawable{d}
+		win.drawables = []map[string][]renderer.ZDrawable{{d.GetRenderer(): {{Drawable: d, Z: 0}}}}
 	}
 
 	return nil
