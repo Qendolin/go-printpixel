@@ -21,7 +21,7 @@ type Error struct {
 }
 
 func (glerr Error) Error() string {
-	return fmt.Sprintf("[%s] %v/%v: %v\n", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
+	return fmt.Sprintf("[%s] %v/%v: %v", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
 }
 
 type Config struct {

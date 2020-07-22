@@ -14,7 +14,7 @@ type LinkErr struct {
 }
 
 func (lerr LinkErr) Error() string {
-	return fmt.Sprintf("Failed to link shaders to program (id: %v). Info: \n\n%v", lerr.Program, lerr.Log)
+	return fmt.Sprintf("Failed to link shaders to program (id: %v). Info: \n\n%v\n\n", lerr.Program, lerr.Log)
 }
 
 type Program struct {
