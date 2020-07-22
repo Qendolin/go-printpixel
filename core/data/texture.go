@@ -367,7 +367,7 @@ func (tex *Texture2D) AllocImage(img image.Image, level, internalFormat int32) {
 		w, h = rgba.Rect.Size().X, rgba.Rect.Size().Y
 		f = gl.RGBA
 	}
-	tex.AllocBytes(buf, 0, gl.RGBA, int32(w), int32(h), f)
+	tex.AllocBytes(buf, 0, internalFormat, int32(w), int32(h), f)
 }
 
 func (tex *Texture2D) AllocFile(file io.Reader, level, internalFormat int32) error {
