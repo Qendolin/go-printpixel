@@ -95,7 +95,7 @@ func (fbo *Fbo) Destroy() {
 	*fbo.uint32 = 0
 }
 
-func FboCheck(target FboTarget) error {
+func (fbo *Fbo) Check(target FboTarget) error {
 	status := gl.CheckFramebufferStatus(uint32(target))
 	var glStatus string
 	var statusStr string
