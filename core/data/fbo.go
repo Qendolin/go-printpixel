@@ -95,7 +95,17 @@ func (fbo *Fbo) Destroy() {
 	*fbo.uint32 = 0
 }
 
-func FboCheck(target FboTarget) error {
+func (fbo *Fbo) Check(target FboTarget) error {
+	enum := gl.DRAW_FRAMEBUFFER_BINDING
+	if target == gl.READ_FRAMEBUFFER {
+		enum = gl.READ_FRAMEBUFFER_BINDING
+	}
+	var id int32
+	gl.GetIntegerv(uint32(enum), &id)
+	if uint32(id) != *fbo.uint32 {
+		return nil
+	}
+
 	status := gl.CheckFramebufferStatus(uint32(target))
 	var glStatus string
 	var statusStr string
@@ -134,17 +144,10 @@ func FboCheck(target FboTarget) error {
 		statusStr = "Unknown"
 	}
 
-	enum := gl.DRAW_FRAMEBUFFER_BINDING
-	if target == gl.READ_FRAMEBUFFER {
-		enum = gl.READ_FRAMEBUFFER_BINDING
-	}
-	var id int32
-	gl.GetIntegerv(uint32(enum), &id)
-
 	return FboStatusError{
 		GlStatus: glStatus,
 		Status:   statusStr,
-		Id:       uint32(id),
+		Id:       *fbo.uint32,
 		Target:   target,
 	}
 }
