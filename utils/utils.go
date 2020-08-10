@@ -42,7 +42,7 @@ func MustResolveModulePath(path string) string {
 }
 
 func MustResolvePath(path string) string {
-	absPath, err := ResolveModulePath(path)
+	absPath, err := ResolvePath(path)
 	if err != nil {
 		panic(err)
 	}
