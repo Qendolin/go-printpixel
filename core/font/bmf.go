@@ -2,6 +2,7 @@ package font
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -29,6 +30,8 @@ type BMF struct {
 	Pages         []string
 	Characters    map[rune]CharDef
 	Kernings      map[[2]rune]int
+	Size          int
+	Face          string
 }
 
 type CharDef struct {
@@ -60,131 +63,135 @@ func Parse(file io.Reader) (bmf *BMF, err error) {
 	for sc.Scan() {
 		lineNr++
 		line = sc.Text()
-		tag := strings.SplitN(line, " ", 2)
-		switch tag[0] {
+		tag, attribs, strs, err := parseTag(line)
+		if err != nil {
+			return nil, err
+		}
+		switch tag {
+		case "info":
+			for k, v := range attribs {
+				switch k {
+				case "size":
+					bmf.Size = v
+				case "face":
+					bmf.Face = strs[v]
+				}
+			}
 		case "char":
 			var char CharDef
-			for _, attr := range strings.Split(tag[1], " ") {
-				kv := strings.Split(attr, "=")
-				if len(kv) != 2 {
-					continue
-				}
-				num, err := strconv.Atoi(kv[1])
-				if err != nil {
-					return nil, err
-				}
-				switch kv[0] {
+			for k, v := range attribs {
+				switch k {
 				case "id":
-					char.Rune = rune(num)
+					char.Rune = rune(v)
 				case "x":
-					char.X = num
+					char.X = v
 				case "y":
-					char.Y = num
+					char.Y = v
 				case "width":
-					char.Width = num
+					char.Width = v
 				case "height":
-					char.Height = num
+					char.Height = v
 				case "yoffset":
-					char.BearingY = num
+					char.BearingY = v
 				case "xoffset":
-					char.BearingX = num
+					char.BearingX = v
 				case "xadvance":
-					char.Advance = num
+					char.Advance = v
 				case "page":
-					char.Page = num
+					char.Page = v
 				}
 			}
 			bmf.Characters[char.Rune] = char
 		case "common":
-			for _, attr := range strings.Split(tag[1], " ") {
-				kv := strings.Split(attr, "=")
-				if len(kv) != 2 {
-					continue
-				}
-				num, err := strconv.Atoi(kv[1])
-				if err != nil {
-					return nil, err
-				}
-				switch kv[0] {
+			for k, v := range attribs {
+				switch k {
 				case "lineHeight":
-					bmf.LineHeight = num
+					bmf.LineHeight = v
 				case "base":
-					bmf.Base = num
+					bmf.Base = v
 				case "scaleW":
-					bmf.Width = num
+					bmf.Width = v
 				case "scaleH":
-					bmf.Height = num
+					bmf.Height = v
 				case "pages":
-					bmf.Pages = make([]string, num)
+					bmf.Pages = make([]string, v)
 				}
 			}
 		case "page":
-			rd := bufio.NewReader(strings.NewReader(tag[1]))
 			var id int
 			var file string
-			var eol error
-			for {
-				if b, err := rd.Peek(1); err == nil && b[0] == ' ' {
-					rd.ReadByte()
-					continue
-				}
-
-				var s string
-				s, eol = rd.ReadString('=')
-				if eol != nil {
-					break
-				}
-				switch s {
-				case "id=":
-					s, eol = rd.ReadString(' ')
-					s = strings.TrimRight(s, " ")
-					id, err = strconv.Atoi(s)
-					if err != nil {
-						return nil, err
-					}
-					if eol != nil {
-						break
-					}
-				case "file=":
-					if b, err := rd.Peek(1); err == nil && b[0] == '"' {
-						rd.ReadByte()
-						file, eol = rd.ReadString('"')
-						if eol != nil {
-							return nil, eol
-						}
-						file = file[:len(file)-1]
-					} else {
-						file, eol = rd.ReadString(' ')
-						if eol != nil {
-							break
-						}
-						file = file[:len(file)-1]
-					}
+			for k, v := range attribs {
+				switch k {
+				case "id":
+					id = v
+				case "file":
+					file = strs[v]
 				}
 			}
 			bmf.Pages[id] = file
 		case "kerning":
 			var first, second, amount int
-			for _, attr := range strings.Split(tag[1], " ") {
-				kv := strings.Split(attr, "=")
-				if len(kv) != 2 {
-					continue
-				}
-				num, err := strconv.Atoi(kv[1])
-				if err != nil {
-					return nil, err
-				}
-				switch kv[0] {
+			for k, v := range attribs {
+				switch k {
 				case "first":
-					first = num
+					first = v
 				case "second":
-					second = num
+					second = v
 				case "amount":
-					amount = num
+					amount = v
 				}
 			}
 			bmf.Kernings[[2]rune{rune(first), rune(second)}] = amount
 		}
 	}
 	return bmf, sc.Err()
+}
+
+func parseTag(line string) (name string, values map[string]int, strs []string, err error) {
+	values = map[string]int{}
+	strs = []string{}
+
+	var stripped string
+	rd := bufio.NewReader(strings.NewReader(line))
+	for {
+		start, err := rd.ReadString('"')
+		stripped += start
+		if errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			return "", nil, nil, err
+		}
+		str, err := rd.ReadString('"')
+		if errors.Is(err, io.EOF) {
+			return "", nil, nil, fmt.Errorf("expected \"")
+		}
+		strs = append(strs, str[:len(str)-1])
+	}
+
+	fields := strings.Fields(stripped)
+	if len(fields) == 0 {
+		return "", nil, nil, fmt.Errorf("empty tag")
+	}
+
+	strIdx := 0
+	for i, f := range fields {
+		if i == 0 {
+			name = f
+			continue
+		}
+
+		kv := strings.Split(f, "=")
+		if len(kv) != 2 {
+			return "", nil, nil, fmt.Errorf("expected key-value pair")
+		}
+		key, value := kv[0], kv[1]
+		if value == "\"" {
+			values[key] = strIdx
+			strIdx++
+		} else if num, err := strconv.Atoi(value); err == nil {
+			values[key] = num
+		}
+	}
+
+	return
 }
