@@ -13,28 +13,30 @@ var expected = font.BMF{
 	Width:      512,
 	Height:     512,
 	LineHeight: 36,
+	Face:       "Arial",
+	Size:       36,
 	Characters: map[rune]font.CharDef{
 		'A': {
 			Rune: 'A',
 			X:    0, Y: 0,
-			Width: 25, Height: 25,
-			BearingX: -2, BearingY: 5,
+			Width: 23, Height: 23,
+			BearingX: -1, BearingY: 6,
 			Advance: 21,
 			Page:    0,
 		},
 		'L': {
 			Rune: 'L',
-			X:    49, Y: 0,
-			Width: 17, Height: 25,
-			BearingX: 1, BearingY: 5,
+			X:    47, Y: 0,
+			Width: 16, Height: 23,
+			BearingX: 2, BearingY: 6,
 			Advance: 18,
 			Page:    0,
 		},
 		'V': {
 			Rune: 'V',
-			X:    25, Y: 0,
-			Width: 24, Height: 25,
-			BearingX: -1, BearingY: 5,
+			X:    24, Y: 0,
+			Width: 22, Height: 23,
+			BearingX: 0, BearingY: 6,
 			Advance: 21,
 			Page:    0,
 		},
@@ -66,6 +68,8 @@ func TestParse(t *testing.T) {
 	assert.Equal(t, expected.Width, bmf.Width)
 	assert.Equal(t, expected.Height, bmf.Height)
 	assert.Equal(t, expected.LineHeight, bmf.LineHeight)
+	assert.Equal(t, expected.Size, bmf.Size)
+	assert.Equal(t, expected.Face, bmf.Face)
 	assert.EqualValues(t, []string{"Arial2_0.png"}, bmf.Pages)
 	assert.EqualValues(t, expected.Characters, bmf.Characters)
 	assert.Equal(t, expected.Kernings, bmf.Kernings)
