@@ -1,8 +1,12 @@
 package core
 
 import (
+	"bytes"
+	"errors"
 	"image"
+	"image/draw"
 	"io"
+	"io/ioutil"
 	"math"
 	"os"
 
@@ -11,40 +15,111 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
+type errorReader struct {
+	error
+}
+
+func (er errorReader) Read(_ []byte) (int, error) {
+	return 0, er.error
+}
+
+type ArrayReader struct {
+	Stride int
+	Array  []io.Reader
+	n      int64
+}
+
+func (ar *ArrayReader) Read(b []byte) (n int, err error) {
+	defer func() {
+		ar.n += int64(n)
+	}()
+
+	i := int(ar.n / int64(ar.Stride))
+	left := ar.Stride - int(ar.n%int64(ar.Stride))
+	if i >= len(ar.Array) {
+		return 0, io.EOF
+	}
+	r := ar.Array[i]
+	n, err = r.Read(b)
+	min := n
+	if left < n {
+		min = left
+	}
+	if errors.Is(err, io.EOF) {
+		if n == 0 {
+			return copy(b, make([]byte, left)), nil
+		}
+	} else if err != nil {
+		return n, err
+	}
+	return min, nil
+}
+
+func PixelReader(img image.Image) (w, h int, r io.Reader) {
+	var buf []byte
+	switch i := img.(type) {
+	case *image.Uniform:
+		r, g, b, a := i.RGBA()
+		buf = []byte{byte(r >> 8), byte(g >> 8), byte(b >> 8), byte(a >> 8)}
+		w, h = 1, 1
+	case *image.RGBA:
+		buf = i.Pix
+		w, h = i.Rect.Size().X, i.Rect.Size().Y
+	default:
+		rgba := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
+		draw.Draw(rgba, rgba.Rect, img, image.Point{}, draw.Src)
+		buf = rgba.Pix
+		w, h = rgba.Rect.Size().X, rgba.Rect.Size().Y
+	}
+	return w, h, bytes.NewReader(buf)
+}
+
+func ImageReader(file io.Reader) (w, h int, r io.Reader) {
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return 0, 0, errorReader{err}
+	}
+	return PixelReader(img)
+}
+
+func FileReader(path string) (w, h int, r io.Reader) {
+	path, err := utils.ResolvePath(path)
+	if err != nil {
+		return 0, 0, errorReader{err}
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return 0, 0, errorReader{err}
+	}
+	return ImageReader(f)
+}
+
 func NewTexture1DEmpty(w int) *data.Texture1D {
 	t := data.NewTexture1D(nil, data.Tex1DTarget1D)
 	t.Bind(0)
-	t.AllocEmpty(0, gl.RGBA, 2, gl.RGBA)
+	t.AllocEmpty(0, gl.RGBA, int32(w), gl.RGBA)
 	t.ApplyDefaults()
 	t.Unbind(0)
 	return t
 }
 
-func NewTexture1DFromBytes(b []byte, w int) *data.Texture1D {
-	t := data.NewTexture1D(nil, data.Tex1DTarget1D)
-	t.Bind(0)
-	t.AllocBytes(b, 0, gl.RGBA, 2, gl.RGBA)
-	t.ApplyDefaults()
-	t.Unbind(0)
-	return t
-}
-
-func NewTexture1DFromFile(r io.Reader) (*data.Texture1D, error) {
-	t := data.NewTexture1D(nil, data.Tex1DTarget1D)
-	t.Bind(0)
-	err := t.AllocFile(r, 0, gl.RGBA)
+func NewTexture1D(w int, r io.Reader) (*data.Texture1D, error) {
+	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
+	t := data.NewTexture1D(nil, data.Tex1DTarget1D)
+	t.Bind(0)
+	t.AllocBytes(b, 0, gl.RGBA, int32(w), gl.RGBA)
 	t.ApplyDefaults()
 	t.Unbind(0)
 	return t, nil
 }
 
-func NewTexture1DFromImage(img image.Image) *data.Texture1D {
+func NewTexture1DBytes(w int, b []byte) *data.Texture1D {
 	t := data.NewTexture1D(nil, data.Tex1DTarget1D)
 	t.Bind(0)
-	t.AllocImage(img, 0, gl.RGBA)
+	t.AllocBytes(b, 0, gl.RGBA, int32(w), gl.RGBA)
 	t.ApplyDefaults()
 	t.Unbind(0)
 	return t
@@ -59,7 +134,20 @@ func NewTexture2DEmpty(w, h int) *data.Texture2D {
 	return t
 }
 
-func NewTexture2DFromBytes(b []byte, w, h int) *data.Texture2D {
+func NewTexture2D(w, h int, r io.Reader) (*data.Texture2D, error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
+	t.Bind(0)
+	t.AllocBytes(b, 0, gl.RGBA, int32(w), int32(h), gl.RGBA)
+	t.ApplyDefaults()
+	t.Unbind(0)
+	return t, nil
+}
+
+func NewTexture2DBytes(w, h int, b []byte) *data.Texture2D {
 	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
 	t.Bind(0)
 	t.AllocBytes(b, 0, gl.RGBA, int32(w), int32(h), gl.RGBA)
@@ -68,44 +156,23 @@ func NewTexture2DFromBytes(b []byte, w, h int) *data.Texture2D {
 	return t
 }
 
-func NewTexture2DFromFile(r io.Reader) (*data.Texture2D, error) {
-	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
-	t.Bind(0)
-	err := t.AllocFile(r, 0, gl.RGBA)
-	if err != nil {
-		return nil, err
-	}
-	t.ApplyDefaults()
-	t.Unbind(0)
-	return t, nil
-}
-
-func NewTexture2DFromImage(img image.Image) *data.Texture2D {
-	t := data.NewTexture2D(nil, data.Tex2DTarget2D)
-	t.Bind(0)
-	t.AllocImage(img, 0, gl.RGBA)
-	t.ApplyDefaults()
-	t.Unbind(0)
-	return t
-}
-
-func LoadTexture(path string) (t *data.Texture2D) {
+func LoadTexture(path string) *data.Texture2D {
 	path, err := utils.ResolvePath(path)
 	if err != nil {
-		return newTextureError("not found")
+		return newErrorTexture("not found")
 	}
 	f, err := os.Open(path)
 	if err != nil {
-		return newTextureError("not found")
+		return newErrorTexture("not found")
 	}
-	t, err = NewTexture2DFromFile(f)
+	t, err := NewTexture2D(ImageReader(f))
 	if err != nil {
-		return newTextureError("not decodeable")
+		return newErrorTexture("not decodeable")
 	}
 	return t
 }
 
-func newTextureError(cause string) *data.Texture2D {
+func newErrorTexture(cause string) *data.Texture2D {
 	buf := make([]byte, 64*64*3)
 	switch cause {
 	case "not found":
@@ -147,9 +214,28 @@ func NewCubemapEmpty(w, h, d int) *data.Texture3D {
 }
 
 /*
+	rs - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
+*/
+func NewCubemap(w, h, d int, rs [6]io.Reader) (*data.Texture3D, error) {
+	t := data.NewTexture3D(nil, data.Tex3DTargetCubeMap)
+	t.Bind(0)
+	for i, r := range rs {
+		b, err := ioutil.ReadAll(r)
+		if err != nil {
+			return nil, err
+		}
+		face := data.TexTarget(int(data.Tex2DTargetCubeMapPositiveX) + i)
+		t.As2D(face).AllocBytes(b, 0, gl.RGBA, int32(w), int32(h), gl.RGBA)
+	}
+	t.ApplyDefaults()
+	t.Unbind(0)
+	return t, nil
+}
+
+/*
 	bufs - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
 */
-func NewCubemapFromBytes(bufs [6][]byte, w, h, d int) *data.Texture3D {
+func NewCubemapBytes(w, h, d int, bufs [6][]byte) (*data.Texture3D, error) {
 	t := data.NewTexture3D(nil, data.Tex3DTargetCubeMap)
 	t.Bind(0)
 	for i, b := range bufs {
@@ -158,37 +244,5 @@ func NewCubemapFromBytes(bufs [6][]byte, w, h, d int) *data.Texture3D {
 	}
 	t.ApplyDefaults()
 	t.Unbind(0)
-	return t
-}
-
-/*
-	files - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
-*/
-func NewCubemapFromFiles(files [6]io.Reader) (*data.Texture3D, error) {
-	t := data.NewTexture3D(nil, data.Tex3DTargetCubeMap)
-	t.Bind(0)
-	for i, r := range files {
-		face := data.TexTarget(int(data.Tex2DTargetCubeMapPositiveX) + i)
-		if err := t.As2D(face).AllocFile(r, 0, gl.RGBA); err != nil {
-			return nil, err
-		}
-	}
-	t.ApplyDefaults()
-	t.Unbind(0)
 	return t, nil
-}
-
-/*
-	images - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
-*/
-func NewCubemapFromImages(images [6]image.Image) *data.Texture3D {
-	t := data.NewTexture3D(nil, data.Tex3DTargetCubeMap)
-	t.Bind(0)
-	for i, img := range images {
-		face := data.TexTarget(int(data.Tex2DTargetCubeMapPositiveX) + i)
-		t.As2D(face).AllocImage(img, 0, gl.RGBA)
-	}
-	t.ApplyDefaults()
-	t.Unbind(0)
-	return t
 }

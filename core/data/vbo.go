@@ -74,12 +74,12 @@ func (vbo *Vbo) Layout(index int, size int, dataType interface{}, normalized boo
 	if err != nil {
 		return
 	}
+	gl.EnableVertexAttribArray(uint32(index))
 	if isFloat {
 		gl.VertexAttribPointer(uint32(index), int32(size), glType, normalized, int32(stride), nil)
 	} else {
 		gl.VertexAttribIPointer(uint32(index), int32(size), glType, int32(stride), nil)
 	}
-	gl.EnableVertexAttribArray(uint32(index))
 	return
 }
 

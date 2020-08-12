@@ -1,6 +1,8 @@
 package core_test
 
 import (
+	"bytes"
+	"io"
 	"os"
 	"testing"
 
@@ -35,6 +37,36 @@ func TestQuad(t *testing.T) {
 	}
 }
 
+func TestArrayReader(t *testing.T) {
+	ar := &core.ArrayReader{
+		Stride: 5,
+		Array:  []io.Reader{bytes.NewReader([]byte{1, 2, 3}), bytes.NewReader([]byte{1, 2, 3, 4, 5, 6, 7}), bytes.NewReader([]byte{1, 2, 3, 4, 5})},
+	}
+
+	buf := make([]byte, 15)
+	n, err := io.ReadFull(ar, buf)
+	assert.NoError(t, err)
+	assert.Equal(t, 15, n)
+	assert.EqualValues(t, []byte{1, 2, 3, 0, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, buf)
+
+	ar = &core.ArrayReader{
+		Stride: 5,
+		Array:  []io.Reader{bytes.NewReader([]byte{1, 2, 3}), bytes.NewReader([]byte{1, 2, 3, 4, 5, 6, 7}), bytes.NewReader([]byte{1, 2, 3, 4, 5})},
+	}
+
+	buf = make([]byte, 15)
+	for i := 0; i < 15; i++ {
+		n, err := ar.Read(buf[i : i+1])
+		assert.NotEqual(t, 0, n)
+		if err == io.EOF {
+			break
+		}
+	}
+	assert.NoError(t, err)
+	assert.Equal(t, 15, n)
+	assert.EqualValues(t, []byte{1, 2, 3, 0, 0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5}, buf)
+}
+
 func TestTextureQuad(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
@@ -48,7 +80,7 @@ func TestTextureQuad(t *testing.T) {
 	assert.NoError(t, err)
 	defer img.Close()
 
-	tex, err := core.NewTexture2DFromFile(img)
+	tex, err := core.NewTexture2D(core.ImageReader(img))
 	assert.NoError(t, err)
 	tex.Bind(0)
 

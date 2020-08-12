@@ -1,9 +1,6 @@
 package data
 
 import (
-	"image"
-	"image/draw"
-	"io"
 	"unsafe"
 
 	"github.com/Qendolin/go-printpixel/utils"
@@ -271,71 +268,24 @@ func (tex *Texture1D) WrapMode(sMode TexWrapMode) {
 	tex.GLTexture.WrapMode(sMode, 0, 0)
 }
 
-func (tex *Texture1D) AllocImage(img image.Image, level, internalFormat int32) {
-	var buf []byte
-	var w int
-	var f uint32
-	switch i := img.(type) {
-	case *image.Uniform:
-		r, g, b, a := i.RGBA()
-		buf = []byte{byte(r >> 8), byte(g >> 8), byte(b >> 8), byte(a >> 8)}
-		f = gl.RGBA
-		w = 1
-	case *image.RGBA:
-		buf = i.Pix
-		w = i.Rect.Size().X
-		f = gl.RGBA
-	default:
-		rgba := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), 1))
-		draw.Draw(rgba, rgba.Rect, img, image.Point{}, draw.Src)
-		buf = rgba.Pix
-		w = rgba.Rect.Size().X
-		f = gl.RGBA
-	}
-	tex.AllocBytes(buf, 0, internalFormat, int32(w), f)
-}
-
-func (tex *Texture1D) AllocFile(file io.Reader, level, internalFormat int32) error {
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return err
-	}
-
-	tex.AllocImage(img, level, internalFormat)
-	return nil
+func (tex *Texture1D) Alloc(level, internalFormat, width int32, format, dataType uint32, data interface{}) {
+	tex.GLTexture.Alloc(level, internalFormat, width, 0, 0, format, dataType, data)
 }
 
 func (tex *Texture1D) AllocBytes(bytes []byte, level, internalFormat, width int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, 0, 0, format, gl.UNSIGNED_BYTE, bytes)
+	tex.Alloc(level, internalFormat, width, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 func (tex *Texture1D) AllocEmpty(level, internalFormat, width int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, 0, 0, format, gl.UNSIGNED_BYTE, nil)
+	tex.Alloc(level, internalFormat, width, format, gl.UNSIGNED_BYTE, nil)
 }
 
-// func (tex *Texture1D) WriteImage(img image.Image, x, level int32, format uint32) {
-// 	rgba := image.NewRGBA(img.Bounds())
-// 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-// 	size := img.Bounds().Size()
-// 	if x < 0 {
-// 		x = int32(size.X) + x
-// 	}
-
-// 	tex.Write(level, x, 0, 0, int32(size.X), 0, 0, format, gl.UNSIGNED_BYTE, rgba.Pix)
-// }
-
-// func (tex *Texture1D) WriteFile(file io.Reader, x, level int32, format uint32) error {
-// 	img, _, err := image.Decode(file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	tex.WriteImage(img, x, level, format)
-// 	return nil
-// }
+func (tex *Texture1D) Write(level, x, width int32, format, dataType uint32, data interface{}) {
+	tex.GLTexture.Write(level, x, 0, 0, width, 0, 0, format, dataType, data)
+}
 
 func (tex *Texture1D) WriteBytes(bytes []byte, level, x, width int32, format uint32) {
-	tex.Write(level, x, 0, 0, width, 0, 0, format, gl.UNSIGNED_BYTE, bytes)
+	tex.Write(level, x, width, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 type Texture2D struct {
@@ -346,73 +296,24 @@ func (tex *Texture2D) WrapMode(sMode, tMode TexWrapMode) {
 	tex.GLTexture.WrapMode(sMode, tMode, 0)
 }
 
-func (tex *Texture2D) AllocImage(img image.Image, level, internalFormat int32) {
-	var buf []byte
-	var w, h int
-	var f uint32
-	switch i := img.(type) {
-	case *image.Uniform:
-		r, g, b, a := i.RGBA()
-		buf = []byte{byte(r >> 8), byte(g >> 8), byte(b >> 8), byte(a >> 8)}
-		f = gl.RGBA
-		w, h = 1, 1
-	case *image.RGBA:
-		buf = i.Pix
-		w, h = i.Rect.Size().X, i.Rect.Size().Y
-		f = gl.RGBA
-	default:
-		rgba := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
-		draw.Draw(rgba, rgba.Rect, img, image.Point{}, draw.Src)
-		buf = rgba.Pix
-		w, h = rgba.Rect.Size().X, rgba.Rect.Size().Y
-		f = gl.RGBA
-	}
-	tex.AllocBytes(buf, 0, internalFormat, int32(w), int32(h), f)
-}
-
-func (tex *Texture2D) AllocFile(file io.Reader, level, internalFormat int32) error {
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return err
-	}
-
-	tex.AllocImage(img, level, internalFormat)
-	return nil
+func (tex *Texture2D) Alloc(level, internalFormat, width, height int32, format, dataType uint32, data interface{}) {
+	tex.GLTexture.Alloc(level, internalFormat, width, height, 0, format, dataType, data)
 }
 
 func (tex *Texture2D) AllocBytes(bytes []byte, level, internalFormat, width, height int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, 0, format, gl.UNSIGNED_BYTE, bytes)
+	tex.Alloc(level, internalFormat, width, height, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 func (tex *Texture2D) AllocEmpty(level, internalFormat, width, height int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, 0, format, gl.UNSIGNED_BYTE, nil)
+	tex.Alloc(level, internalFormat, width, height, format, gl.UNSIGNED_BYTE, nil)
 }
 
-// func (tex *Texture2D) WriteImage(img image.Image, x, y, level int32, format uint32) {
-// 	rgba := image.NewRGBA(img.Bounds())
-// 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-// 	size := img.Bounds().Size()
-// 	if x < 0 {
-// 		x = int32(size.X) + x
-// 	}
-// 	if y < 0 {
-// 		y = int32(size.Y) + y
-// 	}
-// 	tex.Write(level, x, y, 0, int32(size.X), int32(size.Y), 0, format, gl.UNSIGNED_BYTE, rgba.Pix)
-// }
-
-// func (tex *Texture2D) WriteFile(file io.Reader, x, y, level int32, format uint32) error {
-// 	img, _, err := image.Decode(file)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	tex.WriteImage(img, x, y, level, format)
-// 	return nil
-// }
+func (tex *Texture2D) Write(level, x, y, width, height int32, format, dataType uint32, data interface{}) {
+	tex.GLTexture.Write(level, x, y, 0, width, height, 0, format, dataType, data)
+}
 
 func (tex *Texture2D) WriteBytes(bytes []byte, level, x, y, width, height int32, format uint32) {
-	tex.Write(level, x, y, 0, width, height, 0, format, gl.UNSIGNED_BYTE, bytes)
+	tex.Write(level, x, y, width, height, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 type Texture3D struct {
@@ -437,29 +338,9 @@ func (tex *Texture3D) WrapMode(sMode, tMode, rMode TexWrapMode) {
 	tex.GLTexture.WrapMode(sMode, tMode, rMode)
 }
 
-// /*
-// 	images - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
-// */
-// func (tex *Texture3D) AllocImage(images [6]image.Image, level, internalFormat int32) {
-// 	for i, img := range images {
-// 		face := TexTarget(int(Tex2DTargetCubeMapPositiveX) + i)
-// 		tex.As2D(face).AllocImage(img, level, internalFormat)
-// 	}
-// }
-
-// /*
-// 	files - right (+x), left (-x), top (+y), bottom (-y), back (+z), front (-z)
-// */
-// func (tex *Texture3D) AllocFile(files [6]io.Reader, level, internalFormat int32) error {
-// 	for i, file := range files {
-// 		face := TexTarget(int(Tex2DTargetCubeMapPositiveX) + i)
-// 		err := tex.As2D(face).AllocFile(file, level, internalFormat)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
+func (tex *Texture3D) Alloc(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
+	tex.GLTexture.Alloc(level, internalFormat, width, height, depth, format, dataType, data)
+}
 
 func (tex *Texture3D) AllocBytes(bytes []byte, level, internalFormat, width, height, depth int32, format uint32) {
 	tex.Alloc(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
@@ -469,34 +350,9 @@ func (tex *Texture3D) AllocEmpty(level, internalFormat, width, height, depth int
 	tex.Alloc(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, nil)
 }
 
-// func (tex Texture3D) WriteImage(images [6]image.Image, x, y, z, level int32, format uint32) {
-// 	for i, img := range images {
-// 		face := TexTarget(int(Tex2DTargetCubeMapPositiveX) + i)
-// 		tex.As2D(face).WriteImage(img, x, y, level, format)
-// 	}
-// }
-
-// func (tex Texture3D) WriteFile(files [6]io.Reader, x, y, z, level int32, format uint32) error {
-// 	xPre := []int32{
-// 		z, -z - 1,
-// 		x, x,
-// 		-x - 1, x,
-// 	}
-// 	yPre := []int32{
-// 		y, y,
-// 		z, -z - 1,
-// 		y, y,
-// 	}
-
-// 	for i, file := range files {
-// 		face := TexTarget(int(Tex2DTargetCubeMapPositiveX) + i)
-// 		err := tex.As2D(face).WriteFile(file, level, xPre[i], yPre[i], format)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
+func (tex *Texture3D) Write(level, x, y, z, width, height, depth int32, format, dataType uint32, data interface{}) {
+	tex.GLTexture.Write(level, x, y, z, width, height, depth, format, dataType, data)
+}
 
 func (tex *Texture3D) WriteBytes(bytes []byte, level, x, y, z, width, height, depth int32, format uint32) {
 	tex.Write(level, x, y, z, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
