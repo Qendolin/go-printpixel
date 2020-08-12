@@ -1,6 +1,8 @@
 package data_test
 
 import (
+	"image"
+	"image/draw"
 	_ "image/png"
 	"math/rand"
 	"os"
@@ -30,10 +32,18 @@ func TestFileTexture(t *testing.T) {
 	assert.NoError(t, err)
 	defer imgFile.Close()
 
+	img, _, err := image.Decode(imgFile)
+	assert.NoError(t, err)
+	rgba := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
+	draw.Draw(rgba, rgba.Rect, img, image.Point{}, draw.Src)
+	buf := rgba.Pix
+	w, h := rgba.Rect.Size().X, rgba.Rect.Size().Y
+
 	tex := data.NewTexture2D(nil, data.Tex2DTarget2D)
 	tex.Bind(0)
 	tex.ApplyDefaults()
-	err = tex.AllocFile(imgFile, 0, gl.RGBA)
+
+	tex.AllocBytes(buf, 0, gl.RGBA, int32(w), int32(h), gl.RGBA)
 	assert.NoError(t, err)
 
 	test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag").Bind()

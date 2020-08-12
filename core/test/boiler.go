@@ -59,7 +59,8 @@ func NewWindow(t *testing.T) (w glwindow.Extended, close func()) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	gl.ClearColor(1, 0, 0, 1)
+	gl.ClearColor(0, 0, 0, 1)
+	gl.Viewport(0, 0, int32(800), int32(450))
 
 	return win, func() {
 		win.Destroy()
