@@ -20,6 +20,8 @@ import (
 func TestMain(m *testing.M) {
 	test.ParseArgs()
 	m.Run()
+	cf := data.ColorFormat(2)
+	_ = cf
 }
 
 func TestFileTexture(t *testing.T) {
@@ -75,7 +77,7 @@ func TestGeneratedTexture(t *testing.T) {
 		}
 	}
 
-	tex.AllocBytes(data, 0, gl.RGB, 256, 256, gl.RGB)
+	assert.NoError(t, tex.AllocBytes(data, 0, gl.RGB, 256, 256, gl.RGB))
 
 	test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()
@@ -103,8 +105,8 @@ func TestUpdatingTexture(t *testing.T) {
 	core.Quad().Bind()
 
 	for !win.ShouldClose() {
-		tex.WriteBytes([]byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}, 0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB)
-		tex.WriteBytes([]byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}, 0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB)
+		assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
+		assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
 		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		win.SwapBuffers()
 		glfw.PollEvents()

@@ -77,7 +77,7 @@ func TestGraphic(t *testing.T) {
 	imgFile, err := os.Open(absPath)
 	assert.NoError(t, err)
 	defer imgFile.Close()
-	tex, err := core.NewTexture2D(core.ImageReader(imgFile))
+	tex, err := core.NewTexture2D(core.InitFiles(0, imgFile), data.ColorFormatDefault)
 	assert.NoError(t, err)
 
 	win.Child = &scene.Graphic{
@@ -120,7 +120,7 @@ func TestDepthSorting(t *testing.T) {
 				//Left (back) to right (front)
 				&scene.Absolute{
 					Child: &scene.Layer{Child: &scene.Layer{Child: &scene.Graphic{
-						Texture: core.NewTexture2DBytes(1, 1, []byte{255, 0, 0, 127}),
+						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{255, 0, 0, 127}), data.RGBA8),
 						Alpha:   true,
 					}}},
 					Unit: scene.Percent,
@@ -128,16 +128,17 @@ func TestDepthSorting(t *testing.T) {
 					W: 0.5, H: 0.4,
 				},
 				&scene.Absolute{
-					Child: &scene.Layer{Child: &SpecialGraphic{
-						Graphic: scene.Graphic{Texture: core.NewTexture2DBytes(1, 1, []byte{0, 255, 0, 127}), Alpha: true},
-					}},
+					Child: &scene.Layer{Child: &SpecialGraphic{Graphic: scene.Graphic{
+						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{0, 255, 0, 127}), data.RGBA8),
+						Alpha:   true,
+					}}},
 					Unit: scene.Percent,
 					DX:   0.5, DY: 0.75,
 					W: 0.5, H: 0.4,
 				},
 				&scene.Absolute{
 					Child: &scene.Graphic{
-						Texture: core.NewTexture2DBytes(1, 1, []byte{0, 0, 255, 127}),
+						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{0, 0, 255, 127}), data.RGBA8),
 						Alpha:   true,
 					},
 					Unit: scene.Percent,
@@ -147,7 +148,7 @@ func TestDepthSorting(t *testing.T) {
 				//Left (front) to right (back)
 				&scene.Absolute{
 					Child: &scene.Graphic{
-						Texture: core.NewTexture2DBytes(1, 1, []byte{255, 0, 0, 127}),
+						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{255, 0, 0, 127}), data.RGBA8),
 						Alpha:   true,
 					},
 					Unit: scene.Percent,
@@ -155,16 +156,17 @@ func TestDepthSorting(t *testing.T) {
 					W: 0.5, H: 0.4,
 				},
 				&scene.Absolute{
-					Child: &scene.Layer{Child: &SpecialGraphic{
-						Graphic: scene.Graphic{Texture: core.NewTexture2DBytes(1, 1, []byte{0, 255, 0, 127}), Alpha: true},
-					}},
+					Child: &scene.Layer{Child: &SpecialGraphic{Graphic: scene.Graphic{
+						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{0, 255, 0, 127}), data.RGBA8),
+						Alpha:   true,
+					}}},
 					Unit: scene.Percent,
 					DX:   0.5, DY: 0.25,
 					W: 0.5, H: 0.4,
 				},
 				&scene.Absolute{
 					Child: &scene.Layer{Child: &scene.Layer{Child: &scene.Graphic{
-						Texture: core.NewTexture2DBytes(1, 1, []byte{0, 0, 255, 127}),
+						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{0, 0, 255, 127}), data.RGBA8),
 						Alpha:   true,
 					}}},
 					Unit: scene.Percent,

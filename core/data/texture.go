@@ -1,16 +1,22 @@
 package data
 
 import (
+	"encoding/binary"
+	"fmt"
 	"unsafe"
 
 	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
+var MipMapDefaultBaseLevel = 0
+var MipMapDefaultMaxLevel = 0
+
 type TexWrapMode int
 
 //Texture Wrap Modes
 const (
+	WrapDefault           = WrapClampToEdge
 	WrapClampToEdge       = TexWrapMode(gl.CLAMP_TO_EDGE)
 	WrapClampToBorder     = TexWrapMode(gl.CLAMP_TO_BORDER)
 	WrapMirroredRepeat    = TexWrapMode(gl.MIRRORED_REPEAT)
@@ -20,11 +26,15 @@ const (
 
 type TexFilterMode int
 
-//Common texture filters
+var FilterMagDefault = FilterLinear
+
+//Texture magnification filters
 const (
 	FilterNearest = TexFilterMode(gl.NEAREST)
 	FilterLinear  = TexFilterMode(gl.LINEAR)
 )
+
+var FilterMinDefault = FilterLinearMipMapLinear
 
 //Texture minification filters
 const (
@@ -84,8 +94,12 @@ func (tt TexTarget) Dimensions() int {
 		return 1
 	case Tex3DTarget3D, Tex3DTargetProxy3D, Tex3DTarget2DArray, Tex3DTargetProxy2DArray, Tex3DTargetCubeMap:
 		return 3
-	default:
+	case Tex2DTarget1DArray, Tex2DTarget2D, Tex2DTargetCubeMapNegativeX, Tex2DTargetCubeMapNegativeY, Tex2DTargetCubeMapNegativeZ,
+		Tex2DTargetCubeMapPositiveX, Tex2DTargetCubeMapPositiveY, Tex2DTargetCubeMapPositiveZ, Tex2DTargetProxy1DArray, Tex2DTargetProxy2D, Tex2DTargetProxyCubeMap,
+		Tex2DTargetProxyRectangle, Tex2DTargetRectangle:
 		return 2
+	default:
+		return 0
 	}
 }
 
@@ -217,47 +231,110 @@ func (tex *GLTexture) GenerateMipmap() {
 }
 
 func (tex *GLTexture) ApplyDefaults() {
-	tex.FilterMode(FilterLinear, FilterLinear)
-	tex.WrapMode(WrapClampToEdge, WrapClampToEdge, WrapClampToEdge)
+	tex.WrapMode(WrapDefault, WrapDefault, WrapDefault)
+	tex.FilterMode(FilterMinDefault, FilterMagDefault)
+	tex.MipMapLevels(MipMapDefaultBaseLevel, MipMapDefaultMaxLevel)
 }
 
-func (tex *GLTexture) Alloc(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
-	var dataPtr unsafe.Pointer
-	if data != nil {
-		dataPtr = gl.Ptr(data)
+func (tex *GLTexture) MipMapLevels(base, max int) {
+	gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_BASE_LEVEL, int32(base))
+	gl.TexParameteri(uint32(tex.Target), gl.TEXTURE_MAX_LEVEL, int32(max))
+}
+
+func dataPtr(data interface{}, glType uint32, len int) (unsafe.Pointer, error) {
+	if data == nil {
+		return unsafe.Pointer(nil), nil
 	}
+
+	minSize := getGlTypeSize(glType) * len
+	size := binary.Size(data)
+	if size == -1 {
+		return nil, fmt.Errorf("data is not a fixed-size value or a slice of fixed-size values, or a pointer to such data. Actual type: %T", data)
+	}
+	if size < minSize {
+		return nil, NotEnoughError{ActualSize: int64(size), RequiredSize: int64(minSize)}
+	}
+	return gl.Ptr(data), nil
+}
+
+func (tex *GLTexture) AllocType(level int32, internalFormat uint32, width, height, depth int32, format, dataType uint32, data interface{}) error {
 	switch tex.Target.Dimensions() {
 	case 1:
-		gl.TexImage1D(uint32(tex.Target), level, internalFormat, width, 0, format, dataType, dataPtr)
+		addr, err := dataPtr(data, dataType, int(width))
+		if err != nil {
+			return err
+		}
+		gl.TexImage1D(uint32(tex.Target), level, int32(internalFormat), width, 0, format, dataType, addr)
 	case 2:
-		gl.TexImage2D(uint32(tex.Target), level, internalFormat, width, height, 0, format, dataType, dataPtr)
+		addr, err := dataPtr(data, dataType, int(width*height))
+		if err != nil {
+			return err
+		}
+		gl.TexImage2D(uint32(tex.Target), level, int32(internalFormat), width, height, 0, format, dataType, addr)
 	case 3:
-		gl.TexImage3D(uint32(tex.Target), level, internalFormat, width, height, depth, 0, format, dataType, dataPtr)
+		addr, err := dataPtr(data, dataType, int(width*height*depth))
+		if err != nil {
+			return err
+		}
+		gl.TexImage3D(uint32(tex.Target), level, int32(internalFormat), width, height, depth, 0, format, dataType, addr)
+	default:
+		return fmt.Errorf("texture has unsupported dimensions of %d", tex.Target.Dimensions())
 	}
+	return nil
 }
 
-func (tex *GLTexture) AllocBytes(bytes []byte, level, internalFormat, width, height, depth int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *GLTexture) Alloc(level int32, internalFormat uint32, width, height, depth int32, format uint32, data interface{}) error {
+	typ, _, err := getGlType(data)
+	if err != nil {
+		return err
+	}
+	return tex.AllocType(level, internalFormat, width, height, depth, format, typ, data)
 }
 
-func (tex *GLTexture) AllocEmpty(level, internalFormat, width, height, depth int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, nil)
+func (tex *GLTexture) AllocBytes(bytes []byte, level int32, internalFormat uint32, width, height, depth int32, format uint32) error {
+	return tex.AllocType(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
 }
 
-func (tex *GLTexture) Write(level, x, y, z, width, height, depth int32, format, dataType uint32, data interface{}) {
-	dataPtr := gl.Ptr(data)
+func (tex *GLTexture) AllocEmpty(level int32, internalFormat uint32, width, height, depth int32, format uint32) error {
+	return tex.AllocType(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, nil)
+}
+
+func (tex *GLTexture) WriteType(level, x, y, z, width, height, depth int32, format, dataType uint32, data interface{}) error {
 	switch tex.Target.Dimensions() {
 	case 1:
-		gl.TexSubImage1D(uint32(tex.Target), level, x, width, format, dataType, dataPtr)
+		addr, err := dataPtr(data, dataType, int(width))
+		if err != nil {
+			return err
+		}
+		gl.TexSubImage1D(uint32(tex.Target), level, x, width, format, dataType, addr)
 	case 2:
-		gl.TexSubImage2D(uint32(tex.Target), level, x, y, width, height, format, dataType, dataPtr)
+		addr, err := dataPtr(data, dataType, int(width*height))
+		if err != nil {
+			return err
+		}
+		gl.TexSubImage2D(uint32(tex.Target), level, x, y, width, height, format, dataType, addr)
 	case 3:
-		gl.TexSubImage3D(uint32(tex.Target), level, x, y, z, width, height, depth, format, dataType, dataPtr)
+		addr, err := dataPtr(data, dataType, int(width*height*depth))
+		if err != nil {
+			return err
+		}
+		gl.TexSubImage3D(uint32(tex.Target), level, x, y, z, width, height, depth, format, dataType, addr)
+	default:
+		return fmt.Errorf("texture has unsupported dimensions of %d", tex.Target.Dimensions())
 	}
+	return nil
 }
 
-func (tex *GLTexture) WriteBytes(bytes []byte, level, x, y, z, width, height, depth int32, format uint32) {
-	tex.Write(level, x, y, z, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *GLTexture) Write(level, x, y, z, width, height, depth int32, format uint32, data interface{}) error {
+	typ, _, err := getGlType(data)
+	if err != nil {
+		return err
+	}
+	return tex.WriteType(level, x, y, z, width, height, depth, format, typ, data)
+}
+
+func (tex *GLTexture) WriteBytes(bytes []byte, level, x, y, z, width, height, depth int32, format uint32) error {
+	return tex.WriteType(level, x, y, z, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 type Texture1D struct {
@@ -268,24 +345,32 @@ func (tex *Texture1D) WrapMode(sMode TexWrapMode) {
 	tex.GLTexture.WrapMode(sMode, 0, 0)
 }
 
-func (tex *Texture1D) Alloc(level, internalFormat, width int32, format, dataType uint32, data interface{}) {
-	tex.GLTexture.Alloc(level, internalFormat, width, 0, 0, format, dataType, data)
+func (tex *Texture1D) AllocType(level int32, internalFormat uint32, width int32, format, dataType uint32, data interface{}) error {
+	return tex.GLTexture.AllocType(level, internalFormat, width, 0, 0, format, dataType, data)
 }
 
-func (tex *Texture1D) AllocBytes(bytes []byte, level, internalFormat, width int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *Texture1D) Alloc(level int32, internalFormat uint32, width int32, format uint32, data interface{}) error {
+	return tex.GLTexture.Alloc(level, internalFormat, width, 0, 0, format, data)
 }
 
-func (tex *Texture1D) AllocEmpty(level, internalFormat, width int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, format, gl.UNSIGNED_BYTE, nil)
+func (tex *Texture1D) AllocBytes(level int32, internalFormat uint32, width int32, format uint32, bytes []byte) error {
+	return tex.AllocType(level, internalFormat, width, format, gl.UNSIGNED_BYTE, bytes)
 }
 
-func (tex *Texture1D) Write(level, x, width int32, format, dataType uint32, data interface{}) {
-	tex.GLTexture.Write(level, x, 0, 0, width, 0, 0, format, dataType, data)
+func (tex *Texture1D) AllocEmpty(level int32, internalFormat uint32, width int32, format uint32) error {
+	return tex.AllocType(level, internalFormat, width, format, gl.UNSIGNED_BYTE, nil)
 }
 
-func (tex *Texture1D) WriteBytes(bytes []byte, level, x, width int32, format uint32) {
-	tex.Write(level, x, width, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *Texture1D) WriteType(level, x, width int32, format, dataType uint32, data interface{}) error {
+	return tex.GLTexture.WriteType(level, x, 0, 0, width, 0, 0, format, dataType, data)
+}
+
+func (tex *Texture1D) Write(level, x, width int32, format uint32, data interface{}) error {
+	return tex.GLTexture.Write(level, x, 0, 0, width, 0, 0, format, data)
+}
+
+func (tex *Texture1D) WriteBytes(level, x, width int32, format uint32, bytes []byte) error {
+	return tex.WriteType(level, x, width, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 type Texture2D struct {
@@ -296,24 +381,32 @@ func (tex *Texture2D) WrapMode(sMode, tMode TexWrapMode) {
 	tex.GLTexture.WrapMode(sMode, tMode, 0)
 }
 
-func (tex *Texture2D) Alloc(level, internalFormat, width, height int32, format, dataType uint32, data interface{}) {
-	tex.GLTexture.Alloc(level, internalFormat, width, height, 0, format, dataType, data)
+func (tex *Texture2D) AllocType(level int32, internalFormat uint32, width, height int32, format, dataType uint32, data interface{}) error {
+	return tex.GLTexture.AllocType(level, internalFormat, width, height, 0, format, dataType, data)
 }
 
-func (tex *Texture2D) AllocBytes(bytes []byte, level, internalFormat, width, height int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *Texture2D) Alloc(level int32, internalFormat uint32, width, height int32, format uint32, data interface{}) error {
+	return tex.GLTexture.Alloc(level, internalFormat, width, height, 0, format, data)
 }
 
-func (tex *Texture2D) AllocEmpty(level, internalFormat, width, height int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, format, gl.UNSIGNED_BYTE, nil)
+func (tex *Texture2D) AllocBytes(bytes []byte, level int32, internalFormat uint32, width, height int32, format uint32) error {
+	return tex.AllocType(level, internalFormat, width, height, format, gl.UNSIGNED_BYTE, bytes)
 }
 
-func (tex *Texture2D) Write(level, x, y, width, height int32, format, dataType uint32, data interface{}) {
-	tex.GLTexture.Write(level, x, y, 0, width, height, 0, format, dataType, data)
+func (tex *Texture2D) AllocEmpty(level int32, internalFormat uint32, width, height int32, format uint32) error {
+	return tex.AllocType(level, internalFormat, width, height, format, gl.UNSIGNED_BYTE, nil)
 }
 
-func (tex *Texture2D) WriteBytes(bytes []byte, level, x, y, width, height int32, format uint32) {
-	tex.Write(level, x, y, width, height, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *Texture2D) WriteType(level, x, y, width, height int32, format, dataType uint32, data interface{}) error {
+	return tex.GLTexture.WriteType(level, x, y, 0, width, height, 0, format, dataType, data)
+}
+
+func (tex *Texture2D) Write(level, x, y, width, height int32, format uint32, data interface{}) error {
+	return tex.GLTexture.Write(level, x, y, 0, width, height, 0, format, data)
+}
+
+func (tex *Texture2D) WriteBytes(level, x, y, width, height int32, format uint32, bytes []byte) error {
+	return tex.WriteType(level, x, y, width, height, format, gl.UNSIGNED_BYTE, bytes)
 }
 
 type Texture3D struct {
@@ -338,22 +431,30 @@ func (tex *Texture3D) WrapMode(sMode, tMode, rMode TexWrapMode) {
 	tex.GLTexture.WrapMode(sMode, tMode, rMode)
 }
 
-func (tex *Texture3D) Alloc(level, internalFormat, width, height, depth int32, format, dataType uint32, data interface{}) {
-	tex.GLTexture.Alloc(level, internalFormat, width, height, depth, format, dataType, data)
+func (tex *Texture3D) AllocType(level int32, internalFormat uint32, width, height, depth int32, format, dataType uint32, data interface{}) error {
+	return tex.GLTexture.AllocType(level, internalFormat, width, height, depth, format, dataType, data)
 }
 
-func (tex *Texture3D) AllocBytes(bytes []byte, level, internalFormat, width, height, depth int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *Texture3D) Alloc(level int32, internalFormat uint32, width, height, depth int32, format uint32, data interface{}) error {
+	return tex.GLTexture.Alloc(level, internalFormat, width, height, depth, format, data)
 }
 
-func (tex *Texture3D) AllocEmpty(level, internalFormat, width, height, depth int32, format uint32) {
-	tex.Alloc(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, nil)
+func (tex *Texture3D) AllocBytes(level int32, internalFormat uint32, width, height, depth int32, format uint32, bytes []byte) error {
+	return tex.AllocType(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
 }
 
-func (tex *Texture3D) Write(level, x, y, z, width, height, depth int32, format, dataType uint32, data interface{}) {
-	tex.GLTexture.Write(level, x, y, z, width, height, depth, format, dataType, data)
+func (tex *Texture3D) AllocEmpty(level int32, internalFormat uint32, width, height, depth int32, format uint32) error {
+	return tex.AllocType(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, nil)
 }
 
-func (tex *Texture3D) WriteBytes(bytes []byte, level, x, y, z, width, height, depth int32, format uint32) {
-	tex.Write(level, x, y, z, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
+func (tex *Texture3D) WriteType(level, x, y, z, width, height, depth int32, format, dataType uint32, data interface{}) error {
+	return tex.GLTexture.WriteType(level, x, y, z, width, height, depth, format, dataType, data)
+}
+
+func (tex *Texture3D) Write(level, x, y, z, width, height, depth int32, format uint32, data interface{}) error {
+	return tex.GLTexture.Write(level, x, y, z, width, height, depth, format, data)
+}
+
+func (tex *Texture3D) WriteBytes(level, x, y, z, width, height, depth int32, format uint32, bytes []byte) error {
+	return tex.WriteType(level, x, y, z, width, height, depth, format, gl.UNSIGNED_BYTE, bytes)
 }

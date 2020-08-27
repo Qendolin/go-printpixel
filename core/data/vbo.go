@@ -2,20 +2,10 @@ package data
 
 import (
 	"encoding/binary"
-	"fmt"
-	"reflect"
 
 	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
-
-type TypeError struct {
-	Type reflect.Type
-}
-
-func (terr TypeError) Error() string {
-	return fmt.Sprintf("Invalid dataType %v, doesn't correspond to any gl type", terr.Type)
-}
 
 type Vbo struct {
 	*uint32
@@ -70,7 +60,7 @@ func (vbo *Vbo) Write(mode uint32, data interface{}) {
 func (vbo *Vbo) Layout(index int, size int, dataType interface{}, normalized bool, stride int) (err error) {
 	var glType uint32
 	var isFloat bool
-	glType, isFloat, err = getGlType(reflect.TypeOf(dataType))
+	glType, isFloat, err = getGlType(dataType)
 	if err != nil {
 		return
 	}
@@ -90,45 +80,4 @@ func (vbo *Vbo) MustLayout(index int, size int, dataType interface{}, normalized
 	if err := vbo.Layout(index, size, dataType, normalized, stride); err != nil {
 		panic(err)
 	}
-}
-
-func getGlType(dataType reflect.Type) (glType uint32, float bool, err error) {
-	name := dataType.Name()
-	switch name {
-	case "byte":
-		fallthrough
-	case "uint8":
-		glType = gl.UNSIGNED_BYTE
-	case "int8":
-		glType = gl.BYTE
-	case "int16":
-		glType = gl.SHORT
-	case "uint16":
-		glType = gl.UNSIGNED_SHORT
-	case "int":
-		fallthrough
-	case "rune":
-		fallthrough
-	case "int32":
-		glType = gl.INT
-	case "uint":
-		fallthrough
-	case "uint32":
-		glType = gl.UNSIGNED_INT
-	case "float32":
-		glType = gl.FLOAT
-		float = true
-	case "float16":
-		glType = gl.HALF_FLOAT
-		float = true
-	case "float64":
-		glType = gl.DOUBLE
-		float = true
-	}
-	if glType == 0 {
-		err = TypeError{
-			Type: dataType,
-		}
-	}
-	return
 }

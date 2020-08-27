@@ -21,9 +21,9 @@ func NewGraphic() *Graphic {
 	}
 }
 
-func LoadGraphic(path string) (g *Graphic) {
+func LoadGraphic(path0 string, paths ...string) (g *Graphic) {
 	return &Graphic{
-		Texture: core.LoadTexture(path),
+		Texture: core.MustNewTexture2D(core.InitPaths(0, path0, paths...), data.ColorFormatDefault),
 	}
 }
 
