@@ -16,7 +16,7 @@ func main() {
 	win := setup()
 
 	g := &scene.Graphic{
-		Texture: core.NewTexture2DEmpty(1600, 900),
+		Texture: core.MustNewTexture2D(core.InitEmpty(1600, 900, 0), 0),
 	}
 	win.Child = g
 
@@ -26,7 +26,10 @@ func main() {
 		x := time
 		y := math.Sin(time*math.Pi)*.5 + .5
 		g.Texture.Bind(0)
-		g.Texture.WriteBytes([]byte{255, 255, 255}, 0, 100+int32(x*50)%1400, 100+int32(y*500), 1, 1, gl.RGB)
+		err := g.Texture.WriteBytes(0, 100+int32(x*50)%1400, 100+int32(y*500), 1, 1, gl.RGB, []byte{255, 255, 255})
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	win.Layout()
