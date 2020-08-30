@@ -18,6 +18,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
+
 const pt float32 = 96. / 72.
 const (
 	Width  = 800
