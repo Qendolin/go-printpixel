@@ -182,8 +182,13 @@ func InitBytes(w, h, d int, format data.ColorFormat, layers int, buf0 []byte, bu
 			break
 		}
 
+		if bufs[l*layers] == nil {
+			continue
+		}
+
 		size := len(bufs[l*layers])
 		lvl := make([]byte, size*layers)
+		lvls[l] = lvl
 
 		for i := 0; i < layers; i++ {
 			if l*layers+i >= len(bufs) {
@@ -209,6 +214,10 @@ func InitBytes(w, h, d int, format data.ColorFormat, layers int, buf0 []byte, bu
 	}
 }
 
+func InitEmpty(w, h, d int) TextureInitializer {
+	return InitBytes(w, h, d, gl.RGBA, 0, nil)
+}
+
 type TextureInitializer struct {
 	Width, Height, Depth int
 	Format               data.ColorFormat
@@ -230,9 +239,21 @@ func (td TextureInitializer) WithFilters(minFilter, magFilter data.TexFilterMode
 	return td
 }
 
-func (td TextureInitializer) WithAutoMipMap() TextureInitializer {
+func (td TextureInitializer) WithGeneratedMipMap() TextureInitializer {
 	td.GenerateMipMap = true
 	return td
+}
+
+func (td TextureInitializer) WithLevels(n int) TextureInitializer {
+	dst := make([]interface{}, n)
+	copy(dst, td.Levels)
+	td.Levels = dst
+	return td
+}
+
+func (td TextureInitializer) WithRequiredLevels() TextureInitializer {
+	max := math.Max(float64(td.Width), math.Max(float64(td.Height), float64(td.Depth)))
+	return td.WithLevels(int(math.Ceil(math.Log2(max))))
 }
 
 func (td *TextureInitializer) Level(index int) (interface{}, error) {
