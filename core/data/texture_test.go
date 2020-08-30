@@ -20,8 +20,6 @@ import (
 func TestMain(m *testing.M) {
 	test.ParseArgs()
 	m.Run()
-	cf := data.ColorFormat(2)
-	_ = cf
 }
 
 func TestFileTexture(t *testing.T) {
