@@ -1,335 +1,77 @@
 package font_test
 
 import (
-	"os"
-	"path"
-	"path/filepath"
+	"strings"
 	"testing"
 
-	_ "image/png"
-
-	"github.com/Qendolin/go-printpixel/core"
-	"github.com/Qendolin/go-printpixel/core/data"
 	"github.com/Qendolin/go-printpixel/core/font"
-	"github.com/Qendolin/go-printpixel/core/test"
-	"github.com/Qendolin/go-printpixel/utils"
-	"github.com/go-gl/gl/v3.3-core/gl"
-	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/go-gl/mathgl/mgl32"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestMain(m *testing.M) {
-	test.ParseArgs()
-	m.Run()
+var expected = font.BMF{
+	Base:       29,
+	Width:      512,
+	Height:     512,
+	LineHeight: 36,
+	Face:       "Arial",
+	Size:       36,
+	Characters: map[rune]font.CharDef{
+		'A': {
+			Rune: 'A',
+			X:    0, Y: 0,
+			Width: 23, Height: 23,
+			BearingX: -1, BearingY: 6,
+			Advance: 21,
+			Page:    0,
+		},
+		'L': {
+			Rune: 'L',
+			X:    47, Y: 0,
+			Width: 16, Height: 23,
+			BearingX: 2, BearingY: 6,
+			Advance: 18,
+			Page:    0,
+		},
+		'V': {
+			Rune: 'V',
+			X:    24, Y: 0,
+			Width: 22, Height: 23,
+			BearingX: 0, BearingY: 6,
+			Advance: 21,
+			Page:    0,
+		},
+	},
+	Kernings: map[[2]rune]int{
+		{'A', 'V'}: -2,
+		{'V', 'A'}: -2,
+		{'L', 'V'}: -2,
+	},
 }
 
-const pt float32 = 96. / 72.
-const (
-	Width  = 800
-	Height = 1000
-)
+var given = `info face="Arial" size=36 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=1,1 outline=0
+common lineHeight=36 base=29 scaleW=512 scaleH=512 pages=1 packed=0 alphaChnl=0 redChnl=4 greenChnl=4 blueChnl=4
+page id=0 file="Arial2_0.png"
+chars count=3
+char id=65   x=0     y=0     width=23    height=23    xoffset=-1    yoffset=6     xadvance=21    page=0  chnl=15
+char id=76   x=47    y=0     width=16    height=23    xoffset=2     yoffset=6     xadvance=18    page=0  chnl=15
+char id=86   x=24    y=0     width=22    height=23    xoffset=0     yoffset=6     xadvance=21    page=0  chnl=15
+kernings count=3
+kerning first=86  second=65  amount=-2  
+kerning first=76  second=86  amount=-2  
+kerning first=65  second=86  amount=-2`
 
-func TestFontWrap(t *testing.T) {
-	win, close := test.NewWindow(t)
-	win.SetSize(Width, Height)
-	defer close()
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular.fnt"))
-	require.NoError(t, err)
-	fnt, err := font.Parse(fntdef)
+func TestParse(t *testing.T) {
+	bmf, err := font.Parse(strings.NewReader(given))
 	require.NoError(t, err)
 
-	fontSize := 68 * pt
-	style := font.Style{
-		Size:       fontSize,
-		Kerning:    true,
-		LineHeight: 1,
-		TabSize:    4,
-	}
-
-	text := font.Layout([]rune(
-		"Hello, world!\nThis is a test.\nLVA Ta gj\n"+
-			"This line is really long, it should be broken up.\n"+
-			"AndAWordThatsTooLong. Also, ellipsis is coming, can't see this."), fnt, font.IDK{
-		Ellipsis: true,
-		Height:   Height,
-		Width:    Width,
-	}, style)
-
-	loadFontMesh(text, fnt, style)
-
-	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
-	for i, file := range fnt.Pages {
-		pagePaths[i] = filepath.Join(fntDir, file)
-	}
-	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	require.NoError(t, err)
-	bm.Bind(0)
-
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
-	prog.Bind()
-
-	fontScale := fontSize / float32(fnt.Size)
-	sclX, sclY := win.GetContentScale()
-	mProj := mgl32.Scale3D(2./Width*sclX, 2./Height*sclY, 1.)
-	mModel := mgl32.Translate3D(-Width/2, Height/2, 0).Mul4(mgl32.Scale3D(fontScale, fontScale, 1.))
-	mMP := mProj.Mul4(mModel)
-	prog.MustGetUniform("u_transform").Set(mMP)
-
-	for !win.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, int32(6*len(text)))
-		win.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
-
-func TestTabs(t *testing.T) {
-	win, close := test.NewWindow(t)
-	win.SetSize(Width, Height)
-	defer close()
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular.fnt"))
-	require.NoError(t, err)
-	fnt, err := font.Parse(fntdef)
-	require.NoError(t, err)
-
-	fontSize := 72 * pt
-	style := font.Style{
-		Size:       fontSize,
-		Kerning:    true,
-		LineHeight: 1,
-		TabSize:    4,
-	}
-
-	text := font.Layout([]rune("|\n\t|\n \t|\n  \t|\n   \t|\n    \t|\n|\t|\t|\t|\t|\t|\t|\t_\t|"), fnt, font.IDK{
-		Ellipsis: true,
-		Height:   Height,
-		Width:    Width,
-	}, style)
-
-	loadFontMesh(text, fnt, style)
-
-	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
-	for i, file := range fnt.Pages {
-		pagePaths[i] = filepath.Join(fntDir, file)
-	}
-	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	require.NoError(t, err)
-	bm.Bind(0)
-
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
-	prog.Bind()
-
-	fontScale := fontSize / float32(fnt.Size)
-	sclX, sclY := win.GetContentScale()
-	mProj := mgl32.Scale3D(2./Width*sclX, 2./Height*sclY, 1.)
-	mModel := mgl32.Translate3D(-Width/2, Height/2, 0).Mul4(mgl32.Scale3D(fontScale, fontScale, 1.))
-	mMP := mProj.Mul4(mModel)
-	prog.MustGetUniform("u_transform").Set(mMP)
-
-	for !win.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, int32(6*len(text)))
-		win.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
-
-func TestBM(t *testing.T) {
-	win, close := test.NewWindow(t)
-	win.SetSize(Width, Height)
-	defer close()
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular.fnt"))
-	require.NoError(t, err)
-	fnt, err := font.Parse(fntdef)
-	require.NoError(t, err)
-
-	fontSize := 200 * pt
-	style := font.Style{
-		Size:       fontSize,
-		Kerning:    true,
-		LineHeight: 1,
-		TabSize:    4,
-	}
-
-	text := font.Layout([]rune("Hello World!"), fnt, font.IDK{
-		Ellipsis: true,
-		Height:   Height,
-		Width:    Width,
-	}, style)
-	loadFontMesh(text, fnt, style)
-
-	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
-	for i, file := range fnt.Pages {
-		pagePaths[i] = filepath.Join(fntDir, file)
-	}
-	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	require.NoError(t, err)
-	bm.Bind(0)
-
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
-	prog.Bind()
-
-	fontScale := fontSize / float32(fnt.Size)
-	sclX, sclY := win.GetContentScale()
-	mProj := mgl32.Scale3D(2./Width*sclX, 2./Height*sclY, 1.)
-	mSdfModel := mgl32.Translate3D(-Width/2, Height/2, 0).Mul4(mgl32.Scale3D(fontScale, fontScale, 1.))
-	mSdfMP := mProj.Mul4(mSdfModel)
-
-	prog.MustGetUniform("u_transform").Set(mSdfMP)
-
-	for !win.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, int32(6*len(text)))
-		win.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
-
-func TestSDF(t *testing.T) {
-	win, close := test.NewWindow(t)
-	win.SetSize(Width, Height)
-	defer close()
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular-SDF.fnt"))
-	require.NoError(t, err)
-	fnt, err := font.Parse(fntdef)
-	require.NoError(t, err)
-
-	fontSize := 200 * pt
-	style := font.Style{
-		Size:       fontSize,
-		Kerning:    true,
-		LineHeight: 1,
-		TabSize:    4,
-	}
-
-	text := font.Layout([]rune("Hello World!"), fnt, font.IDK{
-		Ellipsis: true,
-		Height:   Height,
-		Width:    Width,
-	}, style)
-	loadFontMesh(text, fnt, style)
-
-	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := "@mod/assets/fonts/Go"
-	for i, file := range fnt.Pages {
-		pagePaths[i] = path.Join(fntDir, file)
-	}
-	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	require.NoError(t, err)
-	bm.Bind(0)
-
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
-	prog.Bind()
-
-	fontScale := fontSize / float32(fnt.Size)
-	sclX, sclY := win.GetContentScale()
-	mProj := mgl32.Scale3D(2./Width*sclX, 2./Height*sclY, 1.)
-	mModel := mgl32.Translate3D(-Width/2, Height/2, 0).Mul4(mgl32.Scale3D(fontScale, fontScale, 1.))
-	mMP := mProj.Mul4(mModel)
-
-	prog.MustGetUniform("u_type").Set(1)
-	prog.MustGetUniform("u_transform").Set(mMP)
-
-	for !win.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, int32(6*len(text)))
-		win.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
-
-func TestMSDF(t *testing.T) {
-	win, close := test.NewWindow(t)
-	win.SetSize(Width, Height)
-	defer close()
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular-MSDF.fnt"))
-	require.NoError(t, err)
-	fnt, err := font.Parse(fntdef)
-	require.NoError(t, err)
-
-	fontSize := 200 * pt
-	style := font.Style{
-		Size:       fontSize,
-		Kerning:    true,
-		LineHeight: 1,
-		TabSize:    4,
-	}
-
-	text := font.Layout([]rune("Hello World!"), fnt, font.IDK{
-		Ellipsis: true,
-		Height:   Height,
-		Width:    Width,
-	}, style)
-	loadFontMesh(text, fnt, style)
-
-	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
-	for i, file := range fnt.Pages {
-		pagePaths[i] = filepath.Join(fntDir, file)
-	}
-	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	require.NoError(t, err)
-	bm.Bind(0)
-
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
-	prog.Bind()
-
-	fontScale := fontSize / float32(fnt.Size)
-	sclX, sclY := win.GetContentScale()
-	mProj := mgl32.Scale3D(2./Width*sclX, 2./Height*sclY, 1.)
-	mModel := mgl32.Translate3D(-Width/2, Height/2, 0).Mul4(mgl32.Scale3D(fontScale, fontScale, 1.))
-	mMP := mProj.Mul4(mModel)
-
-	prog.MustGetUniform("u_type").Set(2)
-	prog.MustGetUniform("u_transform").Set(mMP)
-
-	for !win.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.DrawArrays(gl.TRIANGLES, 0, int32(6*len(text)))
-		win.SwapBuffers()
-		glfw.PollEvents()
-	}
-}
-
-func loadFontMesh(text []rune, fnt *font.BMF, style font.Style) {
-	verts, texs := font.Mesh(text, fnt, style)
-	vao := data.NewVao(nil)
-	vao.Bind()
-	vBuf := data.NewVbo(nil)
-	vBuf.Bind(gl.ARRAY_BUFFER)
-	vBuf.WriteStatic(verts)
-	vBuf.MustLayout(0, 2, float32(0), false, 0)
-	tBuf := data.NewVbo(nil)
-	tBuf.Bind(gl.ARRAY_BUFFER)
-	tBuf.WriteStatic(texs)
-	tBuf.MustLayout(1, 2, float32(0), false, 0)
+	assert.Equal(t, expected.Base, bmf.Base)
+	assert.Equal(t, expected.Width, bmf.Width)
+	assert.Equal(t, expected.Height, bmf.Height)
+	assert.Equal(t, expected.LineHeight, bmf.LineHeight)
+	assert.Equal(t, expected.Size, bmf.Size)
+	assert.Equal(t, expected.Face, bmf.Face)
+	assert.EqualValues(t, []string{"Arial2_0.png"}, bmf.Pages)
+	assert.EqualValues(t, expected.Characters, bmf.Characters)
+	assert.Equal(t, expected.Kernings, bmf.Kernings)
 }
