@@ -228,47 +228,47 @@ type TextureInitializer struct {
 	MinFilter            data.TexFilterMode
 }
 
-func (td TextureInitializer) As(target data.TexTarget) TextureInitializer {
-	td.Target = target
-	return td
+func (tini TextureInitializer) As(target data.TexTarget) TextureInitializer {
+	tini.Target = target
+	return tini
 }
 
-func (td TextureInitializer) WithFilters(minFilter, magFilter data.TexFilterMode) TextureInitializer {
-	td.MinFilter = minFilter
-	td.MagFilter = magFilter
-	return td
+func (tini TextureInitializer) WithFilters(minFilter, magFilter data.TexFilterMode) TextureInitializer {
+	tini.MinFilter = minFilter
+	tini.MagFilter = magFilter
+	return tini
 }
 
-func (td TextureInitializer) WithGeneratedMipMap() TextureInitializer {
-	td.GenerateMipMap = true
-	return td
+func (tini TextureInitializer) WithGeneratedMipMap() TextureInitializer {
+	tini.GenerateMipMap = true
+	return tini
 }
 
-func (td TextureInitializer) WithLevels(n int) TextureInitializer {
+func (tini TextureInitializer) WithLevels(n int) TextureInitializer {
 	dst := make([]interface{}, n)
-	copy(dst, td.Levels)
-	td.Levels = dst
-	return td
+	copy(dst, tini.Levels)
+	tini.Levels = dst
+	return tini
 }
 
-func (td TextureInitializer) WithRequiredLevels() TextureInitializer {
-	max := math.Max(float64(td.Width), math.Max(float64(td.Height), float64(td.Depth)))
-	return td.WithLevels(int(math.Ceil(math.Log2(max))))
+func (tini TextureInitializer) WithRequiredLevels() TextureInitializer {
+	max := math.Max(float64(tini.Width), math.Max(float64(tini.Height), float64(tini.Depth)))
+	return tini.WithLevels(int(math.Ceil(math.Log2(max))))
 }
 
-func (td *TextureInitializer) Level(index int) (interface{}, error) {
-	if !td.HasLevel(index) {
+func (tini *TextureInitializer) Level(index int) (interface{}, error) {
+	if !tini.HasLevel(index) {
 		return nil, nil
 	}
-	lvl := td.Levels[index]
+	lvl := tini.Levels[index]
 	if err, ok := lvl.(error); ok {
 		return nil, err
 	}
 	return lvl, nil
 }
 
-func (td *TextureInitializer) HasLevel(index int) bool {
-	return index < len(td.Levels)
+func (tini *TextureInitializer) HasLevel(index int) bool {
+	return index < len(tini.Levels)
 }
 
 func calcLevelSize(bw, bh, bd int, typ data.TexTarget, lvl int) (w, h, d int) {
