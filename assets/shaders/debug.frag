@@ -37,12 +37,12 @@ bool num(int n, vec2 p) {
     p.x -= 1.;
     p.x *= float(digits)*1.1;
     p.x += 1.05;
-	bool r;
+	bool r = false;
 	do {
 		int d = n%10;
 		n /= 10;
 		r = r || digit(d, p);
-                p.x += 1.1;
+		p.x += 1.1;
 	} while(n != 0);
 	return r;
 }
