@@ -26,9 +26,9 @@ type boolHint struct {
 
 func (bh boolHint) intValue() int {
 	if bh.Value {
-		return 1
+		return glfw.True
 	}
-	return 0
+	return glfw.False
 }
 
 type intHint struct {
