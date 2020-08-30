@@ -6,6 +6,7 @@ import (
 
 	"github.com/Qendolin/go-printpixel/core/font"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var expected = font.BMF{
@@ -62,7 +63,7 @@ kerning first=65  second=86  amount=-2`
 
 func TestParse(t *testing.T) {
 	bmf, err := font.Parse(strings.NewReader(given))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, expected.Base, bmf.Base)
 	assert.Equal(t, expected.Width, bmf.Width)

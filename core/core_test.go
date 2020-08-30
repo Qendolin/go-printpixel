@@ -14,7 +14,7 @@ import (
 	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -46,13 +46,13 @@ func TestTextureQuad(t *testing.T) {
 	prog.Bind()
 
 	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	img, err := os.Open(absPath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer img.Close()
 
 	tex, err := core.NewTexture2D(core.InitFiles(0, img), data.RGBA8)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	tex.Bind(0)
 
 	core.Quad().Bind()

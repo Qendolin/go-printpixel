@@ -15,6 +15,7 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -27,13 +28,13 @@ func TestFileTexture(t *testing.T) {
 	defer close()
 
 	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	imgFile, err := os.Open(absPath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer imgFile.Close()
 
 	img, _, err := image.Decode(imgFile)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	rgba := image.NewRGBA(image.Rect(0, 0, img.Bounds().Dx(), img.Bounds().Dy()))
 	draw.Draw(rgba, rgba.Rect, img, image.Point{}, draw.Src)
 	buf := rgba.Pix
@@ -43,8 +44,7 @@ func TestFileTexture(t *testing.T) {
 	tex.Bind(0)
 	tex.ApplyDefaults()
 
-	tex.AllocBytes(buf, 0, gl.RGBA, int32(w), int32(h), gl.RGBA)
-	assert.NoError(t, err)
+	assert.NoError(t, tex.AllocBytes(buf, 0, gl.RGBA, int32(w), int32(h), gl.RGBA))
 
 	test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()

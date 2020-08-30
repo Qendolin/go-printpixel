@@ -18,6 +18,7 @@ import (
 	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -39,7 +40,7 @@ func TestWindowNormal(t *testing.T) {
 	}()
 
 	win, err := window.NewCustom("Test Window", 1600, 900, hints, nil, cfg)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	win.GlWindow = test.WrapWindow(win.GlWindow)
 	win.Run()
 }
@@ -73,12 +74,12 @@ func TestGraphic(t *testing.T) {
 	defer close()
 
 	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	imgFile, err := os.Open(absPath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer imgFile.Close()
 	tex, err := core.NewTexture2D(core.InitFiles(0, imgFile), data.ColorFormatDefault)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	win.Child = &scene.Graphic{
 		Texture: tex,
