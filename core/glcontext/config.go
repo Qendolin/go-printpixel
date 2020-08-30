@@ -18,10 +18,11 @@ type Error struct {
 	Message  string
 	Fatal    bool
 	Stack    string
+	Source   string
 }
 
 func (glerr Error) Error() string {
-	return fmt.Sprintf("[%s] %v/%v: %v", glerr.Severity, glerr.Id, glerr.Type, glerr.Message)
+	return fmt.Sprintf("[%s] %v/%v from %v: %v", glerr.Severity, glerr.Id, glerr.Type, glerr.Source, glerr.Message)
 }
 
 type Config struct {
@@ -96,6 +97,23 @@ func debugMessageCallback(errorChan chan<- Error) gl.DebugProc {
 		case gl.DEBUG_SEVERITY_NOTIFICATION:
 			severityStr = "WARNING"
 		}
+		var sourceStr string
+		switch source {
+		case gl.DEBUG_SOURCE_API:
+			sourceStr = "API"
+		case gl.DEBUG_SOURCE_WINDOW_SYSTEM:
+			sourceStr = "WINDOW SYSTEM"
+		case gl.DEBUG_SOURCE_SHADER_COMPILER:
+			sourceStr = "SHADER COMPILER"
+		case gl.DEBUG_SOURCE_THIRD_PARTY:
+			sourceStr = "THIRD PARTY"
+		case gl.DEBUG_SOURCE_APPLICATION:
+			sourceStr = "APPLICATION"
+		case gl.DEBUG_SOURCE_OTHER:
+			sourceStr = "OTHER"
+		default:
+			sourceStr = "UNKNOWN"
+		}
 
 		stack := debug.Stack()
 
@@ -106,6 +124,7 @@ func debugMessageCallback(errorChan chan<- Error) gl.DebugProc {
 			Message:  message,
 			Fatal:    fatal,
 			Stack:    string(stack),
+			Source:   sourceStr,
 		}
 		select {
 		case errorChan <- err:
