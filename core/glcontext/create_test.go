@@ -48,13 +48,15 @@ func TestCreateWindowMaximized(t *testing.T) {
 
 	hints := glwindow.NewHints()
 	hints.Maximized.Value = true
-	hints.Visible.Value = false
+	hints.Visible.Value = true
 	win, err := glwindow.New(hints, "Test Window", 1, 1, nil)
 	defer win.Destroy()
 	assert.NoError(t, err)
 	assert.NotNil(t, win)
 	w, h := win.GetSize()
-	assert.True(t, w == vidMode.Width && h == vidMode.Height)
+	left, top, right, bot := win.GetVisibleFrameSize()
+	assert.Equal(t, vidMode.Width-left-right, w)
+	assert.Equal(t, vidMode.Height-top-bot, h)
 }
 
 func TestCreateWindowFullscreen(t *testing.T) {
