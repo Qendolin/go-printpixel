@@ -138,6 +138,9 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 	if hints.Vsync.Value {
 		glfw.SwapInterval(1)
 	}
+	if hints.Maximized.Value && glfwWin.GetAttrib(glfw.Maximized) != glfw.True {
+		glfwWin.Maximize()
+	}
 
 	glfwWin.SetFramebufferSizeCallback(func(_ *glfw.Window, w, h int) {
 		if glcontext.Status()&glcontext.StatusGlInitialized != 0 {

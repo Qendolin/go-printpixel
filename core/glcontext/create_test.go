@@ -48,10 +48,11 @@ func TestCreateWindowMaximized(t *testing.T) {
 	hints := glwindow.NewHints()
 	hints.Maximized.Value = true
 	hints.Visible.Value = true
-	win, err := glwindow.New(hints, "Test Window", 1, 1, nil)
+	win, err := glwindow.New(hints, "Test Window", 99, 99, nil)
 	defer win.Destroy()
 	require.NoError(t, err)
 	require.NotNil(t, win)
+	assert.True(t, win.GetAttrib(glfw.Maximized) == glfw.True)
 	w, h := win.GetSize()
 	left, top, right, bot := win.GetVisibleFrameSize()
 	assert.Equal(t, vidMode.Width-left-right, w)
