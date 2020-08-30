@@ -1,304 +1,290 @@
 package font
 
 import (
-	"sort"
-	"unicode"
+	"bufio"
+	"bytes"
+	"encoding/xml"
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"strconv"
+	"strings"
 )
 
-type Breaker interface {
-	Break(curr rune, next rune) BreakConstraint
+type ParseError struct {
+	LineNumber int
+	Line       string
+	Err        error
 }
 
-type Style struct {
-	Kerning    bool
-	Size       float32
-	LineHeight float32
-	TabSize    int
+func (e ParseError) Error() string {
+	return fmt.Sprintf("Error in line %v: '%v'", e.LineNumber, e.Line)
 }
 
-type IDK struct {
-	Breaker  Breaker
-	Width    float32
-	Height   float32
-	Ellipsis bool
+func (e ParseError) Unwrap() error {
+	return e.Err
 }
 
-type BreakConstraint int
-
-const (
-	PreventBreak BreakConstraint = -1
-	CanBreak     BreakConstraint = 0
-	ShouldBreak  BreakConstraint = 1
-	ForceBreak   BreakConstraint = 2
-)
-
-func containsRune(slice []rune, r rune) bool {
-	i := sort.Search(len(slice), func(i int) bool {
-		return slice[i] >= r
-	})
-	return i < len(slice) && slice[i] == r
+type Font struct {
+	LineHeight    int
+	Base          int
+	Width, Height int
+	Pages         []string
+	Characters    map[rune]CharDef
+	Kernings      map[[2]rune]int
+	Size          int
+	Face          string
 }
 
-type ListBreaker struct {
-	ForceAfter    []rune
-	ShouldBefore  []rune
-	ShouldAfter   []rune
-	PreventBefore []rune
-	PreventAfter  []rune
+type CharDef struct {
+	Rune               rune
+	X, Y               int
+	Width, Height      int
+	BearingX, BearingY int
+	Advance            int
+	Page               int
 }
 
-func NewListBreaker(forceAfter, shouldBefore, shouldAfter, preventBefore, preventAfter []rune) ListBreaker {
-	br := ListBreaker{
-		ForceAfter:    forceAfter,
-		ShouldBefore:  shouldBefore,
-		ShouldAfter:   shouldAfter,
-		PreventBefore: preventBefore,
-		PreventAfter:  preventAfter,
+func Parse(file io.Reader) (fnt *Font, err error) {
+	buf := bufio.NewReader(file)
+	start, _ := buf.Peek(5)
+	if bytes.Equal(start, ([]byte)("<?xml")) {
+		return ParseXML(buf)
 	}
-	// sort slices to make search faster
-	sort.Slice(br.ForceAfter, func(i, j int) bool {
-		return br.ForceAfter[i] < br.ForceAfter[j]
-	})
-	sort.Slice(br.ShouldAfter, func(i, j int) bool {
-		return br.ShouldAfter[i] < br.ShouldAfter[j]
-	})
-	sort.Slice(br.PreventAfter, func(i, j int) bool {
-		return br.PreventAfter[i] < br.PreventAfter[j]
-	})
-	sort.Slice(br.ShouldBefore, func(i, j int) bool {
-		return br.ShouldBefore[i] < br.ShouldBefore[j]
-	})
-	sort.Slice(br.PreventBefore, func(i, j int) bool {
-		return br.PreventBefore[i] < br.PreventBefore[j]
-	})
-	return br
+	return ParseText(buf)
 }
 
-func (br ListBreaker) Break(curr, next rune) BreakConstraint {
-	if containsRune(br.ForceAfter, curr) {
-		if curr == '\r' && next == '\n' {
-			return PreventBreak
-		}
-		return ForceBreak
-	}
-	if containsRune(br.PreventBefore, next) {
-		return PreventBreak
-	}
-	if containsRune(br.PreventAfter, curr) {
-		return PreventBreak
-	}
-	if containsRune(br.ShouldAfter, curr) {
-		if curr == '\u002D' && unicode.IsDigit(next) {
-			return PreventBreak
-		}
-		return ShouldBreak
-	}
-	if containsRune(br.ShouldBefore, next) {
-		return ShouldBreak
-	}
-	return CanBreak
-}
-
-var DefaultBreaker = NewListBreaker(
-	[]rune{'\n', '\u000C', '\u000B', '\r', '\u2028', '\u2029'},
-	[]rune{'\u00B4', '\u1FFD', '\u02DF', '\u02C8', '\u02CC', '\u002F'},
-	[]rune{'\u2014', '\u1680', '\u2000', '\u2001', '\u2002', ' ', '\u2003', '\u2004', '\u2005', '\u2006', '\u2008', '\u2009', '\u200A', '\u205F', '\u3000', '\u0009', '\u00AD', '\u058A', '\u2010', '\u2012', '\u2013', '\u05BE', '\u0F0B', '\u1316', '\u17D8', '\u17DA', '\u2027', '\u007C', '\u002D'},
-	[]rune{'\r', '\n', '\u00A0', '\u202F', '\u180E', '\u034F', '\u2007', '\u2011', '\u0F08', '\u0F0C', '\u0F12', '\u035C', '\u035D', '\u035E', '\u035F', '\u0360', '\u0361', '\u0362', '\u200D', '\u2060', '\uFEFF'},
-	[]rune{'\u00A0', '\u202F', '\u180E', '\u034F', '\u2007', '\u2011', '\u0F08', '\u0F0C', '\u0F12', '\u035C', '\u035D', '\u035E', '\u035F', '\u0360', '\u0361', '\u0362', '\u200D', '\u2060', '\uFEFF'},
-)
-
-type preventBreaker struct{}
-
-func (br preventBreaker) Break(a, b rune) BreakConstraint {
-	return PreventBreak
-}
-
-var PreventBreaker = preventBreaker{}
-
-func calcTabWidth(tabSize int, bmf *BMF) int {
-	if chr, ok := bmf.Characters[' ']; ok {
-		return tabSize * chr.Advance
-	}
-	chr := bmf.Characters[0]
-	return tabSize * chr.Advance
-}
-
-func Layout(text []rune, bmf *BMF, idk IDK, style Style) []rune {
-	if idk.Breaker == nil {
-		idk.Breaker = DefaultBreaker
-	}
-	if style.TabSize == 0 {
-		style.TabSize = 1
-	}
-
-	scale := style.Size / float32(bmf.Size)
-	lineWidth := int(idk.Width / scale)
-	lines := int(idk.Height / float32(bmf.LineHeight) / scale / style.LineHeight)
-	var ellipsisWidth int
-	var ellipsis []rune
-	if idk.Ellipsis {
-		// Pick ellipsis character if it exists
-		if chr, ok := bmf.Characters['\u2026']; ok {
-			ellipsisWidth = chr.Advance
-			ellipsis = []rune{'\u2026'}
-		} else if chr, ok = bmf.Characters['.']; ok {
-			w := chr.Advance
-			if k, ok := bmf.Kernings[[2]rune{'.', '.'}]; ok && style.Kerning {
-				w += k
+func ParseText(file io.Reader) (fnt *Font, err error) {
+	var lineNr int
+	var line string
+	defer func() {
+		if err != nil {
+			err = ParseError{
+				Line:       line,
+				LineNumber: lineNr,
+				Err:        err,
 			}
-			ellipsisWidth = 3 * w
-			ellipsis = []rune{'.', '.', '.'}
-		} else {
-			idk.Ellipsis = false
+		}
+	}()
+	fnt = &Font{
+		Characters: map[rune]CharDef{},
+		Kernings:   map[[2]rune]int{},
+	}
+	sc := bufio.NewScanner(file)
+	for sc.Scan() {
+		lineNr++
+		line = sc.Text()
+		tag, attribs, strs, err := parseTag(line)
+		if err != nil {
+			return nil, err
+		}
+		switch tag {
+		case "info":
+			for k, v := range attribs {
+				switch k {
+				case "size":
+					fnt.Size = v
+				case "face":
+					fnt.Face = strs[v]
+				}
+			}
+		case "char":
+			var char CharDef
+			for k, v := range attribs {
+				switch k {
+				case "id":
+					char.Rune = rune(v)
+				case "x":
+					char.X = v
+				case "y":
+					char.Y = v
+				case "width":
+					char.Width = v
+				case "height":
+					char.Height = v
+				case "yoffset":
+					char.BearingY = v
+				case "xoffset":
+					char.BearingX = v
+				case "xadvance":
+					char.Advance = v
+				case "page":
+					char.Page = v
+				}
+			}
+			fnt.Characters[char.Rune] = char
+		case "common":
+			for k, v := range attribs {
+				switch k {
+				case "lineHeight":
+					fnt.LineHeight = v
+				case "base":
+					fnt.Base = v
+				case "scaleW":
+					fnt.Width = v
+				case "scaleH":
+					fnt.Height = v
+				case "pages":
+					fnt.Pages = make([]string, v)
+				}
+			}
+		case "page":
+			var id int
+			var file string
+			for k, v := range attribs {
+				switch k {
+				case "id":
+					id = v
+				case "file":
+					file = strs[v]
+				}
+			}
+			fnt.Pages[id] = file
+		case "kerning":
+			var first, second, amount int
+			for k, v := range attribs {
+				switch k {
+				case "first":
+					first = v
+				case "second":
+					second = v
+				case "amount":
+					amount = v
+				}
+			}
+			fnt.Kernings[[2]rune{rune(first), rune(second)}] = amount
 		}
 	}
-	tabWidth := calcTabWidth(style.TabSize, bmf)
+	return fnt, sc.Err()
+}
 
-	var res []rune
-	var word []rune
-	var wordWidth int
-	var px, line int
-	for i, chr := range text {
-		var next rune
-		if i+1 < len(text) {
-			next = text[i+1]
-		}
-		def, _ := bmf.Characters[chr]
-		if chr == '\t' {
-			def.Advance = tabWidth - (px+wordWidth)%tabWidth
-		}
-		br := idk.Breaker.Break(chr, next)
-		width := def.Advance
-		if k, ok := bmf.Kernings[[2]rune{chr, next}]; ok && style.Kerning {
-			width += k
-		}
-		futureLineWidth := px + wordWidth + width
+func parseTag(line string) (name string, values map[string]int, strs []string, err error) {
+	values = map[string]int{}
+	strs = []string{}
 
-		if line+1 == lines {
-			if br == ForceBreak || futureLineWidth >= lineWidth-ellipsisWidth {
-				line++
-				break
-			}
-			word = append(word, chr)
-			wordWidth += width
+	var stripped string
+	rd := bufio.NewReader(strings.NewReader(line))
+	for {
+		start, err := rd.ReadString('"')
+		stripped += start
+		if errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			return "", nil, nil, err
+		}
+		str, err := rd.ReadString('"')
+		if errors.Is(err, io.EOF) {
+			return "", nil, nil, fmt.Errorf("expected \"")
+		}
+		strs = append(strs, str[:len(str)-1])
+	}
+
+	fields := strings.Fields(stripped)
+	if len(fields) == 0 {
+		return "", nil, nil, fmt.Errorf("empty tag")
+	}
+
+	strIdx := 0
+	for i, f := range fields {
+		if i == 0 {
+			name = f
 			continue
 		}
 
-		switch br {
-		case ForceBreak:
-			word = append(word, '\n')
-			res = append(res, word...)
-			line++
-			px = 0
-			word = []rune{}
-			wordWidth = 0
-		case PreventBreak:
-			word = append(word, chr)
-			wordWidth += width
-		case ShouldBreak:
-			if futureLineWidth > lineWidth {
-				word = append(word, '\n', chr)
-				res = append(res, word...)
-				line++
-				px = width
-			} else {
-				word = append(word, chr)
-				res = append(res, word...)
-				px += wordWidth + width
-			}
-			word = []rune{}
-			wordWidth = 0
-		case CanBreak:
-			if wordWidth+width > lineWidth {
-				// word is too long
-				word = append(word, '\n')
-				res = append(res, word...)
-				line++
-				px = 0
-				word = []rune{chr}
-				wordWidth = width
-			} else if futureLineWidth > lineWidth {
-				// line is too long
-				word = append(word, chr)
-				res = append(res, '\n')
-				line++
-				px = 0
-				wordWidth += width
-			} else {
-				word = append(word, chr)
-				wordWidth += width
-			}
+		kv := strings.Split(f, "=")
+		if len(kv) != 2 {
+			return "", nil, nil, fmt.Errorf("expected key-value pair")
+		}
+		key, value := kv[0], kv[1]
+		if value == "\"" {
+			values[key] = strIdx
+			strIdx++
+		} else if num, err := strconv.Atoi(value); err == nil {
+			values[key] = num
 		}
 	}
-	if line == lines {
-		word = append(word, ellipsis...)
-	}
-	res = append(res, word...)
-	return res
+
+	return
 }
 
-type BrokenText struct {
-	Text       string
-	Kerning    bool
-	Size       float32
-	LineHeight float32
+type XMLFont struct {
+	Info struct {
+		Face string `xml:"face,attr"`
+		Size int    `xml:"size,attr"`
+	} `xml:"info"`
+	Common struct {
+		LineHeight int `xml:"lineHeight,attr"`
+		Base       int `xml:"base,attr"`
+		ScaleW     int `xml:"scaleW,attr"`
+		ScaleH     int `xml:"scaleH,attr"`
+		Pages      int `xml:"pages,attr"`
+	} `xml:"common"`
+	Pages []struct {
+		Id   int    `xml:"id,attr"`
+		File string `xml:"file,attr"`
+	} `xml:"pages>page"`
+	Chars []struct {
+		Id       rune `xml:"id,attr"`
+		X        int  `xml:"x,attr"`
+		Y        int  `xml:"y,attr"`
+		Width    int  `xml:"width,attr"`
+		Height   int  `xml:"height,attr"`
+		XOffset  int  `xml:"xoffset,attr"`
+		YOffset  int  `xml:"yoffset,attr"`
+		XAdvance int  `xml:"xadvance,attr"`
+		Page     int  `xml:"page,attr"`
+	} `xml:"chars>char"`
+	Kernings []struct {
+		First  rune `xml:"first,attr"`
+		Second rune `xml:"second,attr"`
+		Amount int  `xml:"amount,attr"`
+	} `xml:"kernings>kerning"`
 }
 
-func Mesh(text []rune, bmf *BMF, style Style) (v []float32, t []float32) {
-	if style.TabSize == 0 {
-		style.TabSize = 1
+func ParseXML(file io.Reader) (*Font, error) {
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	xfnt := XMLFont{}
+	err = xml.Unmarshal(data, &xfnt)
+	if err != nil {
+		return nil, err
 	}
 
-	tabWidth := calcTabWidth(style.TabSize, bmf)
-	sx, sy := float32(bmf.Width), float32(bmf.Height)
-	px, py := 0, 0
-	verts := make([]float32, 0, len(text)*12)
-	texs := make([]float32, 0, len(text)*12)
-	for i, chr := range text {
-		if chr == '\n' {
-			py -= int(float32(bmf.LineHeight) * style.LineHeight)
-			px = 0
-			continue
-		}
-		def, ok := bmf.Characters[chr]
-		if !ok {
-			if chr == '\t' {
-				px += tabWidth - px%tabWidth
-			}
-			if unicode.IsControl(chr) {
-				continue
-			}
-			if def, ok = bmf.Characters[0]; !ok {
-				continue
-			}
-		}
+	pages := make([]string, len(xfnt.Pages))
+	for i, p := range xfnt.Pages {
+		pages[i] = p.File
+	}
 
-		if def.Width != 0 && def.Height != 0 {
-			rx := px + def.BearingX
-			ry := py - def.BearingY
-			verts = append(verts,
-				float32(rx), float32(ry),
-				float32(rx+def.Width), float32(ry),
-				float32(rx+def.Width), float32(ry-def.Height),
-				float32(rx+def.Width), float32(ry-def.Height),
-				float32(rx), float32(ry-def.Height),
-				float32(rx), float32(ry))
-			pg := float32(def.Page)
-			texs = append(texs,
-				float32(def.X)/sx+pg, float32(def.Y)/sy,
-				float32(def.X+def.Width)/sx+pg, float32(def.Y)/sy,
-				float32(def.X+def.Width)/sx+pg, float32(def.Y+def.Height)/sy,
-				float32(def.X+def.Width)/sx+pg, float32(def.Y+def.Height)/sy,
-				float32(def.X)/sx+pg, float32(def.Y+def.Height)/sy,
-				float32(def.X)/sx+pg, float32(def.Y)/sy)
-		}
-
-		px += def.Advance
-		if i+1 < len(text) && style.Kerning {
-			if amount, ok := bmf.Kernings[[2]rune{chr, text[i+1]}]; ok {
-				px += amount
-			}
+	chars := make(map[rune]CharDef, len(xfnt.Chars))
+	for _, chr := range xfnt.Chars {
+		chars[chr.Id] = CharDef{
+			Rune: chr.Id,
+			X:    chr.X, Y: chr.Y,
+			Width: chr.Width, Height: chr.Height,
+			BearingX: chr.XOffset, BearingY: chr.YOffset,
+			Advance: chr.XAdvance,
+			Page:    chr.Page,
 		}
 	}
-	return verts, texs
+
+	kerns := make(map[[2]rune]int, len(xfnt.Kernings))
+	for _, k := range xfnt.Kernings {
+		kerns[[2]rune{k.First, k.Second}] = k.Amount
+	}
+
+	fnt := Font{
+		LineHeight: xfnt.Common.LineHeight,
+		Base:       xfnt.Common.Base,
+		Width:      xfnt.Common.ScaleW,
+		Height:     xfnt.Common.ScaleH,
+		Pages:      pages,
+		Characters: chars,
+		Kernings:   kerns,
+		Size:       xfnt.Info.Size,
+		Face:       xfnt.Info.Face,
+	}
+	return &fnt, nil
 }
