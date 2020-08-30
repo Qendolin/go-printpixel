@@ -50,6 +50,10 @@ func TestCreateWindowMaximized(t *testing.T) {
 	hints.Visible.Value = true
 	win, err := glwindow.New(hints, "Test Window", 99, 99, nil)
 	defer win.Destroy()
+	glfw.PollEvents()
+	win.SwapBuffers()
+	glfw.PollEvents()
+	win.SwapBuffers()
 	require.NoError(t, err)
 	require.NotNil(t, win)
 	assert.True(t, win.GetAttrib(glfw.Maximized) == glfw.True)
