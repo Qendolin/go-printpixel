@@ -9,6 +9,7 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -17,22 +18,20 @@ func TestMain(m *testing.M) {
 }
 
 func TestGlfwInit(t *testing.T) {
-	err := glcontext.InitGlfw()
-	assert.NoError(t, err)
+	assert.NoError(t, glcontext.InitGlfw())
 	defer glcontext.Terminate()
 }
 
 func TestCreateWindowNormal(t *testing.T) {
-	err := glcontext.InitGlfw()
-	assert.NoError(t, err)
+	require.NoError(t, glcontext.InitGlfw())
 	defer glcontext.Terminate()
 
 	hints := glwindow.NewHints()
 	hints.Visible.Value = false
 	win, err := glwindow.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
-	assert.NoError(t, err)
-	assert.NotNil(t, win)
+	require.NoError(t, err)
+	require.NotNil(t, win)
 	w, h := win.GetSize()
 	assert.Equal(t, 800, w)
 	assert.Equal(t, 450, h)
@@ -40,7 +39,7 @@ func TestCreateWindowNormal(t *testing.T) {
 
 func TestCreateWindowMaximized(t *testing.T) {
 	err := glcontext.InitGlfw()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer glcontext.Terminate()
 
 	monitor := glfw.GetPrimaryMonitor()
@@ -51,8 +50,8 @@ func TestCreateWindowMaximized(t *testing.T) {
 	hints.Visible.Value = true
 	win, err := glwindow.New(hints, "Test Window", 1, 1, nil)
 	defer win.Destroy()
-	assert.NoError(t, err)
-	assert.NotNil(t, win)
+	require.NoError(t, err)
+	require.NotNil(t, win)
 	w, h := win.GetSize()
 	left, top, right, bot := win.GetVisibleFrameSize()
 	assert.Equal(t, vidMode.Width-left-right, w)
@@ -61,7 +60,7 @@ func TestCreateWindowMaximized(t *testing.T) {
 
 func TestCreateWindowFullscreen(t *testing.T) {
 	err := glcontext.InitGlfw()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer glcontext.Terminate()
 
 	monitor := glfw.GetPrimaryMonitor()
@@ -72,8 +71,8 @@ func TestCreateWindowFullscreen(t *testing.T) {
 	hints.Visible.Value = false
 	win, err := glwindow.New(hints, "Test Window", 1920, 1080, nil)
 	defer win.Destroy()
-	assert.NoError(t, err)
-	assert.NotNil(t, win)
+	require.NoError(t, err)
+	require.NotNil(t, win)
 	w, h := win.GetSize()
 	assert.Equal(t, vidMode.Width, w)
 	assert.Equal(t, vidMode.Height, h)
@@ -81,14 +80,14 @@ func TestCreateWindowFullscreen(t *testing.T) {
 
 func TestGlInit(t *testing.T) {
 	err := glcontext.InitGlfw()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer glcontext.Terminate()
 
 	hints := glwindow.NewHints()
 	hints.Visible.Value = false
 	win, err := glwindow.New(hints, "Test Window", 800, 450, nil)
 	defer win.Destroy()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	win.MakeContextCurrent()
 	cfg := glcontext.NewGlConfig(0)
 	cfg.Debug = true

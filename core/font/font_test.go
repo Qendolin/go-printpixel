@@ -15,7 +15,7 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -37,9 +37,9 @@ func TestFontWrap(t *testing.T) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	fntdef, err := os.Open(utils.MustResolvePath("res://assets/fonts/Go/Regular.fnt"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fontSize := 68 * pt
 	style := font.Style{
@@ -68,7 +68,7 @@ func TestFontWrap(t *testing.T) {
 	bm, err := core.NewTexture3D(core.
 		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
 		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	bm.Bind(0)
 
 	prog := test.NewProgram(t, "res://assets/shaders/text_test.vert", "res://assets/shaders/text_test.frag")
@@ -97,9 +97,9 @@ func TestTabs(t *testing.T) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	fntdef, err := os.Open(utils.MustResolvePath("res://assets/fonts/Go/Regular.fnt"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fontSize := 72 * pt
 	style := font.Style{
@@ -125,7 +125,7 @@ func TestTabs(t *testing.T) {
 	bm, err := core.NewTexture3D(core.
 		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
 		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	bm.Bind(0)
 
 	prog := test.NewProgram(t, "res://assets/shaders/text_test.vert", "res://assets/shaders/text_test.frag")
@@ -154,9 +154,9 @@ func TestBM(t *testing.T) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	fntdef, err := os.Open(utils.MustResolvePath("res://assets/fonts/Go/Regular.fnt"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fontSize := 200 * pt
 	style := font.Style{
@@ -181,7 +181,7 @@ func TestBM(t *testing.T) {
 	bm, err := core.NewTexture3D(core.
 		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
 		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	bm.Bind(0)
 
 	prog := test.NewProgram(t, "res://assets/shaders/text_test.vert", "res://assets/shaders/text_test.frag")
@@ -211,9 +211,9 @@ func TestSDF(t *testing.T) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	fntdef, err := os.Open(utils.MustResolvePath("res://assets/fonts/Go/Regular-SDF.fnt"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fontSize := 200 * pt
 	style := font.Style{
@@ -238,7 +238,7 @@ func TestSDF(t *testing.T) {
 	bm, err := core.NewTexture3D(core.
 		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
 		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	bm.Bind(0)
 
 	prog := test.NewProgram(t, "res://assets/shaders/text_test.vert", "res://assets/shaders/text_test.frag")
@@ -269,9 +269,9 @@ func TestMSDF(t *testing.T) {
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	fntdef, err := os.Open(utils.MustResolvePath("res://assets/fonts/Go/Regular-MSDF.fnt"))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	fontSize := 300 * pt
 	style := font.Style{
@@ -296,7 +296,7 @@ func TestMSDF(t *testing.T) {
 	bm, err := core.NewTexture3D(core.
 		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
 		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	bm.Bind(0)
 
 	prog := test.NewProgram(t, "res://assets/shaders/text_test.vert", "res://assets/shaders/text_test.frag")
