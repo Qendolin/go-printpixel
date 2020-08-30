@@ -150,6 +150,7 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 		Window:   glfwWin,
 		lastSwap: time.Now(),
 		id:       NewId(),
+		problems: map[problem]bool{},
 	}
 	id := x.id
 	glfwWin.SetUserPointer(gl.Ptr(&id))
