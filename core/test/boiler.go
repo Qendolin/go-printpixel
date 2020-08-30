@@ -43,6 +43,8 @@ func NewWindow(t *testing.T) (w glwindow.Extended, close func()) {
 	win := TestingWindow{glfwWin, 0, Args.Headless}
 
 	win.MakeContextCurrent()
+	left, top, _, _ := win.GetVisibleFrameSize()
+	win.SetPos(left, top)
 
 	cfg := glcontext.NewGlConfig(0)
 	cfg.Debug = true
