@@ -284,6 +284,10 @@ func (tex *GLTexture) AllocType(level int32, internalFormat uint32, width, heigh
 }
 
 func (tex *GLTexture) Alloc(level int32, internalFormat uint32, width, height, depth int32, format uint32, data interface{}) error {
+	if data == nil {
+		return tex.AllocType(level, internalFormat, width, height, depth, format, gl.UNSIGNED_BYTE, data)
+	}
+
 	typ, _, err := getGlType(data)
 	if err != nil {
 		return err
