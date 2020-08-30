@@ -23,10 +23,12 @@ func main() {
 	win := setup()
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	tex := core.LoadTexture("./star.png")
+	tex := core.MustNewTexture2D(core.
+		InitPaths(0, "./star.png").
+		WithFilters(data.FilterLinearMipMapLinear, data.FilterLinear).
+		WithRequiredLevels().
+		WithGeneratedMipMap(), 0)
 	tex.Bind(0)
-	tex.FilterMode(data.FilterLinearMipMapLinear, data.FilterLinear)
-	tex.GenerateMipmap()
 
 	starStack := &scene.Stack{
 		Children: make([]scene.Layoutable, Stars),
