@@ -59,9 +59,6 @@ func InitGl(cfg Config) error {
 }
 
 func InitGlfw() error {
-	if status&StatusGlfwInitialized != 0 {
-		return nil
-	}
 	err := glfw.Init()
 	if err == nil {
 		status |= StatusGlfwInitialized
