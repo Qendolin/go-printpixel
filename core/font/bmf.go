@@ -2,24 +2,27 @@ package font
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strconv"
 	"strings"
 )
 
-type FormatError struct {
+type ParseError struct {
 	LineNumber int
 	Line       string
 	Err        error
 }
 
-func (e FormatError) Error() string {
+func (e ParseError) Error() string {
 	return fmt.Sprintf("Error in line %v: '%v'", e.LineNumber, e.Line)
 }
 
-func (e FormatError) Unwrap() error {
+func (e ParseError) Unwrap() error {
 	return e.Err
 }
 
@@ -44,11 +47,20 @@ type CharDef struct {
 }
 
 func Parse(file io.Reader) (bmf *BMF, err error) {
+	buf := bufio.NewReader(file)
+	start, _ := buf.Peek(5)
+	if bytes.Equal(start, ([]byte)("<?xml")) {
+		return ParseXML(buf)
+	}
+	return ParseText(buf)
+}
+
+func ParseText(file io.Reader) (bmf *BMF, err error) {
 	var lineNr int
 	var line string
 	defer func() {
 		if err != nil {
-			err = FormatError{
+			err = ParseError{
 				Line:       line,
 				LineNumber: lineNr,
 				Err:        err,
@@ -194,4 +206,85 @@ func parseTag(line string) (name string, values map[string]int, strs []string, e
 	}
 
 	return
+}
+
+type XMLFont struct {
+	Info struct {
+		Face string `xml:"face,attr"`
+		Size int    `xml:"size,attr"`
+	} `xml:"info"`
+	Common struct {
+		LineHeight int `xml:"lineHeight,attr"`
+		Base       int `xml:"base,attr"`
+		ScaleW     int `xml:"scaleW,attr"`
+		ScaleH     int `xml:"scaleH,attr"`
+		Pages      int `xml:"pages,attr"`
+	} `xml:"common"`
+	Pages []struct {
+		Id   int    `xml:"id,attr"`
+		File string `xml:"file,attr"`
+	} `xml:"pages>page"`
+	Chars []struct {
+		Id       rune `xml:"id,attr"`
+		X        int  `xml:"x,attr"`
+		Y        int  `xml:"y,attr"`
+		Width    int  `xml:"width,attr"`
+		Height   int  `xml:"height,attr"`
+		XOffset  int  `xml:"xoffset,attr"`
+		YOffset  int  `xml:"yoffset,attr"`
+		XAdvance int  `xml:"xadvance,attr"`
+		Page     int  `xml:"page,attr"`
+	} `xml:"chars>char"`
+	Kernings []struct {
+		First  rune `xml:"first,attr"`
+		Second rune `xml:"second,attr"`
+		Amount int  `xml:"amount,attr"`
+	} `xml:"kernings>kerning"`
+}
+
+func ParseXML(file io.Reader) (bmf *BMF, err error) {
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+	xfnt := XMLFont{}
+	err = xml.Unmarshal(data, &xfnt)
+	if err != nil {
+		return nil, err
+	}
+
+	pages := make([]string, len(xfnt.Pages))
+	for i, p := range xfnt.Pages {
+		pages[i] = p.File
+	}
+
+	chars := make(map[rune]CharDef, len(xfnt.Chars))
+	for _, chr := range xfnt.Chars {
+		chars[chr.Id] = CharDef{
+			Rune: chr.Id,
+			X:    chr.X, Y: chr.Y,
+			Width: chr.Width, Height: chr.Height,
+			BearingX: chr.XOffset, BearingY: chr.YOffset,
+			Advance: chr.XAdvance,
+			Page:    chr.Page,
+		}
+	}
+
+	kerns := make(map[[2]rune]int, len(xfnt.Kernings))
+	for _, k := range xfnt.Kernings {
+		kerns[[2]rune{k.First, k.Second}] = k.Amount
+	}
+
+	fnt := BMF{
+		LineHeight: xfnt.Common.LineHeight,
+		Base:       xfnt.Common.Base,
+		Width:      xfnt.Common.ScaleW,
+		Height:     xfnt.Common.ScaleH,
+		Pages:      pages,
+		Characters: chars,
+		Kernings:   kerns,
+		Size:       xfnt.Info.Size,
+		Face:       xfnt.Info.Face,
+	}
+	return &fnt, nil
 }
