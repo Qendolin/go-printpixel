@@ -89,7 +89,14 @@ type Extended interface {
 	Delta() time.Duration
 	GetGLFWWindow() *glfw.Window
 	Id() uint64
+	HasProblem(problem) bool
 }
+
+type problem string
+
+const (
+	CannotMaximize problem = "the window cannot be maximized, this is likely a system bug"
+)
 
 type extWindow struct {
 	*glfw.Window
@@ -97,6 +104,7 @@ type extWindow struct {
 	d        time.Duration
 	cbs      callbacks
 	id       uint64
+	problems map[problem]bool
 }
 
 func (w *extWindow) GetGLFWWindow() *glfw.Window {
@@ -115,6 +123,10 @@ func (w *extWindow) Delta() time.Duration {
 
 func (w *extWindow) Id() uint64 {
 	return w.id
+}
+
+func (w *extWindow) HasProblem(p problem) bool {
+	return w.problems[p]
 }
 
 func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Extended, error) {
@@ -148,10 +160,7 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 	}
 	if hints.Maximized.Value && glfwWin.GetAttrib(glfw.Maximized) != glfw.True {
 		// on some systems it's not possible to maximize the window
-		vm := glfw.GetPrimaryMonitor().GetVideoMode()
-		left, top, right, bot := x.GetVisibleFrameSize()
-		glfwWin.SetSize(vm.Width-left-right, vm.Height-top-bot)
-		glfwWin.SetPos(left, top)
+		x.problems[CannotMaximize] = true
 	}
 
 	glfwWin.SetFramebufferSizeCallback(func(_ *glfw.Window, w, h int) {

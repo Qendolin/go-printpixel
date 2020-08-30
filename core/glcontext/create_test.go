@@ -52,6 +52,12 @@ func TestCreateWindowMaximized(t *testing.T) {
 	defer win.Destroy()
 	require.NoError(t, err)
 	require.NotNil(t, win)
+
+	if win.HasProblem(glwindow.CannotMaximize) {
+		t.Skipf("%v", glwindow.CannotMaximize)
+		return
+	}
+
 	assert.True(t, win.GetAttrib(glfw.Maximized) == glfw.True)
 	w, h := win.GetSize()
 	left, top, right, bot := win.GetVisibleFrameSize()
