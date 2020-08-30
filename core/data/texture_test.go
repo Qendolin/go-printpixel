@@ -27,7 +27,7 @@ func TestFileTexture(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
+	absPath, err := utils.ResolvePath("@mod/assets/textures/uv.png")
 	require.NoError(t, err)
 	imgFile, err := os.Open(absPath)
 	require.NoError(t, err)
@@ -46,7 +46,7 @@ func TestFileTexture(t *testing.T) {
 
 	assert.NoError(t, tex.AllocBytes(buf, 0, gl.RGBA, int32(w), int32(h), gl.RGBA))
 
-	test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag").Bind()
+	test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()
 
 	for !win.ShouldClose() {
@@ -77,7 +77,7 @@ func TestGeneratedTexture(t *testing.T) {
 
 	assert.NoError(t, tex.AllocBytes(data, 0, gl.RGB, 256, 256, gl.RGB))
 
-	test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag").Bind()
+	test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()
 
 	for !win.ShouldClose() {
@@ -99,7 +99,7 @@ func TestUpdatingTexture(t *testing.T) {
 
 	tex.AllocEmpty(0, gl.RGB, 128, 128, gl.RGB)
 
-	test.NewProgram(t, "res://assets/shaders/quad_tex.vert", "res://assets/shaders/quad_tex.frag").Bind()
+	test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()
 
 	for !win.ShouldClose() {

@@ -73,7 +73,7 @@ func TestGraphic(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	absPath, err := utils.ResolvePath("res://assets/textures/uv.png")
+	absPath, err := utils.ResolvePath("@mod/assets/textures/uv.png")
 	require.NoError(t, err)
 	imgFile, err := os.Open(absPath)
 	require.NoError(t, err)
