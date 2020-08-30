@@ -20,7 +20,7 @@ func TestUniformColor(t *testing.T) {
 	win, close := test.NewWindow(t)
 	defer close()
 
-	prog := test.NewProgram(t, "res://assets/shaders/quad_uniform.vert", "res://assets/shaders/quad_uniform.frag")
+	prog := test.NewProgram(t, "@mod/assets/shaders/quad_uniform.vert", "@mod/assets/shaders/quad_uniform.frag")
 
 	uColor, err := shader.NewUniform(*prog, "u_color")
 	if err != nil {

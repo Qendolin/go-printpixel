@@ -21,7 +21,7 @@ func TestResolveModulePath(t *testing.T) {
 
 func TestResolvePath(t *testing.T) {
 	modPath := utils.MustResolveModulePath("")
-	path, err := utils.ResolvePath("res://")
+	path, err := utils.ResolvePath("@mod/")
 	assert.NoError(t, err)
 	assert.Equal(t, modPath, path)
 

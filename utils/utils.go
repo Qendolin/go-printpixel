@@ -49,11 +49,22 @@ func MustResolvePath(path string) string {
 	return absPath
 }
 
+/*
+	Resolves paths with @mod as the first segment relative to the module root
+	Resolves relative paths to absolute paths
+	Use an extra @ to escape
+*/
 func ResolvePath(path string) (string, error) {
-	if !strings.HasPrefix(path, "res://") {
-		return filepath.Abs(path)
+	if strings.HasPrefix(path, "@mod/") {
+		return ResolveModulePath(path[4:])
 	}
-	return ResolveModulePath(path[6:])
+	if path == "@mod" {
+		return ResolveModulePath("")
+	}
+	if strings.HasPrefix(path, "@@") {
+		path = path[1:]
+	}
+	return filepath.Abs(path)
 }
 
 func NullTerm(str string) string {
