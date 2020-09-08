@@ -1,6 +1,7 @@
 package test
 
 import (
+	"image"
 	"runtime"
 	"testing"
 
@@ -13,21 +14,47 @@ import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
+const MaxHeadlessFrames = 10
+
 type TestingWindow struct {
 	glwindow.Extended
+	expectedResult  string
+	t               *testing.T
 	closeCheckCount int
 	isHeadless      bool
 }
 
-func (win TestingWindow) ShouldClose() bool {
+func (win *TestingWindow) ShouldClose() bool {
 	win.closeCheckCount++
-	if win.closeCheckCount >= 10 || win.isHeadless {
+	if win.closeCheckCount > MaxHeadlessFrames && win.isHeadless {
+		win.assertResult()
 		return true
 	}
-	return win.Extended.ShouldClose()
+	if win.Extended.ShouldClose() {
+		win.assertResult()
+		return true
+	}
+	return false
 }
 
-func NewWindow(t *testing.T) (w glwindow.Extended, close func()) {
+func (win *TestingWindow) assertResult() {
+	w, h := win.GetSize()
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	gl.ReadPixels(0, 0, int32(w), int32(h), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+	actual := dHash(img)
+
+	if win.expectedResult == "" {
+		win.t.Errorf("expected hash has not been calculated, current hash is %v\n", actual)
+		win.t.FailNow()
+		return
+	}
+
+	if d := distance(win.expectedResult, actual); d > 3 {
+		win.t.Errorf("result has a distance greater than 3 from expected result. Distance: %d\n", d)
+	}
+}
+
+func NewWindow(t *testing.T, expectedResult string) (w glwindow.Extended, close func()) {
 	runtime.LockOSThread()
 	err := glcontext.InitGlfw()
 	if err != nil {
@@ -40,7 +67,13 @@ func NewWindow(t *testing.T) (w glwindow.Extended, close func()) {
 		t.Fatal(err)
 	}
 
-	win := TestingWindow{glfwWin, 0, Args.Headless}
+	win := &TestingWindow{
+		Extended:        glfwWin,
+		closeCheckCount: 0,
+		isHeadless:      Args.Headless,
+		t:               t,
+		expectedResult:  expectedResult,
+	}
 
 	win.MakeContextCurrent()
 	left, top, _, _ := win.GetVisibleFrameSize()

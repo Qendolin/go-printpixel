@@ -31,7 +31,7 @@ const (
 )
 
 func TestFontWrap(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "70747db82b76c2cdae3d56af16c338")
 	win.SetSize(Width, Height)
 	defer close()
 	gl.Enable(gl.BLEND)
@@ -90,7 +90,7 @@ func TestFontWrap(t *testing.T) {
 }
 
 func TestTabs(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "100292524a010020040080100400")
 	win.SetSize(Width, Height)
 	defer close()
 	gl.Enable(gl.BLEND)
@@ -146,7 +146,7 @@ func TestTabs(t *testing.T) {
 }
 
 func TestBM(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "15ca9aac901327aab510")
 	win.SetSize(Width, Height)
 	defer close()
 	gl.Enable(gl.BLEND)
@@ -202,7 +202,7 @@ func TestBM(t *testing.T) {
 }
 
 func TestSDF(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "5cabaac9d1325a6f510")
 	win.SetSize(Width, Height)
 	defer close()
 	gl.Enable(gl.BLEND)
@@ -258,7 +258,7 @@ func TestSDF(t *testing.T) {
 }
 
 func TestMSDF(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "54abaac9d1325a6f510")
 	win.SetSize(Width, Height)
 	defer close()
 	gl.Enable(gl.BLEND)
