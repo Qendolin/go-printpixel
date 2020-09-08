@@ -313,7 +313,14 @@ func NewTexture(tini TextureInitializer, format data.ColorFormat) (*data.GLTextu
 		}
 	}
 
-	t.ApplyDefaults()
+	t.WrapMode(data.WrapDefault, data.WrapDefault, data.WrapDefault)
+	if tini.MinFilter == 0 {
+		tini.MinFilter = data.FilterMinDefault
+	}
+	if tini.MagFilter == 0 {
+		tini.MagFilter = data.FilterMagDefault
+	}
+	t.FilterMode(tini.MinFilter, tini.MagFilter)
 	t.MipMapLevels(0, lvl-1)
 	if tini.GenerateMipMap {
 		t.GenerateMipmap()
