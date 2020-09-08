@@ -320,7 +320,7 @@ func TestMSDF(t *testing.T) {
 	}
 }
 
-func loadFontMesh(text []rune, fnt *font.BMF, style font.Style) {
+func loadFontMesh(text []rune, fnt *font.Font, style font.Style) {
 	verts, texs := font.Mesh(text, fnt, style)
 	vao := data.NewVao(nil)
 	vao.Bind()

@@ -115,7 +115,7 @@ func (br preventBreaker) Break(a, b rune) BreakConstraint {
 
 var PreventBreaker = preventBreaker{}
 
-func calcTabWidth(tabSize int, bmf *BMF) int {
+func calcTabWidth(tabSize int, bmf *Font) int {
 	if chr, ok := bmf.Characters[' ']; ok {
 		return tabSize * chr.Advance
 	}
@@ -123,7 +123,7 @@ func calcTabWidth(tabSize int, bmf *BMF) int {
 	return tabSize * chr.Advance
 }
 
-func Layout(text []rune, bmf *BMF, idk IDK, style Style) []rune {
+func Layout(text []rune, bmf *Font, idk IDK, style Style) []rune {
 	if idk.Breaker == nil {
 		idk.Breaker = DefaultBreaker
 	}
@@ -244,7 +244,7 @@ type BrokenText struct {
 	LineHeight float32
 }
 
-func Mesh(text []rune, bmf *BMF, style Style) (v []float32, t []float32) {
+func Mesh(text []rune, bmf *Font, style Style) (v []float32, t []float32) {
 	if style.TabSize == 0 {
 		style.TabSize = 1
 	}
