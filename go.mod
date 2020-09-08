@@ -3,6 +3,7 @@ module github.com/Qendolin/go-printpixel
 go 1.13
 
 require (
+	github.com/Qendolin/go-bmf v0.0.0-20200908162457-acb92dfaebad
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200707082815-5321531c36a2
