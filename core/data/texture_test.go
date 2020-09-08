@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestFileTexture(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "240c83705206c1682d000000")
 	defer close()
 
 	absPath, err := utils.ResolvePath("@mod/assets/textures/uv.png")
@@ -58,7 +58,7 @@ func TestFileTexture(t *testing.T) {
 }
 
 func TestGeneratedTexture(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "40080100200400801000000")
 	defer close()
 
 	tex := data.NewTexture2D(nil, data.Tex2DTarget2D)
@@ -89,7 +89,7 @@ func TestGeneratedTexture(t *testing.T) {
 
 // Texture is not initialized and may contain garbage data
 func TestUpdatingTexture(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "540b81503605c05817000000")
 	defer close()
 
 	tex := data.NewTexture2D(nil, data.Tex2DTarget2D)
@@ -102,9 +102,15 @@ func TestUpdatingTexture(t *testing.T) {
 	test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()
 
+	i := 0
 	for !win.ShouldClose() {
-		assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
-		assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
+		if i < test.MaxHeadlessFrames {
+			for j := 0; j < 500; j++ {
+				assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
+				assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
+			}
+			i++
+		}
 		gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
 		win.SwapBuffers()
 		glfw.PollEvents()

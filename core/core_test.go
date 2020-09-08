@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestQuad(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "40080100200400801000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_uv.vert", "@mod/assets/shaders/quad_uv.frag")
@@ -39,7 +39,7 @@ func TestQuad(t *testing.T) {
 }
 
 func TestTextureQuad(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "240c83705206c1682d000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag")
@@ -65,7 +65,7 @@ func TestTextureQuad(t *testing.T) {
 }
 
 func TestTextureNotFound(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "241b8090020dc04837000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag")
@@ -84,7 +84,7 @@ func TestTextureNotFound(t *testing.T) {
 }
 
 func TestTextureUndecodeable(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "40080100200400801000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag")
@@ -103,7 +103,7 @@ func TestTextureUndecodeable(t *testing.T) {
 }
 
 func TestTextureError(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "41881104a04418801000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag")

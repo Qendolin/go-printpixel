@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestUniformColor(t *testing.T) {
-	win, close := test.NewWindow(t)
+	win, close := test.NewWindow(t, "40080100200400801000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_uniform.vert", "@mod/assets/shaders/quad_uniform.frag")

@@ -1,6 +1,8 @@
 package test
 
-import "flag"
+import (
+	"flag"
+)
 
 func ParseArgs() {
 	flag.BoolVar(&Args.Headless, "headless", false, "Configure for headless testing")
