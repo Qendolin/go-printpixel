@@ -67,8 +67,7 @@ func TestFontWrap(t *testing.T) {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
 	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
+		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...), data.RGBA8)
 	require.NoError(t, err)
 	bm.Bind(0)
 
@@ -124,8 +123,7 @@ func TestTabs(t *testing.T) {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
 	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
+		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...), data.RGBA8)
 	require.NoError(t, err)
 	bm.Bind(0)
 
@@ -180,8 +178,7 @@ func TestBM(t *testing.T) {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
 	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
+		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...), data.RGBA8)
 	require.NoError(t, err)
 	bm.Bind(0)
 
@@ -236,9 +233,7 @@ func TestSDF(t *testing.T) {
 	for i, file := range fnt.Pages {
 		pagePaths[i] = path.Join(fntDir, file)
 	}
-	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
+	bm, err := core.NewTexture3D(core.InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...), data.RGBA8)
 	require.NoError(t, err)
 	bm.Bind(0)
 
@@ -295,8 +290,7 @@ func TestMSDF(t *testing.T) {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
 	bm, err := core.NewTexture3D(core.
-		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...).
-		WithFilters(data.FilterNearest, data.FilterNearest), data.RGBA8)
+		InitPaths(len(pagePaths), pagePaths[0], pagePaths[1:]...), data.RGBA8)
 	require.NoError(t, err)
 	bm.Bind(0)
 
