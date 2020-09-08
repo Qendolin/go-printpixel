@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var expected = font.BMF{
+var expected = font.Font{
 	Base:       29,
 	Width:      512,
 	Height:     512,
