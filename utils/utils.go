@@ -13,6 +13,10 @@ type BindingClosure func()
 
 var rootPath string
 
+/*
+  Resolves a path relative to the current module or the working directory if the module is not avaliable
+  Won't return a path thats outside of the root folder, e.g.: "./../" will be changed to just "./"
+*/
 func ResolveModulePath(path string) (string, error) {
 	if rootPath == "" {
 		if _, p, _, ok := runtime.Caller(0); ok {
@@ -20,7 +24,7 @@ func ResolveModulePath(path string) (string, error) {
 				Mode: packages.NeedName | packages.NeedModule,
 			}, p)
 			if err == nil && len(pkgs) > 0 && pkgs[0].Module != nil && pkgs[0].Module.Dir != "" {
-				rootPath = pkgs[0].Module.Dir
+				rootPath = filepath.Clean(pkgs[0].Module.Dir)
 				return ResolveModulePath(path)
 			}
 		}
@@ -28,9 +32,14 @@ func ResolveModulePath(path string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		rootPath = wd
+		rootPath = filepath.Clean(wd)
 	}
-	return filepath.Join(rootPath, path), nil
+
+	path = filepath.Join(rootPath, path)
+	if !strings.HasPrefix(path, rootPath) {
+		path = rootPath
+	}
+	return path, nil
 }
 
 func MustResolveModulePath(path string) string {
