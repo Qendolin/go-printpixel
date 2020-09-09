@@ -1,5 +1,7 @@
 github.com/Qendolin/go-bmf v0.0.0-20200908162457-acb92dfaebad h1:LCnrN+d0L3EgGaGGqcKcC2yEpWC1Togc+zj9FWErwjc=
 github.com/Qendolin/go-bmf v0.0.0-20200908162457-acb92dfaebad/go.mod h1:HQCPv/StkzxoL/HQxBY1iS+imxDuGixsTBBODkJIbAo=
+github.com/Qendolin/go-bmf v1.0.0 h1:SF0uUNZ2RetBfy23jy/CtF4buy0jmfzxI7AoyVJCqk8=
+github.com/Qendolin/go-bmf v1.0.0/go.mod h1:7E/k1qzKk9zWTYSQRualgdIxemB9k5WjCgZUbgvhL2A=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
