@@ -7,6 +7,7 @@ import (
 	"image/draw"
 	"io"
 	"math"
+	"math/rand"
 	"os"
 
 	"github.com/Qendolin/go-printpixel/core/data"
@@ -28,10 +29,10 @@ func init() {
 	}
 	errorImageData[NotFoundError] = pix
 
-	// white
+	// random colors
 	pix = make([]byte, 64*64*4)
 	for i := range pix {
-		pix[i] = 255
+		pix[i] = byte(rand.Float32() * 256)
 	}
 	errorImageData[DecodeError] = pix
 
