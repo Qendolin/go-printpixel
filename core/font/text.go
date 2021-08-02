@@ -16,6 +16,7 @@ type Style struct {
 	TabSize    int
 }
 
+// TODO:
 type IDK struct {
 	Breaker  Breaker
 	Width    float32
@@ -163,7 +164,7 @@ func Layout(text []rune, bmf *Font, idk IDK, style Style) []rune {
 		if i+1 < len(text) {
 			next = text[i+1]
 		}
-		def, _ := bmf.Characters[chr]
+		def := bmf.Characters[chr]
 		if chr == '\t' {
 			def.Advance = tabWidth - (px+wordWidth)%tabWidth
 		}

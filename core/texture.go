@@ -27,14 +27,14 @@ func init() {
 			}
 		}
 	}
-	errorImageData[NotFoundError] = pix
+	errorImageData[ErrNotFound] = pix
 
 	// random colors
 	pix = make([]byte, 64*64*4)
 	for i := range pix {
 		pix[i] = byte(rand.Float32() * 256)
 	}
-	errorImageData[DecodeError] = pix
+	errorImageData[ErrDecode] = pix
 
 	// red square with an X
 	pix = make([]byte, 64*64*4)
@@ -52,8 +52,8 @@ func init() {
 type ImageError error
 
 var (
-	NotFoundError ImageError = fmt.Errorf("the image was not found or could not be opened")
-	DecodeError              = fmt.Errorf("the image could not be decoded")
+	ErrNotFound ImageError = fmt.Errorf("the image was not found or could not be opened")
+	ErrDecode              = fmt.Errorf("the image could not be decoded")
 )
 
 var errorImageData = map[ImageError][]byte{}
@@ -141,7 +141,7 @@ func InitFiles(layers int, file0 io.Reader, files ...io.Reader) TextureInitializ
 		img, _, err := image.Decode(file)
 		if err != nil {
 			return TextureInitializer{
-				Levels: []interface{}{DecodeError},
+				Levels: []interface{}{ErrDecode},
 			}
 		}
 		imgs[i] = img
@@ -156,13 +156,13 @@ func InitPaths(layers int, path0 string, paths ...string) TextureInitializer {
 		path, err := utils.ResolvePath(path)
 		if err != nil {
 			return TextureInitializer{
-				Levels: []interface{}{NotFoundError},
+				Levels: []interface{}{ErrNotFound},
 			}
 		}
 		file, err := os.Open(path)
 		if err != nil {
 			return TextureInitializer{
-				Levels: []interface{}{NotFoundError},
+				Levels: []interface{}{ErrNotFound},
 			}
 		}
 		defer file.Close()

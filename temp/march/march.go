@@ -1,4 +1,4 @@
-package main
+package march
 
 import (
 	"image"
@@ -10,15 +10,15 @@ import (
 type Point [2]float32
 
 func (p Point) Dot(q Point) float32 {
-	return p[0] * q[0] + p[1] * q[1]
+	return p[0]*q[0] + p[1]*q[1]
 }
 
 func (p Point) SquareLength() float32 {
-	return p[0] * p[0] + p[1] * p[1]
+	return p[0]*p[0] + p[1]*p[1]
 }
 
 func (p Point) Length() float32 {
-	return float32(math.Sqrt(float64(p[0] * p[0] + p[1] * p[1])))
+	return float32(math.Sqrt(float64(p[0]*p[0] + p[1]*p[1])))
 }
 
 func (p Point) Sub(q Point) Point {
@@ -26,17 +26,18 @@ func (p Point) Sub(q Point) Point {
 }
 
 type side int
+
 const (
 	none = side(0)
-	up = side(1<<iota)
+	up   = side(1 << iota)
 	right
 	down
 	left
 )
 
 type Marcher struct {
-	Img   *image.RGBA
-	Quality int // Quality is used for binary search interations
+	Img           *image.RGBA
+	Quality       int // Quality is used for binary search interations
 	Discriminator func(color.Color) float64
 }
 
@@ -49,8 +50,8 @@ func (m Marcher) Process() [][]Point {
 
 func (m Marcher) findStart() (x, y int) {
 	b := m.Img.Bounds()
-	for y := b.Max.Y-1; y >= b.Min.Y; y-- {
-		for x := b.Max.X-1; x >= b.Min.X; x-- {
+	for y := b.Max.Y - 1; y >= b.Min.Y; y-- {
+		for x := b.Max.X - 1; x >= b.Min.X; x-- {
 			if m.Discriminator(m.Img.At(x, y)) >= 0.5 {
 				return x, y
 			}
@@ -65,53 +66,53 @@ func (m Marcher) lookup(value int, c8, c4, c2, c1 color.Color, previousStep side
 	default:
 		return [][2]color.Color{}, []float64{}, []side{}, none
 	case 1:
-		return [][2]color.Color{{c1,c2}, {c1,c8}}, []float64{1,-1}, []side{down, left}, left
+		return [][2]color.Color{{c1, c2}, {c1, c8}}, []float64{1, -1}, []side{down, left}, left
 	case 2:
-		return [][2]color.Color{{c2,c1}, {c2,c4}}, []float64{-1,-1}, []side{down,right}, down
+		return [][2]color.Color{{c2, c1}, {c2, c4}}, []float64{-1, -1}, []side{down, right}, down
 	case 3:
-		return [][2]color.Color{{c1,c8}, {c2,c4}}, []float64{-1,-1}, []side{left,right}, left
+		return [][2]color.Color{{c1, c8}, {c2, c4}}, []float64{-1, -1}, []side{left, right}, left
 	case 4:
-		return [][2]color.Color{{c4,c2}, {c4,c8}}, []float64{1,-1}, []side{right,up}, right
+		return [][2]color.Color{{c4, c2}, {c4, c8}}, []float64{1, -1}, []side{right, up}, right
 	case 5:
 		if previousStep == up {
 			dir = left
 		} else {
 			dir = right
 		}
-		return [][2]color.Color{{c1,c2}, {c1,c8}, {c4,c2}, {c4,c8}}, []float64{1,-1,1,-1}, []side{down,left,right,up}, dir
+		return [][2]color.Color{{c1, c2}, {c1, c8}, {c4, c2}, {c4, c8}}, []float64{1, -1, 1, -1}, []side{down, left, right, up}, dir
 	case 6:
-		return [][2]color.Color{{c2,c1}, {c4,c8}}, []float64{-1,-1}, []side{down,up}, down
+		return [][2]color.Color{{c2, c1}, {c4, c8}}, []float64{-1, -1}, []side{down, up}, down
 	case 7:
-		return [][2]color.Color{{c1,c8}, {c4,c8}}, []float64{-1,-1}, []side{left,up}, left
+		return [][2]color.Color{{c1, c8}, {c4, c8}}, []float64{-1, -1}, []side{left, up}, left
 	case 8:
-		return [][2]color.Color{{c8,c1}, {c8,c4}}, []float64{1,1}, []side{left,up}, up
+		return [][2]color.Color{{c8, c1}, {c8, c4}}, []float64{1, 1}, []side{left, up}, up
 	case 9:
-		return [][2]color.Color{{c1,c2}, {c8,c4}}, []float64{1,1}, []side{down,up}, up
+		return [][2]color.Color{{c1, c2}, {c8, c4}}, []float64{1, 1}, []side{down, up}, up
 	case 10:
 		if previousStep == right {
 			dir = up
 		} else {
 			dir = down
 		}
-		return [][2]color.Color{{c2,c1}, {c2,c4}, {c8,c1}, {c8,c4}}, []float64{-1,-1,1,1}, []side{down,right,left,up}, dir
+		return [][2]color.Color{{c2, c1}, {c2, c4}, {c8, c1}, {c8, c4}}, []float64{-1, -1, 1, 1}, []side{down, right, left, up}, dir
 	case 11:
-		return [][2]color.Color{{c2,c4}, {c8,c4}}, []float64{-1,1}, []side{right,up}, up
+		return [][2]color.Color{{c2, c4}, {c8, c4}}, []float64{-1, 1}, []side{right, up}, up
 	case 12:
-		return [][2]color.Color{{c4,c2}, {c8,c1}}, []float64{1,1}, []side{right,left}, right
+		return [][2]color.Color{{c4, c2}, {c8, c1}}, []float64{1, 1}, []side{right, left}, right
 	case 13:
-		return [][2]color.Color{{c1,c2}, {c4,c2}}, []float64{1,1}, []side{down,right}, right
+		return [][2]color.Color{{c1, c2}, {c4, c2}}, []float64{1, 1}, []side{down, right}, right
 	case 14:
-		return [][2]color.Color{{c2,c1}, {c8,c1}}, []float64{-1,1}, []side{down,left}, down
+		return [][2]color.Color{{c2, c1}, {c8, c1}}, []float64{-1, 1}, []side{down, left}, down
 	}
 }
 
 func (m Marcher) step(loop *[]Point, previousStep side, x, y int) side {
 	value := 0
-	c8,c4,c2,c1 := m.Img.At(x, y), m.Img.At(x+1, y), m.Img.At(x+1, y+1), m.Img.At(x, y+1)
+	c8, c4, c2, c1 := m.Img.At(x, y), m.Img.At(x+1, y), m.Img.At(x+1, y+1), m.Img.At(x, y+1)
 	if m.Discriminator(c8) >= 0.5 {
 		value |= 8
 	}
-	if m.Discriminator(c4) >= 0.5{
+	if m.Discriminator(c4) >= 0.5 {
 		value |= 4
 	}
 	if m.Discriminator(c2) >= 0.5 {
@@ -121,10 +122,10 @@ func (m Marcher) step(loop *[]Point, previousStep side, x, y int) side {
 		value |= 1
 	}
 
-	colors, orients, sides, nextStep := m.lookup(value, c8,c4,c2,c1, previousStep)
+	colors, orients, sides, nextStep := m.lookup(value, c8, c4, c2, c1, previousStep)
 
 	for i := 0; i < len(colors); i++ {
-		if i % 2 == 1 {
+		if i%2 == 1 {
 			continue
 		}
 		pair := colors[i]
@@ -183,15 +184,15 @@ func (m Marcher) walk(startX, startY int) []Point {
 
 func (m Marcher) findIntersection(s, e color.Color, orientation float64) float64 {
 	t := 0.5
-	epsilon := 1 / float64(int64(8 << m.Quality))
+	epsilon := 1 / float64(int64(8<<m.Quality))
 
 	for i := 1; i <= m.Quality; i++ {
-		step := 1 / float64(int64(2 << i))
+		step := 1 / float64(int64(2<<i))
 		v := m.Discriminator(clerp(s, e, t))
 		d := math.Abs(0.5 - v)
 		if d < epsilon {
 			break
-		} else if (v > 0.5) {
+		} else if v > 0.5 {
 			t += step
 		} else {
 			t -= step
@@ -202,7 +203,7 @@ func (m Marcher) findIntersection(s, e color.Color, orientation float64) float64
 	}
 
 	if orientation < 0 {
-		t = 1-t
+		t = 1 - t
 	}
 
 	return t
