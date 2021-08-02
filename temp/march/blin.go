@@ -1,4 +1,4 @@
-package main
+package march
 
 import (
 	"image"
@@ -7,7 +7,7 @@ import (
 	"math"
 )
 
-func scale(dst draw.Image, src image.Image) {
+func Scale(dst draw.Image, src image.Image) {
 	sr := src.Bounds()
 	dr := dst.Bounds()
 	mx := float64(sr.Dx()-1) / float64(dr.Dx())

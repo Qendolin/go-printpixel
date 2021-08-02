@@ -164,11 +164,13 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 		x.problems[CannotMaximize] = true
 	}
 
-	glfwWin.SetFramebufferSizeCallback(func(_ *glfw.Window, w, h int) {
-		if glcontext.Status()&glcontext.StatusGlInitialized != 0 {
-			gl.Viewport(0, 0, int32(w), int32(h))
-		}
-	})
+	x.SetFramebufferSizeCallback(ResizeGlViewport)
 
 	return x, nil
+}
+
+func ResizeGlViewport(win Extended, w, h int) {
+	if glcontext.Status()&glcontext.StatusGlInitialized != 0 {
+		gl.Viewport(0, 0, int32(w), int32(h))
+	}
 }

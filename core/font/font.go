@@ -2,7 +2,7 @@ package font
 
 import (
 	"io"
-	"io/ioutil"
+
 	"github.com/Qendolin/go-bmf"
 )
 
@@ -27,11 +27,7 @@ type CharDef struct {
 }
 
 func Parse(file io.Reader) (*Font, error) {
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-	bmfont, err := bmf.Parse(data)
+	bmfont, err := bmf.Parse(file)
 	if err != nil {
 		return nil, err
 	}

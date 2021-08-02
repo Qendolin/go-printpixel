@@ -14,6 +14,7 @@ const (
 	StatusGlInitialized
 )
 
+// TODO: Rework
 var status int
 
 var (

@@ -12,31 +12,42 @@ import (
 	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/Qendolin/go-printpixel/core/glwindow"
 	"github.com/Qendolin/go-printpixel/pkg/window"
+	"github.com/Qendolin/go-printpixel/temp/march"
 	"github.com/go-gl/gl/v3.3-compatibility/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
+	"github.com/tchayen/triangolatte"
 	"github.com/zx9597446/rdp"
 )
 
 func main() {
-	f, err := os.Open("./g.png")
+	// file := "./PressStart2P-W-msdf.png"
+	// file := "./PressStart2P-W-msdf2.png"
+	// file := "./Playball-W-msdf.png"
+	// file := "./Playball-W-msdf2.png"
+	file := "./a-msdf.png"
+	// file := "./g-msdf.png"
+	f, err := os.Open(file)
 	panicIf(err)
 	start := time.Now()
+	lastCheck := time.Now()
 	src, _, err := image.Decode(f)
-	dr := image.Rect(0, 0, src.Bounds().Dx()*6, src.Bounds().Dy()*6)
+	dr := image.Rect(0, 0, src.Bounds().Dx()*4, src.Bounds().Dy()*4)
 	img := image.NewRGBA(dr)
-	scale(img, src)
+	march.Scale(img, src)
 	// img := src
-	log.Printf("Scale %v\n", time.Since(start))
+	log.Printf("Scale %v %v\n", time.Since(lastCheck), time.Since(start))
+	lastCheck = time.Now()
 
-	verts := make([]Point, 0)
+	verts := make([]march.Point, 0)
 
-	m := Marcher{Quality: 8, Img: img, Discriminator: func(c color.Color) float64 {
+	m := march.Marcher{Quality: 4, Img: img, Discriminator: func(c color.Color) float64 {
 		r, g, b, a := c.RGBA()
 		return median(float64(r)/float64(a), float64(g)/float64(a), float64(b)/float64(a))
 	}}
 	verts = m.Process()[0]
 
-	log.Printf("March %v\n", time.Since(start))
+	log.Printf("March %v %v\n", time.Since(lastCheck), time.Since(start))
+	lastCheck = time.Now()
 
 	// for x := 0; x < img.Bounds().Max.X-1.; x++ {
 	// 	for y := 0; y < img.Bounds().Max.Y-1; y++ {
@@ -58,32 +69,35 @@ func main() {
 	// 	}
 	// }
 
-	temp := make([]image.Point, len(verts))
-	for i := 0; i < len(verts); i++ {
-		temp[i] = image.Pt(int(verts[i][0]*100), int(verts[i][1]*100))
-	}
-	// temp := marchingsquare.Process(img, func(r, g, b, a uint32) bool {
-	// 	return  median(float64(r)/float64(a),float64(g)/float64(a),float64(b)/float64(a))*2-1 > 0
-	// })
-	temp = rdp.Process(temp, 30)
-	verts = make([]Point, len(temp))
-	for i, p := range temp {
-		verts[i] = Point{float32(p.X) / 100, float32(p.Y) / 100}
-	}
+	verts = reduce(verts)
 
-	verts = clean(verts, 5)
+	log.Printf("Reduce %v %v\n", time.Since(lastCheck), time.Since(start))
+	lastCheck = time.Now()
+
+	verts = clean(verts, 2)
+
+	log.Printf("Clean %v %v\n", time.Since(lastCheck), time.Since(start))
+	lastCheck = time.Now()
+
+	// verts = clean2(verts, 2.)
 
 	// verts = decimate(verts, 0.002)
 
+	// verts = triangulate(verts)
+	verts = triangulate2(verts)
+
+	log.Printf("Triangulate %v %v\n", time.Since(lastCheck), time.Since(start))
+	lastCheck = time.Now()
+
 	log.Printf("Verts: %d\n", len(verts))
-	log.Printf("End %v\n", time.Since(start))
+	log.Printf("End %v %v\n", time.Since(lastCheck), time.Since(start))
 
 	win := setup()
 	win.GlWindow.MakeContextCurrent()
 	panicIf(gl.Init())
 	gl.ClearColor(0., 0., 0., 1.)
-	gl.LineWidth(5.)
-	gl.PointSize(5.)
+	gl.LineWidth(1.)
+	gl.PointSize(4.)
 
 	gl.MatrixMode(gl.PROJECTION)
 	gl.LoadIdentity()
@@ -93,30 +107,102 @@ func main() {
 	gl.LoadIdentity()
 	gl.Translatef(-1, -1, 0)
 
+	frame := 0
+
 	for !win.GlWindow.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		gl.Color3f(1, 1, 1)
-		gl.Begin(gl.LINE_LOOP)
+		gl.Begin(gl.TRIANGLES)
 		for i := 0; i < len(verts); i++ {
+			// if frame/4%len(verts) == i {
+			// 	gl.Color3f(0., 0., 0.)
+			// } else {
+			// 	// if i > len(verts)-16 {
+			// 	// 	gl.Color3f(1, 0, 0)
+
+			// 	// } else {
+
+			// 	gl.Color3f(1, 1, 1)
+			// 	// }
+			// }
+			// gl.Color3f(float32(i%2+1)/2, float32(i%4+1)/4, float32(i%8+1)/8)
+			gl.Color3f(1, 1, 1)
 			gl.Vertex2f(verts[i][0], verts[i][1])
 		}
 		gl.End()
 		//*
 		gl.Begin(gl.POINTS)
 		for i := 0; i < len(verts); i++ {
-			gl.Color3f(calcColor(i, len(verts)))
-			gl.Vertex2f(verts[i][0], verts[i][1])
+			// gl.Color3f(calcColor(i, len(verts)))
+			// gl.Vertex2f(verts[i][0], verts[i][1])
 		}
 		gl.End()
 		//*/
 		win.GlWindow.SwapBuffers()
 		glfw.PollEvents()
+		frame++
 	}
 }
 
+func reduce(verts []march.Point) []march.Point {
+	temp := make([]image.Point, len(verts))
+	for i := 0; i < len(verts); i++ {
+		temp[i] = image.Pt(int(verts[i][0]*100), int(verts[i][1]*100))
+	}
+
+	temp = rdp.Process(temp, 30)
+	verts = make([]march.Point, len(temp))
+	for i, p := range temp {
+		verts[i] = march.Point{float32(p.X) / 100, float32(p.Y) / 100}
+	}
+	return verts
+}
+
+func triangulate(verts []march.Point) []march.Point {
+	temp := make([]triangolatte.Point, len(verts))
+	for i, v := range verts {
+		temp[i] = triangolatte.Point{X: float64(v[0]), Y: float64(v[1])}
+	}
+
+	for i, j := 0, len(temp)-1; i < j; i, j = i+1, j-1 {
+		temp[i], temp[j] = temp[j], temp[i]
+	}
+
+	temp = temp[0:60]
+
+	coords, err := triangolatte.Polygon(temp)
+	panicIf(err)
+
+	verts = make([]march.Point, len(coords)/2)
+	for i, co := range coords {
+		if i%2 == 0 {
+			verts[i/2] = march.Point{float32(co), 0}
+		} else {
+			verts[i/2][1] = float32(co)
+		}
+	}
+	return verts
+}
+
+func triangulate2(verts []march.Point) []march.Point {
+	temp := make([]float32, len(verts)*2)
+	for i, v := range verts {
+		temp[i*2] = v[0]
+		temp[i*2+1] = v[1]
+	}
+
+	indices := Earcut(temp, []int{}, 2)
+
+	out := make([]march.Point, len(indices))
+	for i, index := range indices {
+		out[i] = verts[index]
+	}
+
+	return out
+}
+
 func calcColor(i, l int) (r, g, b float32) {
-	// a := float32(i)/float32(l) * 0.75 + 0.25
+	// a := float32(i)/float32(l)*0.75 + 0.25
 	a := float32(0.85)
 	switch i % 3 {
 	case 0:
@@ -152,8 +238,36 @@ func translate(x, y int, values ...float32) []float32 {
 	return values
 }
 
-func clean(verts []Point, tolerance float32) []Point {
-	verts = append([]Point{verts[len(verts)-2], verts[len(verts)-1]}, verts...)
+func clean2(verts []march.Point, tolerance float32) []march.Point {
+
+	var get = func(i int) march.Point {
+		if i < 0 {
+			i += len(verts)
+		}
+
+		return verts[i%len(verts)]
+	}
+
+	out := make([]march.Point, 0, len(verts))
+
+	for i, c := range verts {
+		p := get(i - 1)
+		n := get(i + 1)
+
+		// https://www.mathopenref.com/coordtrianglearea.html
+		area := p[0]*(c[1]-n[1]) + c[0]*(n[1]-p[1]) + n[0]*(p[1]-c[1])
+		area = float32(math.Abs(float64(area / 2)))
+
+		if area >= tolerance {
+			out = append(out, c)
+		}
+	}
+
+	return out
+}
+
+func clean(verts []march.Point, tolerance float32) []march.Point {
+	verts = append([]march.Point{verts[len(verts)-2], verts[len(verts)-1]}, verts...)
 	j := 3
 	p1, p2, p3 := verts[0], verts[1], verts[2]
 	for i := 3; i < len(verts); i++ {
@@ -175,7 +289,7 @@ func clean(verts []Point, tolerance float32) []Point {
 				x := (b2*c1 - b1*c2) / determinant
 				y := (a1*c2 - a2*c1) / determinant
 
-				verts[j-2] = Point{x, y}
+				verts[j-2] = march.Point{x, y}
 				verts[j-1] = p4
 			} else {
 				verts[j-2] = p2
@@ -193,7 +307,7 @@ func clean(verts []Point, tolerance float32) []Point {
 	return verts[:j-2]
 }
 
-func decimate(verts []Point, tolerance float32) []Point {
+func decimate(verts []march.Point, tolerance float32) []march.Point {
 	j := 0
 	p1 := verts[0]
 	p2 := verts[1]

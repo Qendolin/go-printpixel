@@ -142,6 +142,10 @@ func (win *Window) InnerHeight() int {
 	return h
 }
 
+func (win *Window) InnerAspect() float32 {
+	return float32(win.InnerWidth()) / float32(win.InnerHeight())
+}
+
 func (win *Window) Run() {
 	for !win.GlWindow.ShouldClose() {
 		win.Update()

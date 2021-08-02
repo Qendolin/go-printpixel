@@ -40,3 +40,28 @@ func (vao *Vao) Destroy() {
 	gl.DeleteVertexArrays(1, vao.uint32)
 	*vao.uint32 = 0
 }
+
+// Specifies the layout of attribute {index} of the currently bound GL_ARRAY_BUFFER
+func (vao *Vao) Layout(index int, size int, dataType interface{}, normalized bool, stride int, offset int) (err error) {
+	var glType uint32
+	var isFloat bool
+	glType, isFloat, err = getGlType(dataType)
+	if err != nil {
+		return
+	}
+	gl.EnableVertexAttribArray(uint32(index))
+	if isFloat {
+		// gl.VertexAttribPointerWithOffset(uint32(index), int32(size), glType, normalized, int32(stride), uintptr(offset))
+		gl.VertexAttribPointer(uint32(index), int32(size), glType, normalized, int32(stride), gl.PtrOffset(offset))
+	} else {
+		gl.VertexAttribIPointer(uint32(index), int32(size), glType, int32(stride), gl.PtrOffset(offset))
+	}
+	return
+}
+
+// Like Layout but panics if there is an error
+func (vao *Vao) MustLayout(index int, size int, dataType interface{}, normalized bool, stride int, offset int) {
+	if err := vao.Layout(index, size, dataType, normalized, stride, offset); err != nil {
+		panic(err)
+	}
+}
