@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Qendolin/go-printpixel/temp2/text3d/march/field"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march/field"
 )
 
 func BenchmarkBlerpF(b *testing.B) {

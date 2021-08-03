@@ -9,9 +9,9 @@ import (
 	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/Qendolin/go-printpixel/core/glwindow"
 	"github.com/Qendolin/go-printpixel/core/shader"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/mesh2"
 	"github.com/Qendolin/go-printpixel/pkg/window"
-	"github.com/Qendolin/go-printpixel/temp2/text3d"
-	"github.com/Qendolin/go-printpixel/temp2/text3d/mesh2"
 	"github.com/go-gl/gl/v3.3-compatibility/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/go-gl/mathgl/mgl32"
@@ -43,8 +43,8 @@ func main() {
 	// imgPath := "./assets/Playball-W-msdf.png"
 	// imgPath := "./assets/PressStart2P-W-msdf.png"
 	// imgPath := "./assets/Cook-T-msdf.png"
-	// imgPath := "./assets/Regular-MSDF.png"
-	imgPath := "./assets/march-test.png"
+	imgPath := "./assets/Regular-MSDF.png"
+	// imgPath := "./assets/march-test.png"
 	imgFile, err := os.Open(imgPath)
 	panicIf(err)
 	img, _, err := image.Decode(imgFile)

@@ -6,9 +6,9 @@ import (
 	"math"
 
 	"github.com/Qendolin/go-printpixel/core/data"
-	"github.com/Qendolin/go-printpixel/temp2/text3d/march"
-	"github.com/Qendolin/go-printpixel/temp2/text3d/march/field"
-	"github.com/Qendolin/go-printpixel/temp2/text3d/mesh2"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march/field"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/mesh2"
 )
 
 type vec2 = [2]float32
