@@ -3,7 +3,6 @@ package mesh2
 // #define NDEBUG
 // #include <stdlib.h>
 // #include <string.h>
-//
 // #define MPE_POLY2TRI_IMPLEMENTATION
 // #include "poly2tri.h"
 import "C"

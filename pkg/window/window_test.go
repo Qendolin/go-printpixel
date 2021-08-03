@@ -118,7 +118,7 @@ func TestDepthSorting(t *testing.T) {
 		Ratio: 1.,
 		Child: scene.Centered(&scene.Stack{
 			Children: []scene.Layoutable{
-				//Left (back) to right (front)
+				// Left (back) to right (front)
 				&scene.Absolute{
 					Child: &scene.Layer{Child: &scene.Layer{Child: &scene.Graphic{
 						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{255, 0, 0, 127}), data.RGBA8),
@@ -146,7 +146,7 @@ func TestDepthSorting(t *testing.T) {
 					DX:   0.875, DY: 0.75,
 					W: 0.5, H: 0.4,
 				},
-				//Left (front) to right (back)
+				// Left (front) to right (back)
 				&scene.Absolute{
 					Child: &scene.Graphic{
 						Texture: core.MustNewTexture2D(core.InitBytes(1, 1, 0, data.RGBA, 0, []byte{255, 0, 0, 127}), data.RGBA8),

@@ -16,8 +16,8 @@ type Style struct {
 	TabSize    int
 }
 
-// TODO:
-type IDK struct {
+// TODO: Rename "LayoutSpecs"
+type LayoutSpecs struct {
 	Breaker  Breaker
 	Width    float32
 	Height   float32
@@ -124,7 +124,7 @@ func calcTabWidth(tabSize int, bmf *Font) int {
 	return tabSize * chr.Advance
 }
 
-func Layout(text []rune, bmf *Font, idk IDK, style Style) []rune {
+func Layout(text []rune, bmf *Font, idk LayoutSpecs, style Style) []rune {
 	if idk.Breaker == nil {
 		idk.Breaker = DefaultBreaker
 	}

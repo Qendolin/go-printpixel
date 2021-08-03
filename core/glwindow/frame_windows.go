@@ -20,7 +20,7 @@ var (
 	dwmGetWindowAttribute = dwmapi.MustFindProc("DwmGetWindowAttribute")
 )
 
-func (win extWindow) GetVisibleFrameSize() (left, top, right, bottom int) {
+func (win extWindow) GetFrameSize() (left, top, right, bottom int) {
 	hwndC := win.Window.GetWin32Window()
 	hwnd := *((*uint64)(unsafe.Pointer(&hwndC)))
 

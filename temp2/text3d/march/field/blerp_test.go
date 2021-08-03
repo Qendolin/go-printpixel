@@ -1,7 +1,5 @@
 package field_test
 
-//go test -bench=BenchmarkBlerp -benchtime 1000x -cpuprofile profile.out
-
 import (
 	"image"
 	"image/png"

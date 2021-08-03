@@ -60,7 +60,7 @@ func TestCreateWindowMaximized(t *testing.T) {
 
 	assert.True(t, win.GetAttrib(glfw.Maximized) == glfw.True)
 	w, h := win.GetSize()
-	left, top, right, bot := win.GetVisibleFrameSize()
+	left, top, right, bot := win.GetFrameSize()
 	assert.Equal(t, vidMode.Width-left-right, w)
 	assert.Equal(t, vidMode.Height-top-bot, h)
 }

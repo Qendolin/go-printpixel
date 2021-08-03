@@ -71,8 +71,8 @@ func (h Hints) apply() {
 	h.framebufferHints.apply()
 }
 
-//window related hints
-//See https://www.glfw.org/docs/latest/window_guide.html
+// Window related hints
+// See https://www.glfw.org/docs/latest/window_guide.html
 type windowHints struct {
 	Focused        boolHint
 	Visible        boolHint
@@ -108,19 +108,19 @@ func (h windowHints) apply() {
 	applyHint(h.ScaleToMonitor)
 }
 
-//context related hints
+// Context related hints
 type contextHints struct {
-	//See https://www.glfw.org/docs/latest/window_guide.html#GLFW_CLIENT_API_hint
+	// See https://www.glfw.org/docs/latest/window_guide.html#GLFW_CLIENT_API_hint
 	ClientAPI           enumHint
 	ContextVersionMajor intHint
 	ContextVersionMinor intHint
-	//See https://www.glfw.org/docs/latest/window_guide.html#GLFW_CONTEXT_ROBUSTNESS_hint
+	// See https://www.glfw.org/docs/latest/window_guide.html#GLFW_CONTEXT_ROBUSTNESS_hint
 	ContextRobustness enumHint
-	//See https://www.glfw.org/docs/latest/window_guide.html#GLFW_CONTEXT_RELEASE_BEHAVIOR_hint
+	// See https://www.glfw.org/docs/latest/window_guide.html#GLFW_CONTEXT_RELEASE_BEHAVIOR_hint
 	ContextReleaseBehavior  enumHint
 	OpenGLForwardCompatible boolHint
 	OpenGLDebugContext      boolHint
-	//See https://www.glfw.org/docs/latest/window_guide.html#GLFW_OPENGL_PROFILE_hint
+	// See https://www.glfw.org/docs/latest/window_guide.html#GLFW_OPENGL_PROFILE_hint
 	OpenGLProfile enumHint
 	SRGBCapable   boolHint
 }
@@ -151,7 +151,7 @@ func (h contextHints) apply() {
 	applyHint(h.SRGBCapable)
 }
 
-//framebuffer related hints
+// Framebuffer related hints
 type framebufferHints struct {
 	DepthBits    intHint
 	Samples      intHint

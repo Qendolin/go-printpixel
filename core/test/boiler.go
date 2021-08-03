@@ -18,7 +18,7 @@ const MaxHeadlessFrames = 10
 
 type TestingWindow struct {
 	glwindow.Extended
-	expectedResult  string
+	expectedHash    string
 	t               *testing.T
 	closeCheckCount int
 	isHeadless      bool
@@ -43,18 +43,18 @@ func (win *TestingWindow) assertResult() {
 	gl.ReadPixels(0, 0, int32(w), int32(h), gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 	actual := dHash(img)
 
-	if win.expectedResult == "" {
+	if win.expectedHash == "" {
 		win.t.Errorf("expected hash has not been calculated, current hash is %v\n", actual)
 		win.t.FailNow()
 		return
 	}
 
-	if d := distance(win.expectedResult, actual); d > 3 {
+	if d := distance(win.expectedHash, actual); d > 3 {
 		win.t.Errorf("result has a distance greater than 3 from expected result. Distance: %d\n", d)
 	}
 }
 
-func NewWindow(t *testing.T, expectedResult string) (w glwindow.Extended, close func()) {
+func NewWindow(t *testing.T, expectedHash string) (w glwindow.Extended, close func()) {
 	runtime.LockOSThread()
 	err := glcontext.InitGlfw()
 	if err != nil {
@@ -72,11 +72,11 @@ func NewWindow(t *testing.T, expectedResult string) (w glwindow.Extended, close 
 		closeCheckCount: 0,
 		isHeadless:      Args.Headless,
 		t:               t,
-		expectedResult:  expectedResult,
+		expectedHash:    expectedHash,
 	}
 
 	win.MakeContextCurrent()
-	left, top, _, _ := win.GetVisibleFrameSize()
+	left, top, _, _ := win.GetFrameSize()
 	win.SetPos(left, top)
 
 	cfg := glcontext.NewGlConfig(0)

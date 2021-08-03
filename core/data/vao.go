@@ -51,8 +51,7 @@ func (vao *Vao) Layout(index int, size int, dataType interface{}, normalized boo
 	}
 	gl.EnableVertexAttribArray(uint32(index))
 	if isFloat {
-		// gl.VertexAttribPointerWithOffset(uint32(index), int32(size), glType, normalized, int32(stride), uintptr(offset))
-		gl.VertexAttribPointer(uint32(index), int32(size), glType, normalized, int32(stride), gl.PtrOffset(offset))
+		gl.VertexAttribPointerWithOffset(uint32(index), int32(size), glType, normalized, int32(stride), uintptr(offset))
 	} else {
 		gl.VertexAttribIPointer(uint32(index), int32(size), glType, int32(stride), gl.PtrOffset(offset))
 	}

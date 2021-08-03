@@ -14,34 +14,37 @@ func triangleAltitude(doubleArea float64, a, c vertex) float64 {
 	return doubleArea / base
 }
 
+// Reducer performs a polygon/polyline reduction algorithm.
 type Reducer interface {
 	// Reduces vertices and returns a new slice or nil if len < 3
-	Reduce(polygon []vertex) []vertex
+	Reduce(polyline []vertex) []vertex
 }
 
-// detail best between 0.1 to 0.01
+// DetailReducer performs a custom algorithm that is similar to Visvalingam–Whyatt
+//
+// Detail gives good results btween 0.1 and 0.01
 type DetailReducer struct {
 	Detail float32
 }
 
-func (r DetailReducer) Reduce(polygon []vertex) (result []vertex) {
-	if r.Detail < 1e-6 || len(polygon) == 0 {
-		return append([]vertex{}, polygon...)
+func (r DetailReducer) Reduce(polyline []vertex) (result []vertex) {
+	if r.Detail < 1e-6 || len(polyline) == 0 {
+		return append([]vertex{}, polyline...)
 	}
 
-	result = make([]vertex, 0, len(polygon))
-	result = append(result, polygon[0])
+	result = make([]vertex, 0, len(polyline))
+	result = append(result, polyline[0])
 	var (
-		a = polygon[0]
-		b = polygon[1]
+		a = polyline[0]
+		b = polyline[1]
 		c vertex
 	)
 
-	for i := 2; i <= len(polygon); i++ {
-		if i == len(polygon) {
-			c = polygon[0]
+	for i := 2; i <= len(polyline); i++ {
+		if i == len(polyline) {
+			c = polyline[0]
 		} else {
-			c = polygon[i]
+			c = polyline[i]
 		}
 
 		alt := 0.0
@@ -91,6 +94,16 @@ func (v *linkedTri) Value() float64 {
 	return alt
 }
 
+// CountReducer performs the same algorithm as DetailReducer but
+// removes the least important vertices until at most 'Count' are left
+type CountReducer struct {
+	Count int
+}
+
+func (r CountReducer) Reduce(polyline []vertex) (result []vertex) {
+	return reduceToCount(polyline, r.Count)
+}
+
 // triHeightQueue implements a priority queue by triangle height
 // https://pkg.go.dev/container/heap@go1.16.6#example-package-PriorityQueue
 type triHeightQueue []*linkedTri
@@ -120,32 +133,27 @@ func (q *triHeightQueue) Pop() interface{} {
 	return item
 }
 
-// CountReducer removes the least important vertices until at most 'Count' are left
-type CountReducer struct {
-	Count int
-}
-
-func (r CountReducer) Reduce(polygon []vertex) (result []vertex) {
-	if len(polygon) <= r.Count || len(polygon) == 0 {
-		return append([]vertex{}, polygon...)
+func reduceToCount(polyline []vertex, count int) (result []vertex) {
+	if len(polyline) <= count || len(polyline) == 0 {
+		return append([]vertex{}, polyline...)
 	}
 
-	q := make(triHeightQueue, 0, len(polygon))
+	q := make(triHeightQueue, 0, len(polyline))
 
 	var (
-		a = &linkedTri{B: polygon[0], index: 0}
-		b = &linkedTri{A: a, B: polygon[1], index: 1}
+		a = &linkedTri{B: polyline[0], index: 0}
+		b = &linkedTri{A: a, B: polyline[1], index: 1}
 		c *linkedTri
 	)
 	first := a
 	a.C = b
 
-	for i := 2; i <= len(polygon); i++ {
-		if i == len(polygon) {
+	for i := 2; i <= len(polyline); i++ {
+		if i == len(polyline) {
 			first.A = c
 			c = first
 		} else {
-			c = &linkedTri{B: polygon[i], index: i}
+			c = &linkedTri{B: polyline[i], index: i}
 		}
 
 		b.C = c
@@ -159,7 +167,7 @@ func (r CountReducer) Reduce(polygon []vertex) (result []vertex) {
 
 	heap.Init(&q)
 
-	over := len(polygon) - r.Count
+	over := len(polyline) - count
 	for i := 0; i < over; i++ {
 		tri := heap.Pop(&q).(*linkedTri)
 		tri.A.unchanged = false
@@ -182,4 +190,27 @@ func (r CountReducer) Reduce(polygon []vertex) (result []vertex) {
 	}
 
 	return result
+}
+
+// PercentReducer performs the same algorithm as DetailReducer but
+// removes the least important vertices until at most ('Percent'*100)% are left
+type PercentReducer struct {
+	Percent float32
+}
+
+func (r PercentReducer) Reduce(polyline []vertex) (result []vertex) {
+	return reduceToCount(polyline, int(r.Percent*float32(len(polyline))))
+}
+
+// RDPReducer performs the Ramer–Douglas–Peucker algorithm
+type RDPReducer struct {
+	Epsilon float32
+}
+
+func (r RDPReducer) Reduce(polyline []vertex) (result []vertex) {
+	if len(polyline) <= 3 {
+		return append([]vertex{}, polyline...)
+	}
+
+	return RDP(polyline, r.Epsilon)
 }

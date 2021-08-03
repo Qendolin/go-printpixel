@@ -1,87 +1,18 @@
 package march
 
 import (
-	"fmt"
-	"image"
-	"image/color"
-	"image/png"
 	"math"
-	"os"
 
 	"github.com/Qendolin/go-printpixel/temp2/text3d/march/field"
 )
 
-// Polyline is a polygonal chain
+// Polyline is a (closed) polygonal chain
 type Polyline = []vertex
 
-// Polygon is a simple polygon with optional holes
+// Polygon is a simple polygon with optional holes (aka. interior bounds)
 type Polygon struct {
 	ExteriorBound  Polyline
 	InteriorBounds []Polyline
-}
-
-// 	Edges  │ Corners │ Indices
-// ────────┼─────────┼─────────
-// 	┌─4─┐  │  8───4  │  3───2
-// 	3   2  │  │   │  │  │   │
-// 	└─1─┘  │  2───1  │  1───0
-var (
-	edge1 = [2]float32{0.5, 1}
-	edge2 = [2]float32{1, 0.5}
-	edge3 = [2]float32{0, 0.5}
-	edge4 = [2]float32{0.5, 0}
-)
-
-// Ordering the edges from CCW to CW makes deduplication easier
-// since they will from a loop that always goes CW.
-// For a better explaination on ordering see stepTable.
-// Every second edge in this table is actually unnecessary.
-var contourTable = [][][2]float32{
-	{},                           // 0
-	{edge2, edge1},               // 1
-	{edge1, edge3},               // 2
-	{edge2, edge3},               // 3
-	{edge4, edge2},               // 4
-	{edge4, edge1},               // 5
-	{edge1, edge3, edge4, edge2}, // 6 up -> first pair, down -> second pair
-	{edge4, edge3},               // 7
-	{edge3, edge4},               // 8
-	{edge3, edge4, edge2, edge1}, // 9 right -> first pair, left -> second pair
-	{edge1, edge4},               // 10
-	{edge2, edge4},               // 11
-	{edge3, edge2},               // 12
-	{edge3, edge1},               // 13
-	{edge1, edge2},               // 14
-	{},                           // 15
-}
-
-// Corner indices for each edge
-// TODO: Figure out pattern
-var cornerIndexTable = [][]int{
-	{}, // 0
-	// {0, 2, 0, 1},             // 1
-	{2, 0, 1, 0}, // 1
-	// {1, 0, 1, 3}, // 2
-	{1, 0, 3, 1}, // 2
-	// {0, 2, 1, 3}, // 3
-	{2, 0, 3, 1}, // 3
-	// {2, 3, 2, 0}, // 4
-	{3, 2, 2, 0}, // 4
-	// {2, 3, 0, 1},             // 5
-	{3, 2, 1, 0},             // 5
-	{1, 0, 1, 3, 2, 3, 2, 0}, // 6 down -> first pairs, up -> second pairs
-	// {2, 3, 1, 3},             // 7
-	{3, 2, 3, 1},             // 7
-	{3, 1, 3, 2},             // 8
-	{3, 1, 3, 2, 0, 2, 0, 1}, // 9 left -> first pair, right -> second pair
-	{1, 0, 3, 2},             // 10
-	// {0, 2, 3, 2}, // 11 ???
-	{2, 0, 3, 2}, // 11
-	{3, 1, 2, 0}, // 12
-	// {3, 1, 0, 1}, // 13
-	{3, 1, 1, 0}, // 13
-	{1, 0, 2, 0}, // 14
-	{},           // 15
 }
 
 type step [2]int
@@ -123,9 +54,69 @@ var stepTable = []step{
 	none,  // 15
 }
 
-var _debugImage *image.RGBA
+//  Edges  │ Corners │ Indices
+// ────────┼─────────┼─────────
+//  ┌─4─┐  │  8───4  │  3───2
+//  3   2  │  │   │  │  │   │
+//  └─1─┘  │  2───1  │  1───0
+var (
+	edge1 = [2]float32{0.5, 1}
+	edge2 = [2]float32{1, 0.5}
+	edge3 = [2]float32{0, 0.5}
+	edge4 = [2]float32{0.5, 0}
+)
 
-const debug = false
+// Ordering the edges from CCW to CW makes deduplication easier
+// since they will from a loop that always goes CW.
+// For a better explaination on ordering see stepTable.
+// Every second edge in this table is actually redundant.
+var contourTable = [][][2]float32{
+	{},                           // 0
+	{edge2, edge1},               // 1
+	{edge1, edge3},               // 2
+	{edge2, edge3},               // 3
+	{edge4, edge2},               // 4
+	{edge4, edge1},               // 5
+	{edge1, edge3, edge4, edge2}, // 6 up -> first pair, down -> second pair
+	{edge4, edge3},               // 7
+	{edge3, edge4},               // 8
+	{edge3, edge4, edge2, edge1}, // 9 right -> first pair, left -> second pair
+	{edge1, edge4},               // 10
+	{edge2, edge4},               // 11
+	{edge3, edge2},               // 12
+	{edge3, edge1},               // 13
+	{edge1, edge2},               // 14
+	{},                           // 15
+}
+
+// Corner indices for each edge for interpolation.
+// The order follows this pattern but the rule is unclear.
+// 8-→-4  │  3-→-2
+// ↓   ↓  │  ↓   ↓
+// 2-→-1  │  1-→-0
+//
+// 8 → 4 | 3 → 2
+// 4 → 1 | 2 → 0
+// 8 → 2 | 3 → 1
+// 2 → 1 | 1 → 0
+var cornerIndexTable = [][]int{
+	{},                       // 0
+	{2, 0, 1, 0},             // 1
+	{1, 0, 3, 1},             // 2
+	{2, 0, 3, 1},             // 3
+	{3, 2, 2, 0},             // 4
+	{3, 2, 1, 0},             // 5
+	{1, 0, 3, 1, 3, 2, 2, 0}, // 6 down -> first pairs, up -> second pairs
+	{3, 2, 3, 1},             // 7
+	{3, 1, 3, 2},             // 8
+	{3, 1, 3, 2, 2, 0, 1, 0}, // 9 left -> first pair, right -> second pair
+	{1, 0, 3, 2},             // 10
+	{2, 0, 3, 2},             // 11
+	{3, 1, 2, 0},             // 12
+	{3, 1, 1, 0},             // 13
+	{1, 0, 2, 0},             // 14
+	{},                       // 15
+}
 
 type point [2]int
 type vertex = [2]float32
@@ -135,9 +126,8 @@ type vertex = [2]float32
 //                                         │        ··
 
 func March(f field.ScalarField, flipY bool) []Polygon {
-	_debugImage = nil
 	if debug {
-		resetDebugImages()
+		dbgReset()
 	}
 
 	width, height := f.Width(), f.Height()
@@ -147,7 +137,7 @@ func March(f field.ScalarField, flipY bool) []Polygon {
 	boundId := 1
 	polygonIndices := map[int]int{}
 
-	// Could use a map here but is much slower
+	// Could use a map here but is much slower >:\
 	boundIds := make([]int, width*height)
 	markVisit := func(x, y, _ int) {
 		boundIds[y*width+x] = boundId
@@ -173,7 +163,8 @@ func March(f field.ScalarField, flipY bool) []Polygon {
 			}
 
 			if debug {
-				createDebugImage(f, []point{{x, y}})
+				dbgInit(f)
+				dbgMarkStart(x, y)
 			}
 
 			bound, isInnerBound := trace(values, width, height, [2]int{x, y}, flipY, markVisit)
@@ -187,9 +178,9 @@ func March(f field.ScalarField, flipY bool) []Polygon {
 
 			if debug {
 				if isInnerBound {
-					saveDebugImage("hole", boundId)
+					dbgSave("hole", boundId)
 				} else {
-					saveDebugImage("shape", boundId)
+					dbgSave("shape", boundId)
 				}
 			}
 			boundId++
@@ -197,35 +188,6 @@ func March(f field.ScalarField, flipY bool) []Polygon {
 	}
 
 	return polygons
-}
-
-func resetDebugImages() {
-	os.RemoveAll("./debug/")
-}
-
-func saveDebugImage(typ string, nr int) {
-	if _debugImage != nil {
-		os.MkdirAll("./debug/", 0666)
-		debug, _ := os.Create(fmt.Sprintf("./debug/%s_%03d.png", typ, nr))
-		png.Encode(debug, _debugImage)
-	}
-}
-
-func createDebugImage(f field.ScalarField, starts []point) {
-	_debugImage = image.NewRGBA(image.Rect(0, 0, f.Width(), f.Height()))
-	for x := 0; x < f.Width(); x++ {
-		for y := 0; y < f.Height(); y++ {
-			if f.Get(x, y) >= 0.5 {
-				_debugImage.Set(x, y, color.RGBA{127, 127, 127, 255})
-			} else {
-				_debugImage.Set(x, y, color.Black)
-			}
-		}
-	}
-
-	for _, p := range starts {
-		_debugImage.Set(p[0], p[1], color.RGBA{0, 255, 0, 255})
-	}
 }
 
 func trace(values []float32, width, height int, start point, flipY bool, onVisit func(x, y, value int)) (verts []vertex, isHole bool) {
@@ -262,7 +224,7 @@ func trace(values []float32, width, height int, start point, flipY bool, onVisit
 		} else if value == 7 || value == 11 || value == 13 || value == 14 {
 			inTurns++
 		} else if value == 6 || value == 9 {
-			// TODO: This could work since a start is always at the top left
+			// FIXME: This could work since a start is always at the top left
 			// but it might not. In a simple loops the outer order might be
 			// 6 (down), 9 (right), 6 (up), 9 (left), so ccw
 			// and the inner order might be
@@ -301,8 +263,7 @@ func trace(values []float32, width, height int, start point, flipY bool, onVisit
 		}
 
 		if debug {
-			r, g, b, _ := _debugImage.At(x, y).RGBA()
-			_debugImage.Set(x, y, color.RGBA{uint8(r + 128), uint8(g), uint8(b), 255})
+			dbgMarkVisit(x, y)
 		}
 		prevStep = next
 
@@ -401,7 +362,7 @@ func lerp(v1, v2 float32) float32 {
 		return 0
 	}
 
-	// the delta interpolation value is equal to the difference between the threshold from first
-	// value over the difference of value 2 from value 1
+	// the delta interpolation value is equal to the difference between the
+	// threshold from first value over the difference of value 2 from value 1
 	return (0.5 - v1) / (v2 - v1)
 }

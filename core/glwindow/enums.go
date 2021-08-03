@@ -4,27 +4,27 @@ import "github.com/go-gl/glfw/v3.3/glfw"
 
 type GlfwEnum int
 
-//ClientApi
+// ClientApi
 const (
 	OpenGLAPI   = GlfwEnum(glfw.OpenGLAPI)
 	OpenGLESAPI = GlfwEnum(glfw.OpenGLESAPI)
 )
 
-//ContextRobustness
+// ContextRobustness
 const (
 	NoRobustness        = GlfwEnum(glfw.NoRobustness)
 	NoResetNotification = GlfwEnum(glfw.NoResetNotification)
 	LoseContextOnReset  = GlfwEnum(glfw.LoseContextOnReset)
 )
 
-//ContextReleaseBehavior
+// ContextReleaseBehavior
 const (
 	AnyReleaseBehavior   = GlfwEnum(glfw.AnyReleaseBehavior)
 	ReleaseBehaviorFlush = GlfwEnum(glfw.ReleaseBehaviorFlush)
 	ReleaseBehaviorNone  = GlfwEnum(glfw.ReleaseBehaviorNone)
 )
 
-//OpenGLProfile
+// OpenGLProfile
 const (
 	OpenGLAnyProfile    = GlfwEnum(glfw.OpenGLAnyProfile)
 	OpenGLCoreProfile   = GlfwEnum(glfw.OpenGLCoreProfile)

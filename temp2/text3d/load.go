@@ -28,7 +28,7 @@ func Load3d(img image.Image, scale float32, reducer mesh2.Reducer, origin vec3, 
 	sideStride := uint32(totalVertCount)
 	totalVertCount *= 4
 
-	// the layout is front back front back, duplicated to enable hard edges
+	// the layout is [front back front back]. (duplicated to enable hard edges)
 	vertexBuffer := make([]vec3, totalVertCount)
 	normalBuffer := make([]vec3, totalVertCount/2, totalVertCount)
 	indexBuffer := make([]uint32, 0, totalVertCount*3)
@@ -86,7 +86,6 @@ func Load3d(img image.Image, scale float32, reducer mesh2.Reducer, origin vec3, 
 		v1 = vertexBuffer[0]
 		v2 vec3
 	)
-	_ = v0
 
 	// Connect edge loops and calculate normals
 	for i := uint32(1); i <= sideStride; i++ {
