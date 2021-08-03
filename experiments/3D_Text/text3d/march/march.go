@@ -3,7 +3,7 @@ package march
 import (
 	"math"
 
-	"github.com/Qendolin/go-printpixel/temp2/text3d/march/field"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march/field"
 )
 
 // Polyline is a (closed) polygonal chain

@@ -7,7 +7,7 @@ import (
 	"image/png"
 	"os"
 
-	"github.com/Qendolin/go-printpixel/temp2/text3d/march/field"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march/field"
 )
 
 var dbgImage *image.RGBA

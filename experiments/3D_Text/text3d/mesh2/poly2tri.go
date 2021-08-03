@@ -10,7 +10,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/Qendolin/go-printpixel/temp2/text3d/march"
+	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march"
 )
 
 const mpePolyPointSize = C.size_t(unsafe.Sizeof(C.MPEPolyPoint{}))

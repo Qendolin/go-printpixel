@@ -1,7 +1,7 @@
 // package ccl is a port of https://github.com/spwhitt/cclabel
 package ccl
 
-import "github.com/Qendolin/go-printpixel/temp2/text3d/march/field"
+import "github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march/field"
 
 type LabelField struct {
 	Width, Height int
