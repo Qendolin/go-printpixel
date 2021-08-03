@@ -1,4 +1,4 @@
-// packe ccl is a port of https://github.com/spwhitt/cclabel
+// package ccl is a port of https://github.com/spwhitt/cclabel
 package ccl
 
 import "github.com/Qendolin/go-printpixel/temp2/text3d/march/field"

@@ -26,7 +26,7 @@ func (glerr Error) Error() string {
 }
 
 type Config struct {
-	//Enables DEBUG_OUTPUT and DEBUG_OUTPUT_SYNCHRONOUS. Also sets DebugMessageCallback.
+	// Enables DEBUG_OUTPUT and DEBUG_OUTPUT_SYNCHRONOUS. Also sets DebugMessageCallback.
 	Debug         bool
 	Multisampling bool
 	Errors        <-chan Error

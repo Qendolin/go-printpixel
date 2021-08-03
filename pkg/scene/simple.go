@@ -52,7 +52,7 @@ func (stack *Stack) Layout() []Layoutable {
 		c.SetY(stack.y)
 	}
 
-	//reverse children so that the first is ontop
+	// reverse children so that the first is ontop
 	c := make([]Layoutable, len(stack.Children))
 	copy(c, stack.Children)
 	for i := len(c)/2 - 1; i >= 0; i-- {

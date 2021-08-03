@@ -14,7 +14,7 @@ var MipMapDefaultMaxLevel = 0
 
 type TexWrapMode int
 
-//Texture Wrap Modes
+// Texture Wrap Modes
 const (
 	WrapDefault           = WrapClampToEdge
 	WrapClampToEdge       = TexWrapMode(gl.CLAMP_TO_EDGE)
@@ -28,7 +28,7 @@ type TexFilterMode int
 
 var FilterMagDefault = FilterLinear
 
-//Texture magnification filters
+// Texture magnification filters
 const (
 	FilterNearest = TexFilterMode(gl.NEAREST)
 	FilterLinear  = TexFilterMode(gl.LINEAR)
@@ -36,7 +36,7 @@ const (
 
 var FilterMinDefault = FilterLinearMipMapLinear
 
-//Texture minification filters
+// Texture minification filters
 const (
 	FilterNearestMipMapNearest = TexFilterMode(gl.NEAREST_MIPMAP_NEAREST)
 	FilterLinearMipMapNearest  = TexFilterMode(gl.LINEAR_MIPMAP_NEAREST)
@@ -46,14 +46,14 @@ const (
 
 type TexTarget int
 
-//1D Texture targets
+// 1D Texture targets
 const (
 	Tex1DTarget1D      = TexTarget(gl.TEXTURE_1D)
 	Tex1DTargetProxy1D = TexTarget(gl.PROXY_TEXTURE_1D)
 	Tex1DTargetBuffer  = TexTarget(gl.TEXTURE_BUFFER)
 )
 
-//2D Texture targets
+// 2D Texture targets
 const (
 	Tex2DTarget2D               = TexTarget(gl.TEXTURE_2D)
 	Tex2DTargetProxy2D          = TexTarget(gl.PROXY_TEXTURE_2D)
@@ -70,7 +70,7 @@ const (
 	Tex2DTargetProxyCubeMap     = TexTarget(gl.PROXY_TEXTURE_CUBE_MAP)
 )
 
-//3D Texture targets
+// 3D Texture targets
 const (
 	Tex3DTarget3D           = TexTarget(gl.TEXTURE_3D)
 	Tex3DTargetCubeMap      = TexTarget(gl.TEXTURE_CUBE_MAP)

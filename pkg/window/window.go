@@ -17,7 +17,7 @@ type Window struct {
 	BeforeUpdate func()
 	AfterUpdate  func()
 	Renderers    map[string]renderer.Renderer
-	//Top, Right, Bottom, Left
+	// Top, Right, Bottom, Left
 	margins        []int
 	init           bool
 	drawables      []map[string][]renderer.ZDrawable
@@ -46,7 +46,7 @@ func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *g
 		return nil, err
 	}
 
-	mLeft, mTop, mRight, mBot := glfwWin.GetVisibleFrameSize()
+	mLeft, mTop, mRight, mBot := glfwWin.GetFrameSize()
 
 	win := Window{GlWindow: glfwWin, margins: []int{mTop, mRight, mBot, mLeft}}
 
@@ -227,7 +227,7 @@ func (win *Window) Layout() []scene.Layoutable {
 			}
 
 			if node.Depth >= len(*ds) {
-				//expand drawables
+				// expand drawables
 				ds1 := make([]map[string][]renderer.ZDrawable, node.Depth+1)
 				copy(ds1, *ds)
 				for i := range ds1 {

@@ -202,32 +202,6 @@ func (msdf *MSDF) Raw() []float32 {
 	return msdf.Values
 }
 
-// func median(a, b, c float32) float32 {
-// 	x := a - b
-// 	y := b - c
-// 	z := a - c
-// 	if x*y > 0 {
-// 		return b
-// 	}
-// 	if x*z > 0 {
-// 		return c
-// 	}
-// 	return a
-// }
-
-// func median(a, b, c float32) float32 {
-// 	if a > b {
-// 		a, b = b, a
-// 	}
-// 	if b > c {
-// 		b = c
-// 	}
-// 	if a > b {
-// 		b = a
-// 	}
-// 	return b
-// }
-
 func max(a, b float32) float32 {
 	if a > b {
 		return a
@@ -246,6 +220,7 @@ func median(a, b, c float32) float32 {
 	return max(min(a, b), min(max(a, b), c))
 }
 
+// ScalarField represents a 2D array of normalized floats [0;1]
 type ScalarField interface {
 	Width() int
 	Height() int

@@ -60,7 +60,7 @@ func (buf *Buffer) WriteStatic(data interface{}) {
 func (buf *Buffer) Write(mode uint32, data interface{}) {
 	size := binary.Size(data)
 	if size == -1 {
-		//Ignore, gl will throw error anyway
+		// Ignore, gl will throw error anyway
 	}
 	gl.BufferData(uint32(buf.Target), size, gl.Ptr(data), mode)
 }

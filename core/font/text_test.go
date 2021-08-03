@@ -53,7 +53,7 @@ func TestFontWrap(t *testing.T) {
 	text := font.Layout([]rune(
 		"Hello, world!\nThis is a test.\nLVA Ta gj\n"+
 			"This line is really long, it should be broken up.\n"+
-			"AndAWordThatsTooLong. Also, ellipsis is coming, can't see this."), fnt, font.IDK{
+			"AndAWordThatsTooLong. Also, ellipsis is coming, can't see this."), fnt, font.LayoutSpecs{
 		Ellipsis: true,
 		Height:   Height,
 		Width:    Width,
@@ -109,7 +109,7 @@ func TestTabs(t *testing.T) {
 		TabSize:    4,
 	}
 
-	text := font.Layout([]rune("|\n\t|\n \t|\n  \t|\n   \t|\n    \t|\n|\t|\t|\t|\t|\t|\t|\t_\t|"), fnt, font.IDK{
+	text := font.Layout([]rune("|\n\t|\n \t|\n  \t|\n   \t|\n    \t|\n|\t|\t|\t|\t|\t|\t|\t_\t|"), fnt, font.LayoutSpecs{
 		Ellipsis: true,
 		Height:   Height,
 		Width:    Width,
@@ -165,7 +165,7 @@ func TestBM(t *testing.T) {
 		TabSize:    4,
 	}
 
-	text := font.Layout([]rune("Hello World!"), fnt, font.IDK{
+	text := font.Layout([]rune("Hello World!"), fnt, font.LayoutSpecs{
 		Ellipsis: true,
 		Height:   Height,
 		Width:    Width,
@@ -221,7 +221,7 @@ func TestSDF(t *testing.T) {
 		TabSize:    4,
 	}
 
-	text := font.Layout([]rune("Hello World!"), fnt, font.IDK{
+	text := font.Layout([]rune("Hello World!"), fnt, font.LayoutSpecs{
 		Ellipsis: true,
 		Height:   Height,
 		Width:    Width,
@@ -277,7 +277,7 @@ func TestMSDF(t *testing.T) {
 		TabSize:    4,
 	}
 
-	text := font.Layout([]rune("Hello World!"), fnt, font.IDK{
+	text := font.Layout([]rune("Hello World!"), fnt, font.LayoutSpecs{
 		Ellipsis: true,
 		Height:   Height,
 		Width:    Width,

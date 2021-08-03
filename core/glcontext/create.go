@@ -14,13 +14,13 @@ const (
 	StatusGlInitialized
 )
 
-// TODO: Rework
+// TODO: Rework initialization checking
 var status int
 
 var (
-	ErrGlfwNotInitialized = errors.New("GLFW has not been initialized. You have to call InitGlfw() first.")
-	ErrGlfwNoContext      = errors.New("GLFW has no context. You have to call MakeContextCurrent() on a *glfw.Window first.")
-	//ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
+	ErrGlfwNotInitialized = errors.New("GLFW has not been initialized, call InitGlfw first")
+	ErrGlfwNoContext      = errors.New("GLFW has no context, call MakeContextCurrent first")
+	// ErrGlNotInitialized   = errors.New("OpenGL has not been initialized. You have to call InitGl() first.")
 )
 
 func InitGl(cfg Config) error {

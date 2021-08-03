@@ -42,15 +42,15 @@ func main() {
 	// imgPath := "./assets/star-msdf.png"
 	// imgPath := "./assets/Playball-W-msdf.png"
 	// imgPath := "./assets/PressStart2P-W-msdf.png"
-	imgPath := "./assets/Cook-T-msdf.png"
+	// imgPath := "./assets/Cook-T-msdf.png"
 	// imgPath := "./assets/Regular-MSDF.png"
-	// imgPath := "./assets/march-test.png"
+	imgPath := "./assets/march-test.png"
 	imgFile, err := os.Open(imgPath)
 	panicIf(err)
 	img, _, err := image.Decode(imgFile)
 	panicIf(err)
-	mesh, bounds, err := text3d.Load3d(img, 1, mesh2.DetailReducer{Detail: 0.06}, [3]float32{0.5, 0.5, 0.}, 10)
-	// mesh, bounds, err := text3d.Load2d(imgPath, 2, mesh2.DetailReducer{Detail: 0.06}, [3]float32{0.5, 0.5, 0.5}, [3]float32{0, 0, 1})
+	// mesh, bounds, err := text3d.Load3d(img, 1, mesh2.DetailReducer{Detail: 0.06}, [3]float32{0.5, 0.5, 0.}, 10)
+	mesh, bounds, err := text3d.Load2d(img, 1, mesh2.DetailReducer{Detail: 0.0}, [3]float32{0.5, 0.5, 0.5}, [3]float32{0, 0, 1})
 	panicIf(err)
 	log.Printf("Loaded in: %v\n", time.Since(loadStart))
 	log.Printf("%-5d vertices, %-5d indices total\n", mesh.VertexCount, mesh.IndexCount)

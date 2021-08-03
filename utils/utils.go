@@ -13,10 +13,8 @@ type BindingClosure func()
 
 var rootPath string
 
-/*
-  Resolves a path relative to the current module or the working directory if the module is not avaliable
-  Won't return a path thats outside of the root folder, e.g.: "./../" will be changed to just "./"
-*/
+// Resolves a path relative to the current module or the working directory if the module is not avaliable
+// Won't return a path thats outside of the root folder, e.g.: "./../" will be changed to just "./"
 func ResolveModulePath(path string) (string, error) {
 	if rootPath == "" {
 		if _, p, _, ok := runtime.Caller(0); ok {
@@ -58,11 +56,10 @@ func MustResolvePath(path string) string {
 	return absPath
 }
 
-/*
-	Resolves paths with @mod as the first segment relative to the module root
-	Resolves relative paths to absolute paths
-	Use an extra @ to escape
-*/
+// ResolvePath acts like filepath.Abs with support for aliases.
+//
+// A path starting with @mod wil resolve to the module root or the wd of the binary.
+// An extra @ can be used for escaping.
 func ResolvePath(path string) (string, error) {
 	if strings.HasPrefix(path, "@mod/") {
 		return ResolveModulePath(path[4:])

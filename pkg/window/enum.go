@@ -4,27 +4,27 @@ import (
 	"github.com/Qendolin/go-printpixel/core/glwindow"
 )
 
-//ClientApi
+// ClientApi
 const (
 	OpenGLAPI   = glwindow.OpenGLAPI
 	OpenGLESAPI = glwindow.OpenGLESAPI
 )
 
-//ContextRobustness
+// ContextRobustness
 const (
 	NoRobustness        = glwindow.NoRobustness
 	NoResetNotification = glwindow.NoResetNotification
 	LoseContextOnReset  = glwindow.LoseContextOnReset
 )
 
-//ContextReleaseBehavior
+// ContextReleaseBehavior
 const (
 	AnyReleaseBehavior   = glwindow.AnyReleaseBehavior
 	ReleaseBehaviorFlush = glwindow.ReleaseBehaviorFlush
 	ReleaseBehaviorNone  = glwindow.ReleaseBehaviorNone
 )
 
-//OpenGLProfile
+// OpenGLProfile
 const (
 	OpenGLAnyProfile    = glwindow.OpenGLAnyProfile
 	OpenGLCoreProfile   = glwindow.OpenGLCoreProfile

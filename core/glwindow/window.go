@@ -33,8 +33,9 @@ type Extended interface {
 	GetClipboardString() string
 	GetContentScale() (x float32, y float32)
 	GetCursorPos() (x, y float64)
+	// GetMarginFrameSize returns the frame size including invisible (resize) margins
+	GetMarginFrameSize() (left, top, right, bottom int)
 	GetFrameSize() (left, top, right, bottom int)
-	GetVisibleFrameSize() (left, top, right, bottom int) //TODO: rename
 	GetFramebufferSize() (width, height int)
 	GetInputMode(mode glfw.InputMode) int
 	GetKey(key glfw.Key) glfw.Action
@@ -109,6 +110,10 @@ type extWindow struct {
 
 func (w *extWindow) GetGLFWWindow() *glfw.Window {
 	return w.Window
+}
+
+func (w *extWindow) GetMarginFrameSize() (left, top, right, bottom int) {
+	return w.Window.GetFrameSize()
 }
 
 func (w *extWindow) SwapBuffers() {
