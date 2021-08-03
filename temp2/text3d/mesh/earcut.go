@@ -176,7 +176,6 @@ func earcutLinked(ear *node, triangles *[]int, dim int, minX, minY, invSize floa
 			break
 		}
 	}
-	return
 }
 
 // check whether a polygon node forms a valid ear with adjacent nodes
@@ -326,7 +325,6 @@ func splitEarcut(start *node, triangles *[]int, dim int, minX, minY, invSize flo
 			break
 		}
 	}
-	return
 }
 
 // eliminate colinear or duplicate points

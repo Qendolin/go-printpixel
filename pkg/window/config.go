@@ -33,7 +33,7 @@ func (cfg *SimpleConfig) Errors() <-chan glcontext.Error {
 		return cfg.errorsOut
 	}
 
-	cfg.errorsOut = make(chan glcontext.Error, 0)
+	cfg.errorsOut = make(chan glcontext.Error)
 	if cfg.errorsIn != nil {
 		go cfg.pipeErrors()
 	}

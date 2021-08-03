@@ -18,7 +18,8 @@ type Window struct {
 	AfterUpdate  func()
 	Renderers    map[string]renderer.Renderer
 	// Top, Right, Bottom, Left
-	margins        []int
+	margins []int
+	// TODO: init is unused
 	init           bool
 	drawables      []map[string][]renderer.ZDrawable
 	alphaDrawables []map[string][]renderer.ZDrawable
