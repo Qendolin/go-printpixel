@@ -59,8 +59,8 @@ func (buf *Buffer) WriteStatic(data interface{}) {
 // data - a silce of some type
 func (buf *Buffer) Write(mode uint32, data interface{}) {
 	size := binary.Size(data)
+	//lint:ignore SA9003 gl will throw error anyway
 	if size == -1 {
-		// Ignore, gl will throw error anyway
 	}
 	gl.BufferData(uint32(buf.Target), size, gl.Ptr(data), mode)
 }

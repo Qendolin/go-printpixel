@@ -52,6 +52,7 @@ func (w *extWindow) SetCharCallback(cb CharCallback) (previous CharCallback) {
 func (w *extWindow) SetCharModsCallback(cb CharModsCallback) (previous CharModsCallback) {
 	p := w.cbs.charMods
 	w.cbs.charMods = cb
+	//lint:ignore SA1019 This is just a proxy function
 	w.GetGLFWWindow().SetCharModsCallback(func(_ *glfw.Window, char rune, mods glfw.ModifierKey) {
 		w.cbs.charMods(w, char, mods)
 	})
