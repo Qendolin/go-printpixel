@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	win, err := window.New("Hello World!", &window.SimpleConfig{Height: 900, Width: 1600, Unresizeable: true})
+	win, err := window.New(window.SimpleConfig{Title: "Hello World!", Height: 900, Width: 1600, FixedSize: true})
 	if err != nil {
 		panic(err)
 	}

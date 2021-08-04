@@ -1,4 +1,4 @@
-package glwindow
+package glw
 
 import "github.com/go-gl/glfw/v3.3/glfw"
 
@@ -8,6 +8,13 @@ type GlfwEnum int
 const (
 	OpenGLAPI   = GlfwEnum(glfw.OpenGLAPI)
 	OpenGLESAPI = GlfwEnum(glfw.OpenGLESAPI)
+)
+
+// ContextCreationApi
+const (
+	NativeContextAPI = GlfwEnum(glfw.NativeContextAPI)
+	EGLContextAPI    = GlfwEnum(glfw.EGLContextAPI)
+	OSMesaContextAPI = GlfwEnum(glfw.OSMesaContextAPI)
 )
 
 // ContextRobustness
@@ -32,5 +39,5 @@ const (
 )
 
 const (
-	DontCare = GlfwEnum(glfw.DontCare)
+	DontCare = glfw.DontCare
 )

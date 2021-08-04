@@ -7,14 +7,13 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 
-	"github.com/Qendolin/go-printpixel/core/glcontext"
-	"github.com/Qendolin/go-printpixel/core/glwindow"
+	"github.com/Qendolin/go-printpixel/core/glw"
 	"github.com/Qendolin/go-printpixel/pkg/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
 
 type TestingWindow struct {
-	glwindow.Extended
+	glw.Window
 	closeCheckCount int
 	isHeadless      bool
 }
@@ -24,32 +23,28 @@ func (win TestingWindow) ShouldClose() bool {
 	if win.closeCheckCount >= 10 || win.isHeadless {
 		return true
 	}
-	return win.Extended.ShouldClose()
+	return win.Window.ShouldClose()
 }
 
-func WrapWindow(win glwindow.Extended) glwindow.Extended {
+func WrapWindow(win glw.Window) glw.Window {
 	return TestingWindow{
-		Extended:   win,
+		Window:     win,
 		isHeadless: Args.Headless,
 	}
 }
 
 func NewWindow(t *testing.T) (w *window.Window, close func()) {
 	runtime.LockOSThread()
-	hints := glwindow.NewHints()
-	cfg := glcontext.NewGlConfig(0)
-	cfg.Debug = true
-	go func() {
-		for err := range cfg.Errors {
-			if err.Fatal {
-				t.Error(err, "\n"+err.Stack)
-			} else {
-				t.Log(err)
-			}
+	conf := glw.BasicConfig("Test Window | "+t.Name(), 1600, 900, glw.DontCare, glw.DontCare)
+	conf.DebugContext = true
+	conf.DebugHandler = func(err glw.DebugMessage) {
+		if err.Critical {
+			t.Error(err, "\n"+err.Stack)
+		} else {
+			t.Log(err)
 		}
-	}()
-
-	win, err := window.NewCustom("Test Window | "+t.Name(), 1600, 900, hints, nil, cfg)
+	}
+	win, err := window.NewCustom(conf)
 	if err != nil {
 		t.Fatal(err)
 	}

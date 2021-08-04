@@ -9,8 +9,7 @@ import (
 
 	"github.com/Qendolin/go-printpixel/core"
 	"github.com/Qendolin/go-printpixel/core/data"
-	"github.com/Qendolin/go-printpixel/core/glcontext"
-	"github.com/Qendolin/go-printpixel/core/glwindow"
+	"github.com/Qendolin/go-printpixel/core/glw"
 	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/pkg/test"
 	"github.com/Qendolin/go-printpixel/pkg/window"
@@ -27,19 +26,16 @@ func TestMain(m *testing.M) {
 }
 
 func TestWindowNormal(t *testing.T) {
-	hints := glwindow.NewHints()
-	cfg := glcontext.NewGlConfig(0)
-	cfg.Debug = true
-	go func() {
-		for err := range cfg.Errors {
-			if err.Fatal {
-				t.Error(err)
-			}
-			t.Log(err)
+	conf := glw.BasicConfig("Test Window", 1600, 900, glw.DontCare, glw.DontCare)
+	conf.DebugContext = true
+	conf.DebugHandler = func(err glw.DebugMessage) {
+		if err.Critical {
+			t.Error(err)
 		}
-	}()
+		t.Log(err)
+	}
 
-	win, err := window.NewCustom("Test Window", 1600, 900, hints, nil, cfg)
+	win, err := window.NewCustom(conf)
 	require.NoError(t, err)
 	win.GlWindow = test.WrapWindow(win.GlWindow)
 	win.Run()
@@ -211,7 +207,7 @@ func TestWindowPosition(t *testing.T) {
 	}
 	win.Child = abs
 
-	win.GlWindow.SetSizeCallback(func(_ glwindow.Extended, _ int, _ int) {
+	win.GlWindow.SetSizeCallback(func(_ glw.Window, _ int, _ int) {
 		win.Layout()
 	})
 

@@ -84,7 +84,7 @@ func TestTextureNotFound(t *testing.T) {
 }
 
 func TestTextureUndecodeable(t *testing.T) {
-	win, close := test.NewWindow(t, "40080100200400801000000")
+	win, close := test.NewWindow(t, "1c0e81502e0941a813000000")
 	defer close()
 
 	prog := test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag")
