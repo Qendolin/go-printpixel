@@ -41,7 +41,7 @@ func main() {
 }
 
 func setup() *window.Window {
-	cfg := window.SimpleConfig{
+	conf := window.SimpleConfig{
 		Width:     Width,
 		Height:    Height,
 		FixedSize: true,
@@ -55,7 +55,7 @@ func setup() *window.Window {
 			log.Printf("%v\n", err)
 		},
 	}
-	win, err := window.New(cfg)
+	win, err := window.New(conf)
 	panicIf(err)
 
 	return win

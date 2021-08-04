@@ -54,10 +54,10 @@ func TestCreateWindowAuto(t *testing.T) {
 }
 
 func TestCreateWindowMaximized(t *testing.T) {
-	hints := glw.BasicConfig("Test Window", 99, 99, glw.DontCare, glw.DontCare)
-	hints.Maximized = true
-	hints.Visible = true
-	win, err := glw.New(hints)
+	conf := glw.BasicConfig("Test Window", 99, 99, glw.DontCare, glw.DontCare)
+	conf.Maximized = true
+	conf.Visible = true
+	win, err := glw.New(conf)
 	defer win.Destroy()
 	require.NoError(t, err)
 	require.NotNil(t, win)
@@ -78,10 +78,10 @@ func TestCreateWindowMaximized(t *testing.T) {
 }
 
 func TestCreateWindowFullscreen(t *testing.T) {
-	hints := glw.BasicConfig("Test Window", 1920, 1080, glw.DontCare, glw.DontCare)
-	hints.Fullscreen = true
-	hints.Visible = false
-	win, err := glw.New(hints)
+	conf := glw.BasicConfig("Test Window", 1920, 1080, glw.DontCare, glw.DontCare)
+	conf.Fullscreen = true
+	conf.Visible = false
+	win, err := glw.New(conf)
 	defer win.Destroy()
 	require.NoError(t, err)
 	require.NotNil(t, win)
