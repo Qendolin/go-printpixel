@@ -1,11 +1,15 @@
-package glwindow
+package glw
 
 import (
 	"image"
+	"log"
+	"math/big"
+	"runtime"
+	"sync"
+	"sync/atomic"
 	"time"
 	"unsafe"
 
-	"github.com/Qendolin/go-printpixel/core/glcontext"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
@@ -17,17 +21,34 @@ func NewId() uint64 {
 	return id
 }
 
-var windows = map[uint64]Extended{}
+var (
+	windows     = sync.Map{}
+	windowCount int32
+)
 
-func Get(id uint64) Extended {
-	return windows[id]
+func Get(id uint64) Window {
+	w, ok := windows.Load(id)
+	if !ok {
+		return nil
+	}
+	return (w).(Window)
 }
 
-func Put(win Extended) {
-	windows[win.Id()] = win
+func Put(win Window) {
+	windows.Store(win.Id(), win)
+	atomic.AddInt32(&windowCount, 1)
 }
 
-type Extended interface {
+func Remove(win Window) {
+	windows.Delete(win.Id())
+}
+
+func DestroyAll() {
+	glfw.Terminate()
+	windows = sync.Map{}
+}
+
+type Window interface {
 	Destroy()
 	GetAttrib(attrib glfw.Hint) int
 	GetClipboardString() string
@@ -97,15 +118,17 @@ type problem string
 
 const (
 	CannotMaximize problem = "the window cannot be maximized, this is likely a system bug"
+	NoDebugContext problem = "a debug context was requested but not granted, it is likely not supported by the device"
 )
 
 type extWindow struct {
 	*glfw.Window
-	lastSwap time.Time
-	d        time.Duration
-	cbs      callbacks
-	id       uint64
-	problems map[problem]bool
+	lastSwap     time.Time
+	d            time.Duration
+	cbs          callbacks
+	id           uint64
+	problems     map[problem]bool
+	debugHandler DebugHandler
 }
 
 func (w *extWindow) GetGLFWWindow() *glfw.Window {
@@ -134,39 +157,62 @@ func (w *extWindow) HasProblem(p problem) bool {
 	return w.problems[p]
 }
 
-func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (Extended, error) {
-	if glcontext.Status()&glcontext.StatusGlfwInitialized == 0 {
-		return nil, glcontext.ErrGlfwNotInitialized
+// Destroy destroys the specified window and its context. On calling this function, no further callbacks will be called for that window.
+// Will also call glfw.Terminate() when the last window is destroyed.
+func (w *extWindow) Destroy() {
+	runtime.LockOSThread()
+	w.Window.Destroy()
+	Remove(w)
+	runtime.UnlockOSThread()
+	w.id = 0
+
+	atomic.AddInt32(&windowCount, -1)
+	if windowCount == 0 {
+		DestroyAll()
+	}
+}
+
+func New(conf Config) (Window, error) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	err := glfw.Init()
+	if err != nil {
+		return nil, err
 	}
 
 	glfw.DefaultWindowHints()
-	hints.apply()
+	conf.load()
 
-	if monitor == nil && (hints.Fullscreen.Value) {
-		monitor = glfw.GetPrimaryMonitor()
-	}
-
-	glfwWin, err := glfw.CreateWindow(width, height, title, monitor, nil)
+	glfwWin, err := glfw.CreateWindow(conf.Width, conf.Height, conf.Title, conf.Monitor, conf.SharedContext)
 	if err != nil {
 		return nil, err
 	}
 	glfwWin.MakeContextCurrent()
 	x := &extWindow{
-		Window:   glfwWin,
-		lastSwap: time.Now(),
-		id:       NewId(),
-		problems: map[problem]bool{},
+		Window:       glfwWin,
+		lastSwap:     time.Now(),
+		id:           NewId(),
+		problems:     map[problem]bool{},
+		debugHandler: conf.DebugHandler,
 	}
 	id := x.id
 	glfwWin.SetUserPointer(gl.Ptr(&id))
 	Put(x)
-
-	if hints.Vsync.Value {
-		glfw.SwapInterval(1)
+	if err = gl.Init(); err != nil {
+		return nil, err
 	}
-	if hints.Maximized.Value && glfwWin.GetAttrib(glfw.Maximized) != glfw.True {
+
+	applyExtendedConfig(x, conf)
+
+	if conf.Maximized && glfwWin.GetAttrib(glfw.Maximized) != glfw.True {
 		// on some systems it's not possible to maximize the window
 		x.problems[CannotMaximize] = true
+	}
+	var contextFlags int32
+	gl.GetIntegerv(gl.CONTEXT_FLAGS, &contextFlags)
+	if conf.DebugContext && (contextFlags&gl.CONTEXT_FLAG_DEBUG_BIT) == 0 {
+		// debug contexts (GL_DEBUG_OUTPUT etc.) are only core since version 4.3
+		x.problems[NoDebugContext] = true
 	}
 
 	x.SetFramebufferSizeCallback(ResizeGlViewport)
@@ -174,8 +220,41 @@ func New(hints Hints, title string, width, height int, monitor *glfw.Monitor) (E
 	return x, nil
 }
 
-func ResizeGlViewport(win Extended, w, h int) {
-	if glcontext.Status()&glcontext.StatusGlInitialized != 0 {
-		gl.Viewport(0, 0, int32(w), int32(h))
+func applyExtendedConfig(win *extWindow, conf Config) {
+	win.SetSizeLimits(conf.MinWidth, conf.MinHeight, conf.MaxWidth, conf.MaxHeight)
+	var aspectNumer, aspectDenom int
+	if conf.AspectRatio <= 0 {
+		aspectDenom = DontCare
+		aspectNumer = DontCare
+	} else {
+		aspect := new(big.Rat).SetFloat64(conf.AspectRatio)
+		aspectDenom = int(aspect.Denom().Int64())
+		aspectNumer = int(aspect.Num().Int64())
 	}
+	if !conf.Maximized {
+		win.SetAspectRatio(aspectNumer, aspectDenom)
+		win.SetSize(conf.Width, conf.Height)
+		win.SetPos(conf.X, conf.Y)
+	}
+	if conf.Vsync {
+		glfw.SwapInterval(1)
+	}
+	if conf.DebugContext {
+		var major, minor int32
+		gl.GetIntegerv(gl.MAJOR_VERSION, &major)
+		gl.GetIntegerv(gl.MINOR_VERSION, &minor)
+		log.Printf(" === System Information === \n")
+		log.Printf("OpenGL Version: %v (%v.%v)\n", gl.GoStr(gl.GetString(gl.VERSION)), major, minor)
+		log.Printf("GLSL Version: %v\n", gl.GoStr(gl.GetString(gl.SHADING_LANGUAGE_VERSION)))
+		log.Printf("Renderer: %v\n", gl.GoStr(gl.GetString(gl.RENDERER)))
+		log.Printf("Vendor: %v\n", gl.GoStr(gl.GetString(gl.VENDOR)))
+		log.Println()
+		gl.DebugMessageCallback(DefaultDebugMessageCallback(win), nil)
+		gl.Enable(gl.DEBUG_OUTPUT)
+		gl.Enable(gl.DEBUG_OUTPUT_SYNCHRONOUS)
+	}
+}
+
+func ResizeGlViewport(win Window, w, h int) {
+	gl.Viewport(0, 0, int32(w), int32(h))
 }

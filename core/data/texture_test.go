@@ -89,7 +89,7 @@ func TestGeneratedTexture(t *testing.T) {
 
 // Texture is not initialized and may contain garbage data
 func TestUpdatingTexture(t *testing.T) {
-	win, close := test.NewWindow(t, "540b81503605c05817000000")
+	win, close := test.NewWindow(t, "540882506206c1e815000000")
 	defer close()
 
 	tex := data.NewTexture2D(nil, data.Tex2DTarget2D)
@@ -102,12 +102,13 @@ func TestUpdatingTexture(t *testing.T) {
 	test.NewProgram(t, "@mod/assets/shaders/quad_tex.vert", "@mod/assets/shaders/quad_tex.frag").Bind()
 	core.Quad().Bind()
 
+	rng := rand.New(rand.NewSource(0))
 	i := 0
 	for !win.ShouldClose() {
-		if i < test.MaxHeadlessFrames {
+		if i < test.MaxFramesHeadless {
 			for j := 0; j < 500; j++ {
-				assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
-				assert.NoError(t, tex.WriteBytes(0, int32(rand.Intn(128)), int32(rand.Intn(128)), 1, 1, gl.RGB, []byte{byte(rand.Intn(255)), byte(rand.Intn(255)), byte(rand.Intn(255))}))
+				assert.NoError(t, tex.WriteBytes(0, int32(rng.Intn(128)), int32(rng.Intn(128)), 1, 1, gl.RGB, []byte{byte(rng.Intn(255)), byte(rng.Intn(255)), byte(rng.Intn(255))}))
+				assert.NoError(t, tex.WriteBytes(0, int32(rng.Intn(128)), int32(rng.Intn(128)), 1, 1, gl.RGB, []byte{byte(rng.Intn(255)), byte(rng.Intn(255)), byte(rng.Intn(255))}))
 			}
 			i++
 		}

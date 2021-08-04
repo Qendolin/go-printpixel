@@ -3,5 +3,8 @@
 		"stdint.h": "c",
 		"blerp.h": "c",
 		"immintrin.h": "c"
+	},
+	"go.editorContextMenuCommands": {
+		"removeTags": true
 	}
 }

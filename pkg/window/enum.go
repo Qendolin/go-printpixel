@@ -1,36 +1,36 @@
 package window
 
 import (
-	"github.com/Qendolin/go-printpixel/core/glwindow"
+	"github.com/Qendolin/go-printpixel/core/glw"
 )
 
 // ClientApi
 const (
-	OpenGLAPI   = glwindow.OpenGLAPI
-	OpenGLESAPI = glwindow.OpenGLESAPI
+	OpenGLAPI   = glw.OpenGLAPI
+	OpenGLESAPI = glw.OpenGLESAPI
 )
 
 // ContextRobustness
 const (
-	NoRobustness        = glwindow.NoRobustness
-	NoResetNotification = glwindow.NoResetNotification
-	LoseContextOnReset  = glwindow.LoseContextOnReset
+	NoRobustness        = glw.NoRobustness
+	NoResetNotification = glw.NoResetNotification
+	LoseContextOnReset  = glw.LoseContextOnReset
 )
 
 // ContextReleaseBehavior
 const (
-	AnyReleaseBehavior   = glwindow.AnyReleaseBehavior
-	ReleaseBehaviorFlush = glwindow.ReleaseBehaviorFlush
-	ReleaseBehaviorNone  = glwindow.ReleaseBehaviorNone
+	AnyReleaseBehavior   = glw.AnyReleaseBehavior
+	ReleaseBehaviorFlush = glw.ReleaseBehaviorFlush
+	ReleaseBehaviorNone  = glw.ReleaseBehaviorNone
 )
 
 // OpenGLProfile
 const (
-	OpenGLAnyProfile    = glwindow.OpenGLAnyProfile
-	OpenGLCoreProfile   = glwindow.OpenGLCoreProfile
-	OpenGLCompatProfile = glwindow.OpenGLCompatProfile
+	OpenGLAnyProfile    = glw.OpenGLAnyProfile
+	OpenGLCoreProfile   = glw.OpenGLCoreProfile
+	OpenGLCompatProfile = glw.OpenGLCompatProfile
 )
 
 const (
-	DontCare = glwindow.DontCare
+	DontCare = glw.DontCare
 )

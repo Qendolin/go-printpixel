@@ -3,8 +3,7 @@ package window
 import (
 	"runtime"
 
-	"github.com/Qendolin/go-printpixel/core/glcontext"
-	"github.com/Qendolin/go-printpixel/core/glwindow"
+	"github.com/Qendolin/go-printpixel/core/glw"
 	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/renderer"
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -12,37 +11,31 @@ import (
 )
 
 type Window struct {
-	GlWindow     glwindow.Extended
+	GlWindow     glw.Window
 	Child        scene.Layoutable
 	BeforeUpdate func()
 	AfterUpdate  func()
 	Renderers    map[string]renderer.Renderer
 	// Top, Right, Bottom, Left
-	margins []int
-	// TODO: init is unused
-	init           bool
+	margins        []int
 	drawables      []map[string][]renderer.ZDrawable
 	alphaDrawables []map[string][]renderer.ZDrawable
 }
 
-func New(title string, cfg *SimpleConfig) (*Window, error) {
-	w := cfg.Width
-	h := cfg.Height
+func New(conf SimpleConfig) (*Window, error) {
+	w := conf.Width
+	h := conf.Height
 	if w == 0 {
 		w = 800
 	}
 	if h == 0 {
 		h = 450
 	}
-	return NewCustom(title, w, h, cfg.ToHints(), nil, cfg.ToGlConfig())
+	return NewCustom(conf.ToFullConfig())
 }
 
-func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *glfw.Monitor, glCfg glcontext.Config) (*Window, error) {
-	err := glcontext.InitGlfw()
-	if err != nil {
-		return nil, err
-	}
-	glfwWin, err := glwindow.New(glwindow.Hints(hints), title, width, height, monitor)
+func NewCustom(config glw.Config) (*Window, error) {
+	glfwWin, err := glw.New(config)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +46,6 @@ func NewCustom(title string, width, height int, hints glwindow.Hints, monitor *g
 
 	runtime.LockOSThread()
 	win.GlWindow.MakeContextCurrent()
-	err = glcontext.InitGl(glCfg)
 
 	win.Renderers = map[string]renderer.Renderer{
 		renderer.TextureQuad: renderer.NewTextureQuadRenderer(),

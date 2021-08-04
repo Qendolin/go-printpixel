@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/Qendolin/go-printpixel/core/data"
+	"github.com/Qendolin/go-printpixel/core/glw"
 	"github.com/Qendolin/go-printpixel/utils"
 	"github.com/go-gl/gl/v3.3-core/gl"
 )
@@ -30,9 +31,10 @@ func init() {
 	errorImageData[ErrNotFound] = pix
 
 	// random colors
+	rng := rand.New(rand.NewSource(0))
 	pix = make([]byte, 64*64*4)
 	for i := range pix {
-		pix[i] = byte(rand.Float32() * 256)
+		pix[i] = byte(rng.Float32() * 256)
 	}
 	errorImageData[ErrDecode] = pix
 
@@ -357,6 +359,7 @@ func NewTexture2D(tini TextureInitializer, format data.ColorFormat) (*data.Textu
 func MustNewTexture2D(tini TextureInitializer, format data.ColorFormat) *data.Texture2D {
 	t, err := NewTexture2D(tini, format)
 	if err != nil {
+		glw.LogError(err)
 		return newErrorTexture(err)
 	}
 	return t

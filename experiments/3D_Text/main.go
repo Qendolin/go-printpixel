@@ -6,8 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Qendolin/go-printpixel/core/glcontext"
-	"github.com/Qendolin/go-printpixel/core/glwindow"
+	"github.com/Qendolin/go-printpixel/core/glw"
 	"github.com/Qendolin/go-printpixel/core/shader"
 	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d"
 	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/mesh2"
@@ -49,8 +48,8 @@ func main() {
 	panicIf(err)
 	img, _, err := image.Decode(imgFile)
 	panicIf(err)
-	// mesh, bounds, err := text3d.Load3d(img, 1, mesh2.DetailReducer{Detail: 0.06}, [3]float32{0.5, 0.5, 0.}, 10)
-	mesh, bounds, err := text3d.Load2d(img, 1, mesh2.DetailReducer{Detail: 0.0}, [3]float32{0.5, 0.5, 0.5}, [3]float32{0, 0, 1})
+	mesh, bounds, err := text3d.Load3d(img, 1, mesh2.DetailReducer{Detail: 0.06}, [3]float32{0.5, 0.5, 0.}, 10)
+	// mesh, bounds, err := text3d.Load2d(img, 1, mesh2.DetailReducer{Detail: 0.0}, [3]float32{0.5, 0.5, 0.5}, [3]float32{0, 0, 1})
 	panicIf(err)
 	log.Printf("Loaded in: %v\n", time.Since(loadStart))
 	log.Printf("%-5d vertices, %-5d indices total\n", mesh.VertexCount, mesh.IndexCount)
@@ -101,9 +100,9 @@ func main() {
 	rotMat := mgl32.HomogRotate3DY(angle)
 	speed := float32(bounds.Dx()) * 0.75
 
-	win.GlWindow.SetFramebufferSizeCallback(func(w glwindow.Extended, width, height int) {
+	win.GlWindow.SetFramebufferSizeCallback(func(w glw.Window, width, height int) {
 		proj = mgl32.Perspective(mgl32.DegToRad(90), float32(width)/float32(height), 0.1, 10000)
-		glwindow.ResizeGlViewport(w, width, height)
+		glw.ResizeGlViewport(w, width, height)
 	})
 
 	var (
@@ -207,36 +206,27 @@ func main() {
 }
 
 func setup() *window.Window {
-	cfg := glcontext.NewGlConfig(1)
-	cfg.Debug = true
-	cfg.Multisampling = false
-	hints := glwindow.NewHints()
-	hints.ContextVersionMajor.Value = 3
-	hints.ContextVersionMinor.Value = 3
-	hints.OpenGLForwardCompatible.Value = true
-	hints.OpenGLProfile.Value = glwindow.OpenGLCoreProfile
-	hints.OpenGLDebugContext.Value = true
-	win, err := window.NewCustom("MS Example", 900, 900, hints, nil, cfg)
+	conf := glw.BasicConfig("MS Example", 1600, 900, glw.DontCare, glw.DontCare)
+	conf.ContextVersionMajor = 3
+	conf.ContextVersionMinor = 3
+	conf.OpenGLForwardCompatible = true
+	conf.OpenGLProfile = glw.OpenGLCoreProfile
+	conf.DebugContext = true
+	conf.DebugHandler = func(err glw.DebugMessage) {
+		if err.Critical {
+			log.Fatalf("%v\n%v", err, err.Stack)
+		}
+		log.Printf("%v\n", err)
+	}
+	win, err := window.NewCustom(conf)
 	panicIf(err)
 	win.GlWindow.MakeContextCurrent()
 
-	panicIf(gl.Init())
-
-	go handleErrors(cfg.Errors)
 	return win
 }
 
 func panicIf(err error) {
 	if err != nil {
 		log.Panic(err)
-	}
-}
-
-func handleErrors(errs <-chan glcontext.Error) {
-	for err := range errs {
-		if err.Fatal {
-			log.Fatalf("%v\n%v", err, err.Stack)
-		}
-		log.Printf("%v\n", err)
 	}
 }

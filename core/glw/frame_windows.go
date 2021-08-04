@@ -1,4 +1,4 @@
-package glwindow
+package glw
 
 import (
 	"fmt"

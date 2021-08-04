@@ -1,24 +1,24 @@
-package glwindow
+package glw
 
 import "github.com/go-gl/glfw/v3.3/glfw"
 
-type CharCallback func(w Extended, char rune)
-type CharModsCallback func(w Extended, char rune, mods glfw.ModifierKey)
-type CloseCallback func(w Extended)
-type ContentScaleCallback func(w Extended, x float32, y float32)
-type CursorEnterCallback func(w Extended, entered bool)
-type CursorPosCallback func(w Extended, x float64, y float64)
-type DropCallback func(w Extended, names []string)
-type FocusCallback func(w Extended, focused bool)
-type FramebufferSizeCallback func(w Extended, width int, height int)
-type IconifyCallback func(w Extended, iconified bool)
-type KeyCallback func(w Extended, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey)
-type MaximizeCallback func(w Extended, maximized bool)
-type MouseButtonCallback func(w Extended, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey)
-type PosCallback func(w Extended, x int, y int)
-type RefreshCallback func(w Extended)
-type ScrollCallback func(w Extended, xoff float64, yoff float64)
-type SizeCallback func(w Extended, width int, height int)
+type CharCallback func(w Window, char rune)
+type CharModsCallback func(w Window, char rune, mods glfw.ModifierKey)
+type CloseCallback func(w Window)
+type ContentScaleCallback func(w Window, x float32, y float32)
+type CursorEnterCallback func(w Window, entered bool)
+type CursorPosCallback func(w Window, x float64, y float64)
+type DropCallback func(w Window, names []string)
+type FocusCallback func(w Window, focused bool)
+type FramebufferSizeCallback func(w Window, width int, height int)
+type IconifyCallback func(w Window, iconified bool)
+type KeyCallback func(w Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey)
+type MaximizeCallback func(w Window, maximized bool)
+type MouseButtonCallback func(w Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey)
+type PosCallback func(w Window, x int, y int)
+type RefreshCallback func(w Window)
+type ScrollCallback func(w Window, xoff float64, yoff float64)
+type SizeCallback func(w Window, width int, height int)
 
 type callbacks struct {
 	char            CharCallback

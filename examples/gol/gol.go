@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Qendolin/go-printpixel/core"
-	"github.com/Qendolin/go-printpixel/core/glcontext"
+	"github.com/Qendolin/go-printpixel/core/glw"
 	"github.com/Qendolin/go-printpixel/pkg/scene"
 	"github.com/Qendolin/go-printpixel/pkg/window"
 	"github.com/go-gl/gl/v3.3-core/gl"
@@ -42,30 +42,27 @@ func main() {
 
 func setup() *window.Window {
 	cfg := window.SimpleConfig{
-		Width:        Width,
-		Height:       Height,
-		Unresizeable: true,
-		NoVsync:      true,
-		Debug:        true,
+		Width:     Width,
+		Height:    Height,
+		FixedSize: true,
+		NoVsync:   true,
+		Debug:     true,
+		Title:     "Game of Life Example",
+		DebugHandler: func(err glw.DebugMessage) {
+			if err.Critical {
+				log.Fatalf("%v\n%v", err, err.Stack)
+			}
+			log.Printf("%v\n", err)
+		},
 	}
-	win, err := window.New("Game of Life Example", &cfg)
+	win, err := window.New(cfg)
 	panicIf(err)
 
-	go handleErrors(cfg.Errors())
 	return win
 }
 
 func panicIf(err error) {
 	if err != nil {
 		panic(err)
-	}
-}
-
-func handleErrors(errs <-chan glcontext.Error) {
-	for err := range errs {
-		if err.Fatal {
-			log.Fatalf("%v\n%v", err, err.Stack)
-		}
-		log.Printf("%v\n", err)
 	}
 }
