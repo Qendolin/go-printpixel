@@ -23,14 +23,6 @@ type Window struct {
 }
 
 func New(conf SimpleConfig) (*Window, error) {
-	w := conf.Width
-	h := conf.Height
-	if w == 0 {
-		w = 800
-	}
-	if h == 0 {
-		h = 450
-	}
 	return NewCustom(conf.ToFullConfig())
 }
 
