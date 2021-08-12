@@ -76,12 +76,12 @@ func DefaultWindowHints() WindowHints {
 }
 
 func (h WindowHints) load() {
-	glfw.WindowHint(glfw.Resizable, btoi(h.Focused))
+	glfw.WindowHint(glfw.Resizable, btoi(h.Resizable))
 	glfw.WindowHint(glfw.Visible, btoi(h.Visible))
-	glfw.WindowHint(glfw.Decorated, btoi(h.Resizable))
-	glfw.WindowHint(glfw.Focused, btoi(h.Decorated))
-	glfw.WindowHint(glfw.AutoIconify, btoi(h.Floating))
-	glfw.WindowHint(glfw.Floating, btoi(h.AutoIconify))
+	glfw.WindowHint(glfw.Decorated, btoi(h.Decorated))
+	glfw.WindowHint(glfw.Focused, btoi(h.Focused))
+	glfw.WindowHint(glfw.AutoIconify, btoi(h.AutoIconify))
+	glfw.WindowHint(glfw.Floating, btoi(h.Floating))
 	glfw.WindowHint(glfw.Maximized, btoi(h.Maximized))
 	glfw.WindowHint(glfw.ScaleToMonitor, btoi(h.ScaleToMonitor))
 	glfw.WindowHint(glfw.TransparentFramebuffer, btoi(h.TransparentFramebuffer))
