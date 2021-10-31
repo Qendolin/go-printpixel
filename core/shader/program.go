@@ -57,6 +57,24 @@ func NewProgramFromPaths(vertex, fragment string) (prog *Program, err error) {
 	return prog, err
 }
 
+func MustNewProgramFromPaths(vertex, fragment string) (prog *Program) {
+	vsh, err := NewShaderFromPath(vertex, TypeVertex)
+	if err != nil {
+		panic(err)
+	}
+	fsh, err := NewShaderFromPath(fragment, TypeFragment)
+	if err != nil {
+		panic(err)
+	}
+	prog, err = NewProgram(vsh, fsh)
+	if err != nil {
+		panic(err)
+	}
+	vsh.Destroy()
+	fsh.Destroy()
+	return prog
+}
+
 func (prog *Program) Validate() (ok bool, log string) {
 	gl.ValidateProgram(*prog.uint32)
 

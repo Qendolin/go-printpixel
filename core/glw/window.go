@@ -65,6 +65,8 @@ type Window interface {
 	GetOpacity() float32
 	GetPos() (x, y int)
 	GetSize() (width, height int)
+	GetWidth() int
+	GetHeight() int
 	GetUserPointer() unsafe.Pointer
 	Handle() unsafe.Pointer
 	Hide()
@@ -93,6 +95,7 @@ type Window interface {
 	SetKeyCallback(cbfun KeyCallback) (previous KeyCallback)
 	SetMaximizeCallback(cbfun MaximizeCallback) MaximizeCallback
 	SetMonitor(monitor *glfw.Monitor, xpos, ypos, width, height, refreshRate int)
+	SetFullscreen(monitor *glfw.Monitor)
 	SetMouseButtonCallback(cbfun MouseButtonCallback) (previous MouseButtonCallback)
 	SetOpacity(opacity float32)
 	SetPos(xpos, ypos int)
@@ -100,6 +103,7 @@ type Window interface {
 	SetRefreshCallback(cbfun RefreshCallback) (previous RefreshCallback)
 	SetScrollCallback(cbfun ScrollCallback) (previous ScrollCallback)
 	SetShouldClose(value bool)
+	Close()
 	SetSize(width, height int)
 	SetSizeCallback(cbfun SizeCallback) (previous SizeCallback)
 	SetSizeLimits(minw, minh, maxw, maxh int)
@@ -155,6 +159,25 @@ func (w *extWindow) Id() uint64 {
 
 func (w *extWindow) HasProblem(p problem) bool {
 	return w.problems[p]
+}
+
+func (w *extWindow) Close() {
+	w.SetShouldClose(true)
+}
+
+func (w *extWindow) GetWidth() int {
+	width, _ := w.GetSize()
+	return width
+}
+
+func (w *extWindow) GetHeight() int {
+	_, height := w.GetSize()
+	return height
+}
+
+func (w *extWindow) SetFullscreen(mon *glfw.Monitor) {
+	vidMode := mon.GetVideoMode()
+	w.SetMonitor(mon, 0, 0, vidMode.Width, vidMode.Height, 0)
 }
 
 // Destroy destroys the specified window and its context. On calling this function, no further callbacks will be called for that window.
