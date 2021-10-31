@@ -132,7 +132,7 @@ type DebugMessage struct {
 }
 
 func (err DebugMessage) String() string {
-	return fmt.Sprintf("[%v] %v #%v from %v: %v", err.Severity, err.Type, err.Source, err.Id, err.Message)
+	return fmt.Sprintf("[%v] %v #%v from %v: %v", err.Severity, err.Type, err.Id, err.Source, err.Message)
 }
 
 func (err DebugMessage) Error() string {

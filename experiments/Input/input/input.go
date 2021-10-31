@@ -1,295 +1,141 @@
 package input
 
 import (
-	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-var (
-	JoystickDeadzoneLeft         = float32(0.1)
-	JoystickDeadzoneRight        = float32(0.1)
-	JoystickDeadzoneLeftTrigger  = float32(-0.5)
-	JoystickDeadzoneRightTrigger = float32(-0.5)
-)
-
-var joystickAxesDeadzones = [...]*float32{&JoystickDeadzoneLeft, &JoystickDeadzoneLeft, &JoystickDeadzoneRight, &JoystickDeadzoneRight}
-
-const (
-	MouseButtonPrefix   = "mouse"
-	MouseWheelPrefix    = "wheel"
-	GamepadButtonPrefix = "gamepad"
-	GamepadAxisPrefix   = "axis"
-	ModifierKeyPrefix   = "mod"
-	KeyPrefix           = "key"
-)
+// TODO: Localized key names
 
 var (
-	MouseButtonNames = map[string]uint8{
-		"1":      uint8(glfw.MouseButton1),
-		"2":      uint8(glfw.MouseButton2),
-		"3":      uint8(glfw.MouseButton3),
-		"4":      uint8(glfw.MouseButton4),
-		"5":      uint8(glfw.MouseButton5),
-		"6":      uint8(glfw.MouseButton6),
-		"7":      uint8(glfw.MouseButton7),
-		"8":      uint8(glfw.MouseButton8),
-		"left":   uint8(glfw.MouseButtonLeft),
-		"middle": uint8(glfw.MouseButtonMiddle),
-		"right":  uint8(glfw.MouseButtonRight),
-	}
-	MouseWheelNames = map[string]int8{
-		"up":   1,
-		"down": -1,
-	}
-	GamepadButtonNames = map[string]uint16{
-		"a":           uint16(glfw.ButtonA),
-		"b":           uint16(glfw.ButtonB),
-		"x":           uint16(glfw.ButtonX),
-		"y":           uint16(glfw.ButtonY),
-		"leftbumper":  uint16(glfw.ButtonLeftBumper),
-		"rightbumper": uint16(glfw.ButtonRightBumper),
-		"back":        uint16(glfw.ButtonBack),
-		"start":       uint16(glfw.ButtonStart),
-		"guide":       uint16(glfw.ButtonGuide),
-		"leftthumb":   uint16(glfw.ButtonLeftThumb),
-		"rightthumb":  uint16(glfw.ButtonRightThumb),
-		"dpadup":      uint16(glfw.ButtonDpadUp),
-		"dpadright":   uint16(glfw.ButtonDpadRight),
-		"dpaddown":    uint16(glfw.ButtonDpadDown),
-		"dpadleft":    uint16(glfw.ButtonDpadLeft),
-		"cross":       uint16(glfw.ButtonCross),
-		"circle":      uint16(glfw.ButtonCircle),
-		"square":      uint16(glfw.ButtonSquare),
-		"triangle":    uint16(glfw.ButtonTriangle),
-	}
-	GamepadAxesNames = map[string]uint8{
-		"leftx-":        0 + 2*uint8(glfw.AxisLeftX),
-		"leftx+":        1 + 2*uint8(glfw.AxisLeftX),
-		"lefty-":        0 + 2*uint8(glfw.AxisLeftY),
-		"lefty+":        1 + 2*uint8(glfw.AxisLeftY),
-		"rightx-":       0 + 2*uint8(glfw.AxisRightX),
-		"rightx+":       1 + 2*uint8(glfw.AxisRightX),
-		"righty-":       0 + 2*uint8(glfw.AxisRightY),
-		"righty+":       1 + 2*uint8(glfw.AxisRightY),
-		"lefttrigger-":  0 + 2*uint8(glfw.AxisLeftTrigger),
-		"lefttrigger+":  1 + 2*uint8(glfw.AxisLeftTrigger),
-		"righttrigger-": 0 + 2*uint8(glfw.AxisRightTrigger),
-		"righttrigger+": 1 + 2*uint8(glfw.AxisRightTrigger),
-	}
-	ModifierKeyNames = map[string]uint8{
-		"shift":    uint8(glfw.ModShift),
-		"control":  uint8(glfw.ModControl),
-		"alt":      uint8(glfw.ModAlt),
-		"super":    uint8(glfw.ModSuper),
-		"capslock": uint8(glfw.ModCapsLock),
-		"numlock":  uint8(glfw.ModNumLock),
-	}
-	KeyNames = map[string]int{
-		"unknown":      int(glfw.KeyUnknown),
-		"space":        int(glfw.KeySpace),
-		"apostrophe":   int(glfw.KeyApostrophe),
-		"comma":        int(glfw.KeyComma),
-		"minus":        int(glfw.KeyMinus),
-		"period":       int(glfw.KeyPeriod),
-		"slash":        int(glfw.KeySlash),
-		"0":            int(glfw.Key0),
-		"1":            int(glfw.Key1),
-		"2":            int(glfw.Key2),
-		"3":            int(glfw.Key3),
-		"4":            int(glfw.Key4),
-		"5":            int(glfw.Key5),
-		"6":            int(glfw.Key6),
-		"7":            int(glfw.Key7),
-		"8":            int(glfw.Key8),
-		"9":            int(glfw.Key9),
-		"semicolon":    int(glfw.KeySemicolon),
-		"equal":        int(glfw.KeyEqual),
-		"a":            int(glfw.KeyA),
-		"b":            int(glfw.KeyB),
-		"c":            int(glfw.KeyC),
-		"d":            int(glfw.KeyD),
-		"e":            int(glfw.KeyE),
-		"f":            int(glfw.KeyF),
-		"g":            int(glfw.KeyG),
-		"h":            int(glfw.KeyH),
-		"i":            int(glfw.KeyI),
-		"j":            int(glfw.KeyJ),
-		"k":            int(glfw.KeyK),
-		"l":            int(glfw.KeyL),
-		"m":            int(glfw.KeyM),
-		"n":            int(glfw.KeyN),
-		"o":            int(glfw.KeyO),
-		"p":            int(glfw.KeyP),
-		"q":            int(glfw.KeyQ),
-		"r":            int(glfw.KeyR),
-		"s":            int(glfw.KeyS),
-		"t":            int(glfw.KeyT),
-		"u":            int(glfw.KeyU),
-		"v":            int(glfw.KeyV),
-		"w":            int(glfw.KeyW),
-		"x":            int(glfw.KeyX),
-		"y":            int(glfw.KeyY),
-		"z":            int(glfw.KeyZ),
-		"leftbracket":  int(glfw.KeyLeftBracket),
-		"backslash":    int(glfw.KeyBackslash),
-		"rightbracket": int(glfw.KeyRightBracket),
-		"graveaccent":  int(glfw.KeyGraveAccent),
-		"world1":       int(glfw.KeyWorld1),
-		"world2":       int(glfw.KeyWorld2),
-		"escape":       int(glfw.KeyEscape),
-		"enter":        int(glfw.KeyEnter),
-		"tab":          int(glfw.KeyTab),
-		"backspace":    int(glfw.KeyBackspace),
-		"insert":       int(glfw.KeyInsert),
-		"delete":       int(glfw.KeyDelete),
-		"right":        int(glfw.KeyRight),
-		"left":         int(glfw.KeyLeft),
-		"down":         int(glfw.KeyDown),
-		"up":           int(glfw.KeyUp),
-		"pageup":       int(glfw.KeyPageUp),
-		"pagedown":     int(glfw.KeyPageDown),
-		"home":         int(glfw.KeyHome),
-		"end":          int(glfw.KeyEnd),
-		"capslock":     int(glfw.KeyCapsLock),
-		"scrolllock":   int(glfw.KeyScrollLock),
-		"numlock":      int(glfw.KeyNumLock),
-		"printscreen":  int(glfw.KeyPrintScreen),
-		"pause":        int(glfw.KeyPause),
-		"f1":           int(glfw.KeyF1),
-		"f2":           int(glfw.KeyF2),
-		"f3":           int(glfw.KeyF3),
-		"f4":           int(glfw.KeyF4),
-		"f5":           int(glfw.KeyF5),
-		"f6":           int(glfw.KeyF6),
-		"f7":           int(glfw.KeyF7),
-		"f8":           int(glfw.KeyF8),
-		"f9":           int(glfw.KeyF9),
-		"f10":          int(glfw.KeyF10),
-		"f11":          int(glfw.KeyF11),
-		"f12":          int(glfw.KeyF12),
-		"f13":          int(glfw.KeyF13),
-		"f14":          int(glfw.KeyF14),
-		"f15":          int(glfw.KeyF15),
-		"f16":          int(glfw.KeyF16),
-		"f17":          int(glfw.KeyF17),
-		"f18":          int(glfw.KeyF18),
-		"f19":          int(glfw.KeyF19),
-		"f20":          int(glfw.KeyF20),
-		"f21":          int(glfw.KeyF21),
-		"f22":          int(glfw.KeyF22),
-		"f23":          int(glfw.KeyF23),
-		"f24":          int(glfw.KeyF24),
-		"f25":          int(glfw.KeyF25),
-		"kp0":          int(glfw.KeyKP0),
-		"kp1":          int(glfw.KeyKP1),
-		"kp2":          int(glfw.KeyKP2),
-		"kp3":          int(glfw.KeyKP3),
-		"kp4":          int(glfw.KeyKP4),
-		"kp5":          int(glfw.KeyKP5),
-		"kp6":          int(glfw.KeyKP6),
-		"kp7":          int(glfw.KeyKP7),
-		"kp8":          int(glfw.KeyKP8),
-		"kp9":          int(glfw.KeyKP9),
-		"kpdecimal":    int(glfw.KeyKPDecimal),
-		"kpdivide":     int(glfw.KeyKPDivide),
-		"kpmultiply":   int(glfw.KeyKPMultiply),
-		"kpsubtract":   int(glfw.KeyKPSubtract),
-		"kpadd":        int(glfw.KeyKPAdd),
-		"kpenter":      int(glfw.KeyKPEnter),
-		"kpequal":      int(glfw.KeyKPEqual),
-		"leftshift":    int(glfw.KeyLeftShift),
-		"leftcontrol":  int(glfw.KeyLeftControl),
-		"leftalt":      int(glfw.KeyLeftAlt),
-		"leftsuper":    int(glfw.KeyLeftSuper),
-		"rightshift":   int(glfw.KeyRightShift),
-		"rightcontrol": int(glfw.KeyRightControl),
-		"rightalt":     int(glfw.KeyRightAlt),
-		"rightsuper":   int(glfw.KeyRightSuper),
-		"menu":         int(glfw.KeyMenu),
-	}
+	Gamepad1AxesConfig GamepadAxesConfig
 )
+
+func init() {
+	Gamepad1AxesConfig = GamepadAxesConfig{
+		Indices:        [6]int{0, 1, 3, 4, 2, 2},
+		UpperDeadzones: [10]float32{0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95},
+		LowerDeadzones: [10]float32{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
+	}
+	Gamepad1AxesConfig.CalculateHalfwayPoint()
+}
+
+// GamepadAxesConfig
+// Order:
+// AxisLeftX- (Left), AxisLeftX+ (Right), AxisLeftY- (Up), AxisLeftY+ (Down),
+// AxisRightX- (Left), AxisRightX+ (Right), AxisRightY- (Up), AxisRightY+ (Down),
+// AxisLeftTrigger (1), AxisRightTrigger (-1)
+type GamepadAxesConfig struct {
+	Indices        [6]int
+	UpperDeadzones [10]float32
+	LowerDeadzones [10]float32
+	HalfwayPoints  [10]float32
+}
+
+func (c *GamepadAxesConfig) CalculateHalfwayPoint() {
+	for i := range c.LowerDeadzones {
+		l, u := c.LowerDeadzones[i], c.UpperDeadzones[i]
+		c.HalfwayPoints[i] = (u - l) / 2
+	}
+}
+
+// var joystickAxesDeadzones = [...]*float32{&JoystickDeadzoneLeftLower, &JoystickDeadzoneLeftLower, &JoystickDeadzoneRightLower, &JoystickDeadzoneRightLower}
 
 type window interface {
 	SetKeyCallback(glfw.KeyCallback) glfw.KeyCallback
 	SetMouseButtonCallback(glfw.MouseButtonCallback) glfw.MouseButtonCallback
 	SetScrollCallback(glfw.ScrollCallback) glfw.ScrollCallback
+	SetCursorPosCallback(glfw.CursorPosCallback) glfw.CursorPosCallback
 }
+
+// 8 inputs is enough for everyone, right?
+const MaxTriggerSources = 8
 
 type Trigger struct {
-	MouseButtons   uint8
-	MouseWheel     int8
-	GamepadButtons uint16
-	GamepadAxes    uint16
-	ModifierKeys   uint8
-	Key            int
-	Error          string
+	Sources     [MaxTriggerSources]SourceId
+	SourceCount uint8
 }
 
-func (tr Trigger) Valid() bool {
-	return tr.Error == ""
+func (tr Trigger) String() string {
+	names := []string{}
+
+	for i := tr.SourceCount - 1; i != 0xff; i-- {
+		id := tr.Sources[i]
+		names = append(names, Sources[int(id)].String())
+	}
+
+	return strings.Join(names, " + ")
+}
+
+func (tr *Trigger) Add(source Source) {
+	if int(tr.SourceCount) == cap(tr.Sources) || source.Id == 0 {
+		return
+	}
+	// Keep order, lower ids at the start
+	for i := 0; i < int(tr.SourceCount); i++ {
+		if source.Id <= tr.Sources[i] {
+			if source.Id == tr.Sources[i] {
+				return
+			}
+			copy(tr.Sources[i+1:], tr.Sources[i:])
+			tr.Sources[i] = source.Id
+			tr.SourceCount++
+			return
+		}
+	}
+	tr.Sources[tr.SourceCount] = source.Id
+	tr.SourceCount++
+}
+
+func (tr *Trigger) Remove(source Source) {
+	if int(tr.SourceCount) == 0 || source.Id == 0 {
+		return
+	}
+	// Keep order, lower ids at the start
+	for i := 0; i < int(tr.SourceCount); i++ {
+		if source.Id == tr.Sources[i] {
+			copy(tr.Sources[i:], tr.Sources[i+1:])
+			tr.SourceCount--
+			tr.Sources[tr.SourceCount] = 0
+			return
+		}
+	}
+}
+
+func (tr *Trigger) Sort() (trigger Trigger) {
+	sort.Slice(tr.Sources[:], func(i, j int) bool {
+		return tr.Sources[i] < tr.Sources[j]
+	})
+	return
+}
+
+func (tr *Trigger) Has(source Source) bool {
+	if int(tr.SourceCount) == 0 || source.Id == 0 {
+		return false
+	}
+	// Keep order, lower ids at the start
+	for i := 0; i < int(tr.SourceCount); i++ {
+		if source.Id == tr.Sources[i] {
+			return true
+		} else if source.Id < tr.Sources[i] {
+			return false
+		}
+	}
+	return false
+}
+
+func Single(input string) (trigger Trigger) {
+	// trigger.Add(input)
+	trigger.Add(NamedSources[strings.ToLower(input)])
+	return
 }
 
 func Combo(inputs ...string) (trigger Trigger) {
-	for _, rawInput := range inputs {
-		input := strings.ToLower(rawInput)
-		if strings.HasPrefix(input, MouseButtonPrefix) {
-			value, ok := MouseButtonNames[input[len(MouseButtonPrefix):]]
-			if !ok {
-				trigger.Error = fmt.Sprintf("unknown mouse button %q", rawInput)
-				return
-			}
-			trigger.MouseButtons |= 1 << value
-			continue
-		}
-		if strings.HasPrefix(input, MouseWheelPrefix) {
-			value, ok := MouseWheelNames[input[len(MouseWheelPrefix):]]
-			if !ok {
-				trigger.Error = fmt.Sprintf("unknown mouse wheel direction %q", rawInput)
-				return
-			}
-			trigger.MouseWheel |= 1 << value
-			continue
-		}
-		if strings.HasPrefix(input, GamepadButtonPrefix) {
-			value, ok := GamepadButtonNames[input[len(GamepadButtonPrefix):]]
-			if !ok {
-				trigger.Error = fmt.Sprintf("unknown gamepad button %q", rawInput)
-				return
-			}
-			trigger.GamepadButtons |= 1 << value
-			continue
-		}
-		if strings.HasPrefix(input, GamepadAxisPrefix) {
-			value, ok := GamepadAxesNames[input[len(GamepadAxisPrefix):]]
-			if !ok {
-				trigger.Error = fmt.Sprintf("unknown gamepad axis %q", rawInput)
-				return
-			}
-			trigger.GamepadAxes |= 1 << value
-			continue
-		}
-		if strings.HasPrefix(input, ModifierKeyPrefix) {
-			value, ok := ModifierKeyNames[input[len(ModifierKeyPrefix):]]
-			if !ok {
-				trigger.Error = fmt.Sprintf("unknown modifier key %q", rawInput)
-				return
-			}
-			trigger.ModifierKeys |= value
-			continue
-		}
-		if strings.HasPrefix(input, KeyPrefix) {
-			value, ok := KeyNames[input[len(KeyPrefix):]]
-			if !ok {
-				trigger.Error = fmt.Sprintf("unknown key %q", rawInput)
-				return
-			}
-			trigger.Key = value
-			continue
-		}
-		trigger.Error = fmt.Sprintf("unknown input %q", rawInput)
-		return
+	for _, input := range inputs {
+		// trigger.Add(input)
+		trigger.Add(NamedSources[strings.ToLower(input)])
 	}
 	return
 }
@@ -301,33 +147,89 @@ type InputState struct {
 }
 
 type KeyboardState struct {
-	Keys      [glfw.KeyLast]bool
+	Keys      [glfw.KeyLast + 1]bool
 	Modifiers uint8
 }
 
 type GamepadState struct {
-	Buttons uint16
-	Axes    uint16
+	Buttons [glfw.ButtonLast + 1]bool
+	Axes    [glfw.AxisLast + 1]float32
 }
 
 type MouseState struct {
 	Buttons uint8
-	Wheel   int8
+	WheelY  int8
+	WheelX  int8
+	PosX    float32
+	PosY    float32
 }
 
 type Action string
 
 type ActionEvent struct {
 	Action Action
+	Active bool
+	InputState
 }
 
 type Handler func(ActionEvent)
 
+// TODO: implement repeat lifecycle
+// TODO: implement deactivate lifecycle
+// TODO: test lifecycle logic
+type ActionLifecycle uint8
+
+// Given        | Required
+// OnActivate   | OnActivate
+// OnActivate   | WhileActive
+// OnActivate   | WhileRepeat
+// WhileActive  | WhileActive
+// WhileRepeat  | WhileActive
+// WhileRepeat  | WhileRepeat
+// OnDeactivate | OnDeactivate
+const (
+	OnActivate   ActionLifecycle = 0b00010001
+	WhileActive  ActionLifecycle = 0b00100111
+	WhileRepeat  ActionLifecycle = 0b01000101
+	OnDeactivate ActionLifecycle = 0b10001000
+)
+
+type HandlerRegistration struct {
+	handler   Handler
+	action    Action
+	lifecycle ActionLifecycle
+}
+
+func (reg HandlerRegistration) Handler() Handler {
+	return reg.handler
+}
+
+func (reg HandlerRegistration) Invoke(ev ActionEvent) {
+	reg.handler(ev)
+}
+
+func (reg HandlerRegistration) Lifecycle() ActionLifecycle {
+	return reg.lifecycle
+}
+
+func (reg HandlerRegistration) Action() Action {
+	return reg.action
+}
+
+type ActionState uint8
+
+const (
+	Inactive  = 0
+	Triggered = 1
+	Active    = 2
+)
+
 type Manager struct {
 	triggers       map[Trigger]Action
+	actionState    map[Action]ActionState
 	override       map[Trigger]Action
 	stickyOverride bool
-	handlers       map[Action][]Handler
+	handlers       map[Action][]*HandlerRegistration
 	activeTrigger  Trigger
 	state          InputState
 }
@@ -339,20 +241,27 @@ func NewManager() Manager {
 		triggers:       map[Trigger]Action{},
 		override:       nil,
 		stickyOverride: false,
-		handlers:       map[Action][]Handler{},
+		handlers:       map[Action][]*HandlerRegistration{},
+		actionState:    map[Action]ActionState{},
 	}
 }
 
-func (m *Manager) AddTrigger(trigger Trigger, action Action) error {
-	if !trigger.Valid() {
-		return fmt.Errorf("%v", trigger.Error)
-	}
+func (m *Manager) AddTrigger(trigger Trigger, action Action) {
 	m.triggers[trigger] = action
-	return nil
+}
+
+func (m *Manager) AddTriggers(triggers map[Trigger]Action) {
+	for tr, act := range triggers {
+		m.triggers[tr] = act
+	}
 }
 
 func (m *Manager) RemoveTrigger(trigger Trigger) {
 	delete(m.triggers, trigger)
+}
+
+func (m *Manager) Triggers() map[Trigger]Action {
+	return m.triggers
 }
 
 // Set a temporary override for all triggers
@@ -368,99 +277,266 @@ func (m *Manager) ClearOverride() {
 	m.stickyOverride = false
 }
 
-func (m *Manager) On(action Action, handler Handler) {
+func (m *Manager) On(action Action, handler Handler) *HandlerRegistration {
+	return m.Listen(action, OnActivate, handler)
+}
+
+func (m *Manager) While(action Action, handler Handler) *HandlerRegistration {
+	return m.Listen(action, WhileActive, handler)
+}
+
+func (m *Manager) OnRepeat(action Action, handler Handler) *HandlerRegistration {
+	return m.Listen(action, WhileRepeat, handler)
+}
+
+func (m *Manager) OnDeactivate(action Action, handler Handler) *HandlerRegistration {
+	return m.Listen(action, OnDeactivate, handler)
+}
+
+func (m *Manager) Listen(action Action, lifecycle ActionLifecycle, handler Handler) *HandlerRegistration {
 	handlers := m.handlers[action]
-	handlers = append(handlers, handler)
+	reg := &HandlerRegistration{handler, action, lifecycle}
+	handlers = append(handlers, reg)
 	m.handlers[action] = handlers
+	return reg
+}
+
+func (m *Manager) Off(reg *HandlerRegistration) {
+	handlers := m.handlers[reg.action]
+	for i := range handlers {
+		if handlers[i] == reg {
+			handlers[i] = handlers[len(handlers)-1]
+			m.handlers[reg.action] = handlers[:len(handlers)-1]
+			break
+		}
+	}
+}
+
+func (m *Manager) State() InputState {
+	return m.state
 }
 
 func (m *Manager) Bind(w window) {
 	w.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
 		m.state.Keyboard.Keys[key] = action == glfw.Press
 		m.state.Keyboard.Modifiers = uint8(mods)
-		m.activeTrigger.ModifierKeys = uint8(mods)
+		// m.activeTrigger.ModifierKeys = uint8(mods)
 		activeInput := false
 		// Above 340 are modifier keys
-		if key < 340 {
-			if action != glfw.Press {
-				m.activeTrigger.Key = 0
-			} else {
-				m.activeTrigger.Key = int(key)
-				activeInput = true
-			}
+		// if key < 340 {
+		if action == glfw.Press {
+			m.activeTrigger.Add(KeyboardKeySources[key])
+			// m.activeTrigger.Key = int(key)
+			activeInput = true
+		} else if action == glfw.Release {
+			m.activeTrigger.Remove(KeyboardKeySources[key])
+			// m.activeTrigger.Key = 0
 		}
+		// }
 		m.Check(activeInput)
 	})
 	w.SetMouseButtonCallback(func(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
 		activeInput := false
-		if action != glfw.Press {
-			m.state.Mouse.Buttons &^= 1 << button
-			m.activeTrigger.MouseButtons &^= 1 << button
-		} else {
-			m.state.Mouse.Buttons |= 1 << button
-			m.activeTrigger.MouseButtons |= 1 << button
+		if action == glfw.Press {
+			m.activeTrigger.Add(MouseButtonSources[button])
+			// m.state.Mouse.Buttons |= 1 << button
+			// m.activeTrigger.MouseButtons |= 1 << button
 			activeInput = true
+		} else if action == glfw.Release {
+			m.activeTrigger.Remove(MouseButtonSources[button])
+			// m.state.Mouse.Buttons &^= 1 << button
+			// m.activeTrigger.MouseButtons &^= 1 << button
 		}
-		m.activeTrigger.ModifierKeys = uint8(mods)
+		// m.activeTrigger.ModifierKeys = uint8(mods)
 		m.state.Keyboard.Modifiers = uint8(mods)
 		m.Check(activeInput)
 	})
+	var (
+		MouseWheelYUp    Source = NamedMouseWheels["mousewheelyup"]
+		MouseWheelYDown  Source = NamedMouseWheels["mousewheelydown"]
+		MouseWheelXLeft  Source = NamedMouseWheels["mousewheelxleft"]
+		MouseWheelXRight Source = NamedMouseWheels["mousewheelxright"]
+		MouseWheelX      Source = NamedMouseWheels["mousewheelx"]
+		MouseWheelY      Source = NamedMouseWheels["mousewheely"]
+	)
 	w.SetScrollCallback(func(w *glfw.Window, xoff, yoff float64) {
-		if yoff > 0 {
-			m.state.Mouse.Wheel = 1
-			m.activeTrigger.MouseWheel = 1
-		} else if yoff < 0 {
-			m.state.Mouse.Wheel = -1
-			m.activeTrigger.MouseWheel = -1
+		// FIXME: A offest greater / less than 1 / -1 is lost as handler does not have the info
+		if yoff != 0 {
+			m.state.Mouse.WheelY += int8(yoff)
+			m.activeTrigger.Add(MouseWheelY)
+			m.Check(true)
+			m.activeTrigger.Remove(MouseWheelY)
 		}
-		m.Check(true)
+		if yoff > 0 {
+			// m.activeTrigger.MouseWheel = 1
+			// if !m.activeTrigger.Has(MouseWheelYUp) {
+			m.activeTrigger.Add(MouseWheelYUp)
+			for ; yoff != 0; yoff-- {
+				m.Check(true)
+			}
+			m.activeTrigger.Remove(MouseWheelYUp)
+			// }
+		} else if yoff < 0 {
+			// m.activeTrigger.MouseWheel = -1
+			// if !m.activeTrigger.Has(MouseWheelYDown) {
+			m.activeTrigger.Add(MouseWheelYDown)
+			for ; yoff != 0; yoff++ {
+				m.Check(true)
+			}
+			m.activeTrigger.Remove(MouseWheelYDown)
+			// }
+		}
+		// FIXME: Left and right might be the other way around
+		if xoff != 0 {
+			m.state.Mouse.WheelX += int8(yoff)
+			m.activeTrigger.Add(MouseWheelX)
+			m.Check(true)
+			m.activeTrigger.Remove(MouseWheelX)
+		}
+		if xoff > 0 {
+			// m.activeTrigger.MouseWheel = 1
+			// if !m.activeTrigger.Has(MouseWheelXRight) {
+			m.activeTrigger.Add(MouseWheelXRight)
+			for ; xoff != 0; xoff-- {
+				m.Check(true)
+			}
+			m.activeTrigger.Remove(MouseWheelXRight)
+			// }
+		} else if xoff < 0 {
+			// m.activeTrigger.MouseWheel = -1
+			// if !m.activeTrigger.Has(MouseWheelXLeft) {
+			m.activeTrigger.Add(MouseWheelXLeft)
+			for ; xoff != 0; xoff++ {
+				m.Check(true)
+			}
+			m.activeTrigger.Remove(MouseWheelXLeft)
+			// }
+		}
+	})
+	w.SetCursorPosCallback(func(w *glfw.Window, xpos, ypos float64) {
+		m.state.Mouse.PosX = float32(xpos)
+		m.state.Mouse.PosY = float32(ypos)
 	})
 }
 
 func (m *Manager) Update() {
 	glfw.PollEvents()
 
-	m.state.Mouse.Wheel = 0
-	m.activeTrigger.MouseWheel = 0
-	m.activeTrigger.Key = 0
+	m.state.Mouse.WheelY = 0
+	m.state.Mouse.WheelX = 0
+
+	for act, state := range m.actionState {
+		if state&Triggered != 0 {
+			m.actionState[act] = Active
+		} else if state != Inactive {
+			ev := ActionEvent{
+				Action: act,
+			}
+			for _, handler := range m.handlers[act] {
+				if handler.Lifecycle() == OnDeactivate {
+					handler.Invoke(ev)
+				}
+			}
+			m.actionState[act] = Inactive
+		}
+	}
+
+	m.activeTrigger.Remove(NamedMouseWheels["mousewheelxright"])
+	m.activeTrigger.Remove(NamedMouseWheels["mousewheelxleft"])
+	m.activeTrigger.Remove(NamedMouseWheels["mousewheelyup"])
+	m.activeTrigger.Remove(NamedMouseWheels["mousewheelydown"])
+	// m.activeTrigger.Key = 0
 
 	activeInput := false
+	// TODO: implement gamepad logic
 	if glfw.Joystick1.IsGamepad() {
 		state := glfw.Joystick1.GetGamepadState()
-		var buttonState uint16
+		// var buttonState uint16
 		for i := 0; i < 15; i++ {
 			if state.Buttons[i] == glfw.Press {
-				mask := uint16(1 << i)
-				activeInput = activeInput || buttonState&mask == 0
-				buttonState |= mask
+				// mask := uint16(1 << i)
+				// activeInput = activeInput || buttonState&mask == 0
+				// buttonState |= mask
+				m.activeTrigger.Add(GamepadButtonSources[i])
+				m.state.Gamepad.Buttons[i] = true
+			} else {
+				m.activeTrigger.Remove(GamepadButtonSources[i])
+				m.state.Gamepad.Buttons[i] = false
 			}
 		}
-		m.state.Gamepad.Buttons = buttonState
-		m.activeTrigger.GamepadButtons = buttonState
-		var axesState uint16
-		for i := 0; i < 4; i++ {
-			if state.Axes[i] > *joystickAxesDeadzones[i] {
-				mask := uint16(1 << (i * 2))
-				activeInput = activeInput || m.activeTrigger.GamepadButtons&mask == 0
-				axesState |= mask
-			} else if state.Axes[i] < -*joystickAxesDeadzones[i] {
-				mask := uint16(1 << (i*2 + 1))
-				activeInput = activeInput || m.activeTrigger.GamepadButtons&mask == 0
-				axesState |= mask
+		// m.state.Gamepad.Buttons = buttonState
+		// m.activeTrigger.GamepadButtons = buttonState
+		// var axesState uint16
+		// TODO: Analog Sources???
+		m.state.Gamepad.Axes = state.Axes
+		for i := 0; i < 8; i++ {
+			value := state.Axes[i/2]
+			if value < 0 {
+				value *= -1
+			}
+			dzLower := Gamepad1AxesConfig.LowerDeadzones[i]
+			if value >= dzLower {
+				m.activeTrigger.Add(DigitalAxesSources[i])
+			} else {
+				m.activeTrigger.Remove(DigitalAxesSources[i])
 			}
 		}
-		if state.Axes[4] > JoystickDeadzoneLeftTrigger {
-			const mask = 1 << 8
-			activeInput = activeInput || axesState&mask == 0
-			axesState |= mask
+		// TODO: Implement analog and digital gamepad triggers (digital threshold is defined by the driver)
+		for i := 0; i < 2; i++ {
+			value := state.Axes[Gamepad1AxesConfig.Indices[i+4]]
+			if value < 0 {
+				value *= -1
+			}
+			dzLower := Gamepad1AxesConfig.LowerDeadzones[i*2]
+			halfway := Gamepad1AxesConfig.HalfwayPoints[i*2]
+			if value >= halfway {
+				m.activeTrigger.Add(DigitalAxesSources[i*2+8+1])
+			} else if value > dzLower {
+				m.activeTrigger.Remove(DigitalAxesSources[i*2+8+1])
+				m.activeTrigger.Add(DigitalAxesSources[i*2+8])
+			} else {
+				m.activeTrigger.Remove(DigitalAxesSources[i*2+8+1])
+				m.activeTrigger.Remove(DigitalAxesSources[i*2+8])
+			}
 		}
-		if state.Axes[5] > JoystickDeadzoneRightTrigger {
-			const mask = 1 << 9
-			activeInput = activeInput || axesState&mask == 0
-			axesState |= mask
-		}
-		m.state.Gamepad.Axes = axesState
-		m.activeTrigger.GamepadAxes = axesState
+		// for i := 0; i < 4; i++ {
+		// 	if state.Axes[i] > *joystickAxesDeadzones[i] {
+		// 		// mask := uint16(1 << (i * 2))
+		// 		// activeInput = activeInput || m.activeTrigger.GamepadButtons&mask == 0
+		// 		// axesState |= mask
+		// 		m.activeTrigger.Remove(DigitalAxesSources[i*2+1])
+		// 		m.activeTrigger.Add(DigitalAxesSources[i*2])
+		// 		m.state.Gamepad.Axes[i*2] = int8(state.Axes[i])
+		// 	} else if state.Axes[i] < -*joystickAxesDeadzones[i] {
+		// 		// mask := uint16(1 << (i*2 + 1))
+		// 		// activeInput = activeInput || m.activeTrigger.GamepadButtons&mask == 0
+		// 		// axesState |= mask
+		// 		m.activeTrigger.Remove(DigitalAxesSources[i*2])
+		// 		m.activeTrigger.Add(DigitalAxesSources[i*2+1])
+		// 		m.state.Gamepad.Axes[i*2+1] = int8(state.Axes[i])
+		// 	} else {
+		// 		m.activeTrigger.Remove(DigitalAxesSources[i*2+1])
+		// 		m.activeTrigger.Remove(DigitalAxesSources[i*2])
+		// 	}
+		// }
+		// if state.Axes[4] > TriggerDeadzoneLeftLower {
+		// 	// const mask = 1 << 8
+		// 	// activeInput = activeInput || axesState&mask == 0
+		// 	// axesState |= mask
+		// 	m.activeTrigger.Add(DigitalAxesSources[glfw.AxisLeftTrigger])
+		// } else {
+		// 	m.activeTrigger.Remove(DigitalAxesSources[glfw.AxisLeftTrigger])
+		// }
+		// if state.Axes[5] > TriggerDeadzoneRightLower {
+		// 	// const mask = 1 << 9
+		// 	// activeInput = activeInput || axesState&mask == 0
+		// 	// axesState |= mask
+		// 	m.activeTrigger.Add(DigitalAxesSources[glfw.AxisRightTrigger])
+		// } else {
+		// 	m.activeTrigger.Remove(DigitalAxesSources[glfw.AxisRightTrigger])
+		// }
+		// m.state.Gamepad.Axes = axesState
+		// m.activeTrigger.GamepadAxes = axesState
 	}
 
 	m.Check(activeInput)
@@ -483,9 +559,23 @@ func (m *Manager) Check(activeInput bool) {
 	}
 
 	ev := ActionEvent{
-		Action: act,
+		Action:     act,
+		Active:     activeInput,
+		InputState: m.state,
 	}
-	for _, handle := range m.handlers[act] {
-		handle(ev)
+	actionState := m.actionState[act]
+	actionLifecycle := OnActivate
+	if actionState != Inactive {
+		actionLifecycle = WhileActive
+	}
+	actionLifecycle = (actionLifecycle >> 4) & 0xf
+
+	m.actionState[act] |= Triggered
+
+	for _, handler := range m.handlers[act] {
+		handlerLifecycle := handler.Lifecycle() & 0xf
+		if handlerLifecycle&actionLifecycle != 0 {
+			handler.Invoke(ev)
+		}
 	}
 }
