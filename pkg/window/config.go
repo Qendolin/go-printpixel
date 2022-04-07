@@ -27,5 +27,7 @@ func (simple *SimpleConfig) ToFullConfig() glw.Config {
 	conf.Samples = simple.Multisampling
 	conf.DebugContext = simple.Debug
 	conf.DebugHandler = simple.DebugHandler
+	conf.Width = simple.Width
+	conf.Height = simple.Height
 	return conf
 }
