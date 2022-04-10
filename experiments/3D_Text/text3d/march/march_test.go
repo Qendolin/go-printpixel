@@ -6,9 +6,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Qendolin/go-printpixel/core/test"
 	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march"
 	"github.com/Qendolin/go-printpixel/experiments/3D_Text/text3d/march/field"
 )
+
+func TestMain(m *testing.M) {
+	test.ParseArgs()
+	m.Run()
+}
 
 func BenchmarkMarcher(b *testing.B) {
 	msdf := load("../../assets/Regular-msdf.png", 4)

@@ -54,7 +54,7 @@ type Window interface {
 	GetClipboardString() string
 	GetContentScale() (x float32, y float32)
 	GetCursorPos() (x, y float64)
-	// GetMarginFrameSize returns the frame size including invisible (resize) margins
+	// GetMarginFrameSize returns the frame size including invisible margins (that are used to resize)
 	GetMarginFrameSize() (left, top, right, bottom int)
 	GetFrameSize() (left, top, right, bottom int)
 	GetFramebufferSize() (width, height int)
