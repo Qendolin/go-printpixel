@@ -235,9 +235,9 @@ void ScaleBlerpCFSimd2(struct ValueFieldFC src, struct ValueFieldFC dst)
 
 			for (uint32_t sx = 0; sx < src.Width - 1; sx++)
 			{
-				//printf("x %zu\n", sx);
-				// __m128 fx = _mm_set_ps1(0);
-				// __m128 fxi = _mm_set_ps1(1.0);
+				// printf("x %zu\n", sx);
+				//  __m128 fx = _mm_set_ps1(0);
+				//  __m128 fxi = _mm_set_ps1(1.0);
 				float *sxp = syp + sx * 4;
 
 				__m128 c00 = _mm_loadu_ps(sxp);
@@ -448,7 +448,7 @@ void print128_num(__m256i var)
 {
 	uint32_t val[8];
 	memcpy(val, &var, sizeof(val));
-	printf("%zu %zu %zu %zu %zu %zu %zu %zu \n",
+	printf("%llu %llu %llu %llu %llu %llu %llu %llu\n",
 		   val[0], val[1], val[2], val[3], val[4], val[5],
 		   val[6], val[7]);
 }
