@@ -448,7 +448,7 @@ void print128_num(__m256i var)
 {
 	uint32_t val[8];
 	memcpy(val, &var, sizeof(val));
-	printf("%llu %llu %llu %llu %llu %llu %llu %llu\n",
+	printf("%u %u %u %u %u %u %u %u\n",
 		   val[0], val[1], val[2], val[3], val[4], val[5],
 		   val[6], val[7]);
 }
