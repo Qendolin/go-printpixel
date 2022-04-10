@@ -224,12 +224,43 @@ const (
 	Active    = 2
 )
 
+type TrackerBit struct {
+	Tracker  *TriggerTracker
+	checkBit uint8
+}
+
+type TriggerTracker struct {
+	check   uint8
+	Action  Action
+	Trigger *Trigger
+}
+
+//
+// 	Manager ->
+// 		map[...Sources] ->
+//			[...]TriggerBit ->
+//				TriggerTracker ->
+//					BitField
+//					Trigger
+//					Action
+//
+
+//
+// 	Manager ->
+// 		map[...Sources] ->
+//			[...]*Trigger ->
+//				Trigger
+//					BitField
+//					Action
+//
+
 type Manager struct {
-	triggers       map[Trigger]Action
+	// triggers       map[Trigger]Action
 	actionState    map[Action]ActionState
 	override       map[Trigger]Action
 	stickyOverride bool
 	handlers       map[Action][]*HandlerRegistration
+	triggers       [cap(Sources)][]TrackerBit
 	activeTrigger  Trigger
 	state          InputState
 }
@@ -238,7 +269,7 @@ var Default = NewManager()
 
 func NewManager() Manager {
 	return Manager{
-		triggers:       map[Trigger]Action{},
+		triggers:       [cap(Sources)][]TrackerBit{},
 		override:       nil,
 		stickyOverride: false,
 		handlers:       map[Action][]*HandlerRegistration{},
@@ -247,21 +278,49 @@ func NewManager() Manager {
 }
 
 func (m *Manager) AddTrigger(trigger Trigger, action Action) {
-	m.triggers[trigger] = action
+	tracker := TriggerTracker{
+		Action: action,
+	}
+	for i := 0; i < int(trigger.SourceCount); i++ {
+		bit := TrackerBit{
+			Tracker:  &tracker,
+			checkBit: 1 << i,
+		}
+		tracker.check |= 1 << i
+		m.triggers[trigger.Sources[i]] = append(m.triggers[trigger.Sources[i]], bit)
+	}
 }
 
 func (m *Manager) AddTriggers(triggers map[Trigger]Action) {
 	for tr, act := range triggers {
-		m.triggers[tr] = act
+		m.AddTrigger(tr, act)
 	}
 }
 
 func (m *Manager) RemoveTrigger(trigger Trigger) {
-	delete(m.triggers, trigger)
+	for i := 0; i < int(trigger.SourceCount); i++ {
+		trackers := m.triggers[trigger.Sources[i]]
+		index := -1
+		for i, bit := range trackers {
+			if *bit.Tracker.Trigger == trigger {
+				index = i
+			}
+		}
+		if index != -1 {
+			trackers[i] = trackers[len(trackers)-1]
+			m.triggers[trigger.Sources[i]] = trackers[:len(trackers)-1]
+		}
+	}
 }
 
 func (m *Manager) Triggers() map[Trigger]Action {
-	return m.triggers
+	triggers := make(map[Trigger]Action)
+	for _, bits := range m.triggers {
+		for _, bit := range bits {
+			triggers[*bit.Tracker.Trigger] = bit.Tracker.Action
+		}
+	}
+	return triggers
 }
 
 // Set a temporary override for all triggers
