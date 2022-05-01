@@ -20,21 +20,39 @@ var aliases map[string]aliasValue = map[string]aliasValue{
 }
 
 func init() {
-	root := ""
+	libroot := ""
 	if _, currentFile, _, ok := runtime.Caller(0); ok {
 		if p, ok := FindModuleRoot(currentFile); ok {
-			root = p
+			libroot = p
 		}
 	}
 
-	if root == "" {
+	if libroot == "" {
 		wd, err := os.Getwd()
 		if err != nil {
 			panic(err)
 		}
-		root = filepath.Clean(wd)
+		libroot = filepath.Clean(wd)
 	}
-	SetAlias("mod", root)
+	SetAlias("lib", libroot)
+
+	modroot := ""
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	if p, ok := FindModuleRoot(wd); ok {
+		modroot = p
+	}
+
+	if libroot == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		modroot = filepath.Clean(wd)
+	}
+	SetAlias("mod", modroot)
 }
 
 func FindModuleRoot(start string) (string, bool) {
@@ -72,7 +90,10 @@ func SetAlias(alias, value string) {
 		raw: value,
 	}
 
-	buildAliasCache()
+	err := buildAliasCache()
+	if err != nil {
+		panic(fmt.Sprintf("invalid alias path %q: %v", value, err))
+	}
 }
 
 func RemoveAlias(alias string) {
@@ -109,11 +130,16 @@ func normalizeAliasName(alias string) string {
 	return "@" + alias
 }
 
-func buildAliasCache() {
+func buildAliasCache() error {
 	for key, value := range aliases {
-		value.cache = filepath.Clean(resolveAlias(value.raw, []string{}))
+		absPath, err := filepath.Abs(resolveAlias(value.raw, []string{}))
+		if err != nil {
+			return err
+		}
+		value.cache = absPath
 		aliases[key] = value
 	}
+	return nil
 }
 
 // recursivly resolves aliases. panics on cyclic references
@@ -160,9 +186,13 @@ func resolveAliasPath(path string) (string, error) {
 
 	path = value.cache + strings.TrimPrefix(path, alias)
 
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
 	// path must not go outside the aliased directory
-	if !strings.HasPrefix(filepath.Clean(path), value.cache) {
-		return "", fmt.Errorf("path %q ends outside the aliased path %q", path, value.cache)
+	if !strings.HasPrefix(absPath, value.cache) {
+		return "", fmt.Errorf("path %q ends outside the aliased path %q", absPath, value.cache)
 	}
 
 	return path, nil

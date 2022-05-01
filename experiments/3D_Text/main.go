@@ -65,8 +65,8 @@ func main() {
 	gl.DepthFunc(gl.LESS)
 
 	sh, err := shader.NewProgramFromPaths(
-		"@mod/assets/shaders/transform.vert",
-		"@mod/assets/shaders/flat.frag",
+		"@lib/assets/shaders/transform.vert",
+		"@lib/assets/shaders/flat.frag",
 	)
 	panicIf(err)
 	if ok, info := sh.Validate(); ok {
@@ -75,8 +75,8 @@ func main() {
 		log.Fatalf("Program Validation Log: \n\n%v\n\n", info)
 	}
 	shDbg, err := shader.NewProgramFromPaths(
-		"@mod/assets/shaders/transform.vert",
-		"@mod/assets/shaders/color.frag",
+		"@lib/assets/shaders/transform.vert",
+		"@lib/assets/shaders/color.frag",
 	)
 	panicIf(err)
 	if ok, info := shDbg.Validate(); ok {

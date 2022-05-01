@@ -13,7 +13,7 @@ func main() {
 		panic(err)
 	}
 	win.Child = &scene.Aspect{
-		Child: scene.LoadGraphic("@mod/assets/textures/hello.png"),
+		Child: scene.LoadGraphic("@lib/assets/textures/hello.png"),
 		//lint:ignore SA4000 So what?
 		Ratio: 640 / 640,
 	}

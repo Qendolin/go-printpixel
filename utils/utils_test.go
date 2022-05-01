@@ -19,10 +19,14 @@ func TestMain(m *testing.M) {
 func TesResolvePath(t *testing.T) {
 	_, err := utils.ResolvePath("")
 	assert.NoError(t, err)
+
+	utils.SetAlias("testalias", ".")
+	_, err = utils.ResolvePath("@testalias/test")
+	assert.NoError(t, err)
 }
 
 func TestResolveModulePath(t *testing.T) {
-	path, err := utils.ResolvePath("@mod/testfile.txt")
+	path, err := utils.ResolvePath("@lib/testfile.txt")
 	assert.NoError(t, err)
 	assert.Equal(t, "testfile.txt", filepath.Base(path))
 
@@ -46,7 +50,7 @@ func TestResolveModulePath(t *testing.T) {
 
 func TestRecurisveAlias(t *testing.T) {
 	utils.RemoveAlias("testfile")
-	utils.SetAlias("testfile", "@mod/testfile.txt")
+	utils.SetAlias("testfile", "@lib/testfile.txt")
 
 	path, err := utils.ResolvePath("@testfile")
 	assert.NoError(t, err)
@@ -54,7 +58,7 @@ func TestRecurisveAlias(t *testing.T) {
 	assert.NoError(t, err)
 
 	utils.RemoveAlias("testalias1")
-	utils.SetAlias("testalias1", "@mod/test1")
+	utils.SetAlias("testalias1", "@lib/test1")
 	utils.RemoveAlias("testalias3")
 	utils.SetAlias("testalias3", "@testalias2/test3")
 	utils.RemoveAlias("testalias2")
@@ -67,13 +71,17 @@ func TestRecurisveAlias(t *testing.T) {
 }
 
 func TestPathOutsideAlias(t *testing.T) {
-	_, err := utils.ResolvePath("@mod/..")
+	_, err := utils.ResolvePath("@lib/..")
 	assert.Error(t, err)
 
-	_, err = utils.ResolvePath("@mod/../whatever")
+	_, err = utils.ResolvePath("@lib/../whatever")
 	assert.Error(t, err)
 
-	_, err = utils.ResolvePath("@mod/test/../../abc")
+	_, err = utils.ResolvePath("@lib/test/../../abc")
+	assert.Error(t, err)
+
+	utils.SetAlias("testalias", ".")
+	_, err = utils.ResolvePath("@testalias/../test")
 	assert.Error(t, err)
 }
 

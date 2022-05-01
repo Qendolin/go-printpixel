@@ -53,7 +53,7 @@ func main() {
 		brushSize                      = float32(4)
 		canvasTexture                  = core.MustNewTexture2D(core.InitEmpty(1920, 1080, 2), data.RGBA)
 		canvasQuad                     = core.Quad()
-		canvasProgram                  = shader.MustNewProgramFromPaths("@mod/assets/shaders/quad_tex_transform.vert", "@mod/assets/shaders/quad_tex_transform.frag")
+		canvasProgram                  = shader.MustNewProgramFromPaths("@lib/assets/shaders/quad_tex_transform.vert", "@lib/assets/shaders/quad_tex_transform.frag")
 		canvasTransformUniform         = canvasProgram.MustGetUniform("u_transform")
 		brushPattern, brushPatternSize = generateBrushPattern(brushSize, true)
 	)
