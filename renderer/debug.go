@@ -17,11 +17,11 @@ type DebugRenderer struct {
 }
 
 func NewDebugRenderer() *DebugRenderer {
-	vs, err := shader.NewShaderFromPath("@mod/assets/shaders/debug.vert", shader.TypeVertex)
+	vs, err := shader.NewShaderFromPath("@lib/assets/shaders/debug.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
 	}
-	fs, err := shader.NewShaderFromPath("@mod/assets/shaders/debug.frag", shader.TypeFragment)
+	fs, err := shader.NewShaderFromPath("@lib/assets/shaders/debug.frag", shader.TypeFragment)
 	if err != nil {
 		panic(err)
 	}

@@ -17,11 +17,11 @@ type TextureQuadRenderer struct {
 }
 
 func NewTextureQuadRenderer() *TextureQuadRenderer {
-	vs, err := shader.NewShaderFromPath("@mod/assets/shaders/quad_tex_transform.vert", shader.TypeVertex)
+	vs, err := shader.NewShaderFromPath("@lib/assets/shaders/quad_tex_transform.vert", shader.TypeVertex)
 	if err != nil {
 		panic(err)
 	}
-	fs, err := shader.NewShaderFromPath("@mod/assets/shaders/quad_tex_transform.frag", shader.TypeFragment)
+	fs, err := shader.NewShaderFromPath("@lib/assets/shaders/quad_tex_transform.frag", shader.TypeFragment)
 	if err != nil {
 		panic(err)
 	}

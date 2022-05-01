@@ -37,7 +37,7 @@ func TestFontWrap(t *testing.T) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular.fnt"))
+	fntdef, err := os.Open(utils.MustResolvePath("@lib/assets/fonts/Go/Regular.fnt"))
 	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
 	require.NoError(t, err)
@@ -62,7 +62,7 @@ func TestFontWrap(t *testing.T) {
 	loadFontMesh(text, fnt, style)
 
 	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
+	fntDir := utils.MustResolvePath("@lib/assets/fonts/Go/")
 	for i, file := range fnt.Pages {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
@@ -71,7 +71,7 @@ func TestFontWrap(t *testing.T) {
 	require.NoError(t, err)
 	bm.Bind(0)
 
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
+	prog := test.NewProgram(t, "@lib/assets/shaders/text_test.vert", "@lib/assets/shaders/text_test.frag")
 	prog.Bind()
 
 	fontScale := fontSize / float32(fnt.Size)
@@ -96,7 +96,7 @@ func TestTabs(t *testing.T) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular.fnt"))
+	fntdef, err := os.Open(utils.MustResolvePath("@lib/assets/fonts/Go/Regular.fnt"))
 	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
 	require.NoError(t, err)
@@ -118,7 +118,7 @@ func TestTabs(t *testing.T) {
 	loadFontMesh(text, fnt, style)
 
 	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
+	fntDir := utils.MustResolvePath("@lib/assets/fonts/Go/")
 	for i, file := range fnt.Pages {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
@@ -127,7 +127,7 @@ func TestTabs(t *testing.T) {
 	require.NoError(t, err)
 	bm.Bind(0)
 
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
+	prog := test.NewProgram(t, "@lib/assets/shaders/text_test.vert", "@lib/assets/shaders/text_test.frag")
 	prog.Bind()
 
 	fontScale := fontSize / float32(fnt.Size)
@@ -152,7 +152,7 @@ func TestBM(t *testing.T) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular.fnt"))
+	fntdef, err := os.Open(utils.MustResolvePath("@lib/assets/fonts/Go/Regular.fnt"))
 	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
 	require.NoError(t, err)
@@ -173,7 +173,7 @@ func TestBM(t *testing.T) {
 	loadFontMesh(text, fnt, style)
 
 	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
+	fntDir := utils.MustResolvePath("@lib/assets/fonts/Go/")
 	for i, file := range fnt.Pages {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
@@ -182,7 +182,7 @@ func TestBM(t *testing.T) {
 	require.NoError(t, err)
 	bm.Bind(0)
 
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
+	prog := test.NewProgram(t, "@lib/assets/shaders/text_test.vert", "@lib/assets/shaders/text_test.frag")
 	prog.Bind()
 
 	fontScale := fontSize / float32(fnt.Size)
@@ -208,7 +208,7 @@ func TestSDF(t *testing.T) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular-SDF.fnt"))
+	fntdef, err := os.Open(utils.MustResolvePath("@lib/assets/fonts/Go/Regular-SDF.fnt"))
 	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
 	require.NoError(t, err)
@@ -229,7 +229,7 @@ func TestSDF(t *testing.T) {
 	loadFontMesh(text, fnt, style)
 
 	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := "@mod/assets/fonts/Go"
+	fntDir := "@lib/assets/fonts/Go"
 	for i, file := range fnt.Pages {
 		pagePaths[i] = path.Join(fntDir, file)
 	}
@@ -237,7 +237,7 @@ func TestSDF(t *testing.T) {
 	require.NoError(t, err)
 	bm.Bind(0)
 
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
+	prog := test.NewProgram(t, "@lib/assets/shaders/text_test.vert", "@lib/assets/shaders/text_test.frag")
 	prog.Bind()
 
 	fontScale := fontSize / float32(fnt.Size)
@@ -264,7 +264,7 @@ func TestMSDF(t *testing.T) {
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	fntdef, err := os.Open(utils.MustResolvePath("@mod/assets/fonts/Go/Regular-MSDF.fnt"))
+	fntdef, err := os.Open(utils.MustResolvePath("@lib/assets/fonts/Go/Regular-MSDF.fnt"))
 	require.NoError(t, err)
 	fnt, err := font.Parse(fntdef)
 	require.NoError(t, err)
@@ -285,7 +285,7 @@ func TestMSDF(t *testing.T) {
 	loadFontMesh(text, fnt, style)
 
 	pagePaths := make([]string, len(fnt.Pages))
-	fntDir := utils.MustResolvePath("@mod/assets/fonts/Go/")
+	fntDir := utils.MustResolvePath("@lib/assets/fonts/Go/")
 	for i, file := range fnt.Pages {
 		pagePaths[i] = filepath.Join(fntDir, file)
 	}
@@ -294,7 +294,7 @@ func TestMSDF(t *testing.T) {
 	require.NoError(t, err)
 	bm.Bind(0)
 
-	prog := test.NewProgram(t, "@mod/assets/shaders/text_test.vert", "@mod/assets/shaders/text_test.frag")
+	prog := test.NewProgram(t, "@lib/assets/shaders/text_test.vert", "@lib/assets/shaders/text_test.frag")
 	prog.Bind()
 
 	fontScale := fontSize / float32(fnt.Size)
