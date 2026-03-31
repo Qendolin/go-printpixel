@@ -5,7 +5,10 @@ import (
 	"unsafe"
 )
 
+// Kept for reference:
 // #cgo CFLAGS: -O3 -mfpmath=sse -mavx -mavx2 -msse -msse2 -msse -msse3 -mssse3 -msse4 -msse4.1 -msse4.2 -march=native
+
+// #cgo CFLAGS: -O3 -march=native -fno-asynchronous-unwind-tables
 // #include "blerp.h"
 import "C"
 
