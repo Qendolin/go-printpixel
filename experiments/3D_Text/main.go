@@ -42,8 +42,17 @@ func main() {
 	// imgPath := "./assets/Playball-W-msdf.png"
 	// imgPath := "./assets/PressStart2P-W-msdf.png"
 	// imgPath := "./assets/Cook-T-msdf.png"
-	imgPath := "./assets/Regular-MSDF.png"
+	// imgPath := "./assets/Regular-MSDF.png"
 	// imgPath := "./assets/march-test.png"
+	var imgPath string
+	if len(os.Args) > 1 {
+		imgPath = os.Args[1]
+	} else {
+		imgPath = "./assets/Regular-MSDF.png"
+	}
+
+	log.Printf("Loading file: %v\n", imgPath)
+
 	imgFile, err := os.Open(imgPath)
 	panicIf(err)
 	img, _, err := image.Decode(imgFile)
