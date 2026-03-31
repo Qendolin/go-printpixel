@@ -1,0 +1,45 @@
+
+
+Input Types:
+
+	Key/Button Presses	boolean
+	Mouse Scrolling		int
+	Mouse Moving		vec2
+	Analog Triggers		float
+	Thumb Sticks		vec2
+
+Features
+
+	// Button = Mouse Button, Stick, Key
+	Button Press Event
+		When a button is pressed
+	Button Release Event
+		When a button is released
+	Button Hold Event
+		When a button is pressed for a specific duration
+	Button Double Press Event
+		When a button is pressed twice in rapid succesion
+
+	Mouse Scroll Event
+		When the scroll wheel ticks
+	Mouse Move Event
+		When the mouse is moved
+	
+	Trigger Above Event
+		When an analog trigger passes a specific threshold
+	Trigger Below Event
+		When an analog trigger passes a specific threshold
+	Trigger Press Event // TODO: rename
+		When an analog trigger is moved
+
+	Digital Input Event
+		When a digital input (button) is pressed
+
+	Stick Move Event
+		When a thumb stick is moved
+	Stick Direction Event
+		When a thumb stick changes its direction (8 directions + none)
+
+
+
+
